@@ -6,11 +6,12 @@ This document defines each field in the `peek.json` AI access manifest, includin
 
 ## 🔹 `peek_then_pay.version`
 - **Type:** `string`
-- **Description:** Declares schema version compliance (e.g. "0.2")
+- **Description:** Declares schema version compliance (e.g. `"0.2"`)
 
 ---
 
 ## 🔹 `meta`
+
 Metadata describing the publisher and content scope.
 
 | Field | Type | Description |
@@ -31,6 +32,7 @@ Use `custom:` prefix for niche categories (e.g. `custom:beauty_tools`).
 ---
 
 ## 🔹 `intents`
+
 Defines policy blocks by intended use case.
 
 ### Intent Block Structure
@@ -45,12 +47,12 @@ Each key is an intent name (e.g. `rag`, `summarization`):
 
 ### Standard Intents
 ```
-training         → Model pretraining/fine-tuning
-rag              → Retrieval-Augmented Generation
-summarization    → TL;DR-style content generation
-citation         → Source linking and quoting
-agent_action     → AI-driven decisions (e.g. buying, recommending)
-metadata_only    → Link graph and non-content metadata
+training         → Model pretraining/fine-tuning  
+rag              → Retrieval-Augmented Generation  
+summarization    → TL;DR-style content generation  
+citation         → Source linking and quoting  
+agent_action     → AI-driven decisions (e.g. buying, recommending)  
+metadata_only    → Link graph and non-content metadata  
 ```
 
 Additional intents may be declared with custom keys (e.g. `custom:embedding_index`).
@@ -58,36 +60,48 @@ Additional intents may be declared with custom keys (e.g. `custom:embedding_inde
 ---
 
 ## 🔹 `license`
-Specifies licensing requirements and contact info.
+
+Specifies licensing requirements and automation endpoints for AI agents.
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `required_for_full` | boolean | Is a license required for full access? |
-| `pricing_url` | URI | Link to license options or pricing info |
-| `contact_email` | email | For licensing/legal inquiries |
+| `terms_url` | string (URI) | Link to a machine-readable `.well-known/peek-license.json` |
+| `pricing_api` | string (URI) | Optional URL to dynamically negotiate or purchase a license |
+| `token_header` | string | Header name for submitting license credentials (e.g. `"X-Peek-License"`) |
+| `validation_endpoint` | string (URI) | Optional endpoint to verify submitted tokens in real-time |
+
+**🔁 Workflow:**
+1. Agent peeks content.
+2. If more access is needed and `license_required = true`, the agent:
+   - Checks `terms_url` for license terms
+   - Optionally calls `pricing_api` to request or purchase access
+   - Uses `token_header` to include license proof in future requests
 
 ---
 
 ## 🔹 `crawler_rules`
+
 Optional guidance for AI crawler behavior.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `allowed_user_agents` | array of strings | Permitted User-Agent strings (e.g. `GPTBot`) |
-| `rate_limit_per_day` | integer | Max daily requests per agent/IP |
-| `usage_logging_required` | boolean | Should usage telemetry be reported? |
-| `required_headers` | array of strings | Headers required in requests (e.g. `X-AI-Intent`) |
+| `allowed_user_agents` | array of strings | Permitted User-Agent strings (e.g. `"GPTBot"`) |
+| `rate_limit_per_day` | integer | Max daily requests per agent or IP |
+| `usage_logging_required` | boolean | Whether telemetry is required |
+| `required_headers` | array of strings | Headers that must be present on all requests |
 
 ---
 
 ## 🔹 `capabilities`
-Signals about content structure, markup, or provenance.
+
+Signals about content structure, markup, or watermarking.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `structured_format` | enum | One of `HTML`, `JSON`, `schema.org` |
-| `has_schema_annotations` | boolean | Whether schema.org/microdata is embedded |
-| `watermarking` | boolean | Whether content has AI watermarking for attribution |
+| `structured_format` | enum | One of `"HTML"`, `"JSON"`, `"schema.org"` |
+| `has_schema_annotations` | boolean | Whether content uses structured markup |
+| `watermarking` | boolean | Whether AI watermarking is embedded |
 
 ---
 
@@ -97,9 +111,9 @@ Signals about content structure, markup, or provenance.
   "peek_then_pay": {
     "version": "0.2",
     "meta": {
-      "site_name": "PCMag",
-      "publisher": "Ziff Davis",
-      "categories": ["product_reviews", "commerce"],
+      "site_name": "EduDocs",
+      "publisher": "EduDocs Inc.",
+      "categories": ["documentation", "academic"],
       "last_updated": "2025-07-23"
     },
     "intents": {
@@ -112,8 +126,10 @@ Signals about content structure, markup, or provenance.
     },
     "license": {
       "required_for_full": true,
-      "pricing_url": "https://pcmag.com/license",
-      "contact_email": "legal@pcmag.com"
+      "terms_url": "https://edudocs.com/.well-known/peek-license.json",
+      "pricing_api": "https://edudocs.com/api/license",
+      "token_header": "X-Peek-License",
+      "validation_endpoint": "https://edudocs.com/api/license/validate"
     }
   }
 }
