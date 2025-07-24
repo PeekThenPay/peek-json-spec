@@ -2,87 +2,69 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Peek JSON AI Access Manifest",
   "type": "object",
+  "required": ["version", "meta", "license"],
   "properties": {
-    "peek_then_pay": {
+    "version": {
+      "type": "string"
+    },
+    "meta": {
       "type": "object",
+      "required": ["site_name", "publisher", "categories", "last_updated"],
       "properties": {
-        "version": { "type": "string" },
-
-        "meta": {
+        "site_name": { "type": "string" },
+        "publisher": { "type": "string" },
+        "categories": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "last_updated": { "type": "string", "format": "date" }
+      }
+    },
+    "license": {
+      "type": "object",
+      "required": ["license_issuer", "terms_url", "pricing"],
+      "properties": {
+        "license_issuer": {
+          "type": "string",
+          "format": "uri",
+          "description": "Endpoint to request or inspect a license and remaining budget."
+        },
+        "terms_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to the legal terms and conditions for content licensing."
+        },
+        "pricing": {
           "type": "object",
+          "required": ["default_per_page", "max_per_page"],
           "properties": {
-            "site_name": { "type": "string" },
-            "publisher": { "type": "string" },
-            "categories": {
-              "type": "array",
-              "items": { "type": "string" }
+            "default_per_page": {
+              "type": "number",
+              "description": "The default price (USD) for any page that does not specify an override."
             },
-            "last_updated": { "type": "string", "format": "date" }
-          },
-          "required": ["site_name", "publisher", "categories", "last_updated"]
-        },
-
-        "intents": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "object",
-            "properties": {
-              "allowed": { "type": "boolean" },
-              "peek_max_tokens": { "type": "integer" },
-              "peek_fields": {
-                "type": "array",
-                "items": { "type": "string" }
-              },
-              "license_required": { "type": "boolean" }
+            "max_per_page": {
+              "type": "number",
+              "description": "Maximum allowable price (USD) for any single page, regardless of override."
             },
-            "required": ["allowed", "peek_max_tokens", "peek_fields", "license_required"]
-          }
-        },
-
-        "license": {
-          "type": "object",
-          "properties": {
-            "required_for_full": { "type": "boolean" },
-            "terms_url": { "type": "string", "format": "uri" },
-            "pricing_api": { "type": "string", "format": "uri" },
-            "token_header": { "type": "string" },
-            "validation_endpoint": { "type": "string", "format": "uri" }
-          },
-          "required": ["required_for_full", "terms_url"]
-        },
-
-        "crawler_rules": {
-          "type": "object",
-          "properties": {
-            "allowed_user_agents": {
-              "type": "array",
-              "items": { "type": "string" }
-            },
-            "rate_limit_per_day": { "type": "integer" },
-            "usage_logging_required": { "type": "boolean" },
-            "required_headers": {
-              "type": "array",
-              "items": { "type": "string" }
-            }
-          },
-          "required": []
-        },
-
-        "capabilities": {
-          "type": "object",
-          "properties": {
-            "structured_format": {
+            "currency": {
               "type": "string",
-              "enum": ["HTML", "JSON", "schema.org"]
+              "description": "Currency used for all pricing (default: 'USD').",
+              "default": "USD"
             },
-            "has_schema_annotations": { "type": "boolean" },
-            "watermarking": { "type": "boolean" }
-          },
-          "required": []
+            "override_mechanism": {
+              "type": "string",
+              "enum": ["header", "402-response", "both"],
+              "default": "both",
+              "description": "Mechanism(s) by which a page may declare a price override from the default_per_page."
+            },
+            "override_header_name": {
+              "type": "string",
+              "default": "X-Peek-Page-Cost",
+              "description": "Header used by the server to signal an overridden per-page cost."
+            }
+          }
         }
-      },
-      "required": ["version", "meta", "intents", "license"]
+      }
     }
-  },
-  "required": ["peek_then_pay"]
+  }
 }
