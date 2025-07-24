@@ -1,14 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "PeekThenPay AI Access Manifest",
+  "title": "Peek JSON AI Access Manifest",
   "type": "object",
   "properties": {
     "peek_then_pay": {
       "type": "object",
-      "required": ["version", "meta", "intents", "license"],
       "properties": {
         "version": { "type": "string" },
-        
+
         "meta": {
           "type": "object",
           "properties": {
@@ -20,18 +19,23 @@
             },
             "last_updated": { "type": "string", "format": "date" }
           },
-          "required": ["site_name", "publisher"]
+          "required": ["site_name", "publisher", "categories", "last_updated"]
         },
 
         "intents": {
           "type": "object",
-          "properties": {
-            "training": { "$ref": "#/definitions/intentPolicy" },
-            "rag": { "$ref": "#/definitions/intentPolicy" },
-            "summarization": { "$ref": "#/definitions/intentPolicy" },
-            "citation": { "$ref": "#/definitions/intentPolicy" },
-            "agent_action": { "$ref": "#/definitions/intentPolicy" },
-            "metadata_only": { "$ref": "#/definitions/intentPolicy" }
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "allowed": { "type": "boolean" },
+              "peek_max_tokens": { "type": "integer" },
+              "peek_fields": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "license_required": { "type": "boolean" }
+            },
+            "required": ["allowed", "peek_max_tokens", "peek_fields", "license_required"]
           }
         },
 
@@ -39,10 +43,12 @@
           "type": "object",
           "properties": {
             "required_for_full": { "type": "boolean" },
-            "pricing_url": { "type": "string", "format": "uri" },
-            "contact_email": { "type": "string", "format": "email" }
+            "terms_url": { "type": "string", "format": "uri" },
+            "pricing_api": { "type": "string", "format": "uri" },
+            "token_header": { "type": "string" },
+            "validation_endpoint": { "type": "string", "format": "uri" }
           },
-          "required": ["required_for_full", "pricing_url"]
+          "required": ["required_for_full", "terms_url"]
         },
 
         "crawler_rules": {
@@ -52,14 +58,16 @@
               "type": "array",
               "items": { "type": "string" }
             },
-            "rate_limit_per_day": { "type": "integer", "minimum": 0 },
+            "rate_limit_per_day": { "type": "integer" },
             "usage_logging_required": { "type": "boolean" },
             "required_headers": {
               "type": "array",
               "items": { "type": "string" }
             }
-          }
+          },
+          "required": []
         },
+
         "capabilities": {
           "type": "object",
           "properties": {
@@ -69,24 +77,12 @@
             },
             "has_schema_annotations": { "type": "boolean" },
             "watermarking": { "type": "boolean" }
-          }
+          },
+          "required": []
         }
-      }
+      },
+      "required": ["version", "meta", "intents", "license"]
     }
   },
-  "definitions": {
-    "intentPolicy": {
-      "type": "object",
-      "properties": {
-        "allowed": { "type": "boolean" },
-        "peek_max_tokens": { "type": "integer", "minimum": 0 },
-        "peek_fields": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "license_required": { "type": "boolean" }
-      },
-      "required": ["allowed"]
-    }
-  }
+  "required": ["peek_then_pay"]
 }
