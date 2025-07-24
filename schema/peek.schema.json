@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PeekThenPay AI Access Manifest",
+  "type": "object",
+  "properties": {
+    "peek_then_pay": {
+      "type": "object",
+      "required": ["version", "meta", "intents", "license"],
+      "properties": {
+        "version": { "type": "string" },
+        
+        "meta": {
+          "type": "object",
+          "properties": {
+            "site_name": { "type": "string" },
+            "publisher": { "type": "string" },
+            "categories": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "last_updated": { "type": "string", "format": "date" }
+          },
+          "required": ["site_name", "publisher"]
+        },
+
+        "intents": {
+          "type": "object",
+          "properties": {
+            "training": { "$ref": "#/definitions/intentPolicy" },
+            "rag": { "$ref": "#/definitions/intentPolicy" },
+            "summarization": { "$ref": "#/definitions/intentPolicy" },
+            "citation": { "$ref": "#/definitions/intentPolicy" },
+            "agent_action": { "$ref": "#/definitions/intentPolicy" },
+            "metadata_only": { "$ref": "#/definitions/intentPolicy" }
+          }
+        },
+
+        "license": {
+          "type": "object",
+          "properties": {
+            "required_for_full": { "type": "boolean" },
+            "pricing_url": { "type": "string", "format": "uri" },
+            "contact_email": { "type": "string", "format": "email" }
+          },
+          "required": ["required_for_full", "pricing_url"]
+        },
+
+        "crawler_rules": {
+          "type": "object",
+          "properties": {
+            "allowed_user_agents": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "rate_limit_per_day": { "type": "integer", "minimum": 0 },
+            "usage_logging_required": { "type": "boolean" },
+            "required_headers": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "properties": {
+            "structured_format": {
+              "type": "string",
+              "enum": ["HTML", "JSON", "schema.org"]
+            },
+            "has_schema_annotations": { "type": "boolean" },
+            "watermarking": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "intentPolicy": {
+      "type": "object",
+      "properties": {
+        "allowed": { "type": "boolean" },
+        "peek_max_tokens": { "type": "integer", "minimum": 0 },
+        "peek_fields": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "license_required": { "type": "boolean" }
+      },
+      "required": ["allowed"]
+    }
+  }
+}
