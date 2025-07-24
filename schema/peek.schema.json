@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Peek JSON AI Access Manifest - MCP Server Configuration for AI Content Licensing",
+  "description": "A JSON-based standard that evolves the robots.txt protocol for the AI era, enabling fair and equitable engagement between MCP servers and AI clients through tool-based access control and transparent pricing.",
+  "type": "object",
+  "required": ["version", "meta", "license"],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "meta": {
+      "type": "object",
+      "required": ["site_name", "publisher", "categories", "last_updated"],
+      "properties": {
+        "site_name": { "type": "string" },
+        "publisher": { "type": "string" },
+        "categories": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "last_updated": { "type": "string", "format": "date" }
+      }
+    },
+    "license": {
+      "type": "object",
+      "required": ["license_issuer", "terms_url", "tools"],
+      "properties": {
+        "license_issuer": {
+          "type": "string",
+          "format": "uri",
+          "description": "Endpoint to request or inspect a license and remaining budget."
+        },
+        "transform_api": {
+          "type": "string",
+          "format": "uri",
+          "description": "Base endpoint for content transformation services that provides standardized output for each tool."
+        },
+        "terms_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to the legal terms and conditions for content licensing."
+        },
+        "global_pricing": {
+          "type": "object",
+          "description": "Global pricing settings that apply to all tools unless overridden.",
+          "properties": {
+            "currency": {
+              "type": "string",
+              "description": "Currency used for all pricing (default: 'USD').",
+              "default": "USD"
+            },
+            "override_mechanism": {
+              "type": "string",
+              "enum": ["header", "402-response", "both"],
+              "default": "both",
+              "description": "Mechanism(s) by which a page may declare a price override from the tool's default pricing."
+            },
+            "override_header_name": {
+              "type": "string",
+              "default": "X-Peek-Page-Cost",
+              "description": "Header used by the server to signal an overridden per-page cost."
+            }
+          }
+        },
+        "tools": {
+          "type": "object",
+          "description": "Pricing and licensing configuration for each supported MCP tool.",
+          "patternProperties": {
+            "^(peek_resource|quote_resource|get_metadata|summarize_resource|generate_embeddings|rag_query|full_access|index_resource|train_on_resource|custom_[a-z_]+)$": {
+              "type": "object",
+              "required": ["allowed"],
+              "properties": {
+                "allowed": {
+                  "type": "boolean",
+                  "description": "Whether this tool is permitted for the content."
+                },
+                "pricing": {
+                  "type": "object",
+                  "description": "Pricing configuration for this specific tool.",
+                  "properties": {
+                    "default_per_page": {
+                      "type": "number",
+                      "description": "The default price (in specified currency) for any page accessed with this tool."
+                    },
+                    "max_per_page": {
+                      "type": "number",
+                      "description": "Maximum allowable price for any single page with this tool, regardless of override."
+                    },
+                    "free_quota": {
+                      "type": "integer",
+                      "description": "Number of free page accesses allowed per month for this tool.",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "license_required": {
+                  "type": "boolean",
+                  "description": "Whether a license is required for this tool (default: true if pricing is specified)."
+                },
+                "output_formats": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["plaintext", "html", "markdown", "json", "embeddings"]
+                  },
+                  "description": "Supported output formats for this tool."
+                },
+                "transform_service": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "Optional endpoint for content transformation specific to this tool."
+                },
+                "restrictions": {
+                  "type": "object",
+                  "description": "Additional restrictions for this tool.",
+                  "properties": {
+                    "rate_limit": {
+                      "type": "object",
+                      "properties": {
+                        "requests_per_hour": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "requests_per_day": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      }
+                    },
+                    "attribution_required": {
+                      "type": "boolean",
+                      "description": "Whether attribution is required when using content for this tool."
+                    },
+                    "commercial_use": {
+                      "type": "boolean",
+                      "description": "Whether commercial use is permitted for this tool."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}
