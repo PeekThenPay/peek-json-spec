@@ -1,0 +1,153 @@
+{
+  "version": "1.0",
+  "meta": {
+    "site_name": "TechNews Daily",
+    "publisher": "TechNews Corp",
+    "domains": ["technews.com", "www.technews.com", "blog.technews.com"],
+    "categories": ["technology", "news", "reviews"],
+    "last_updated": "2025-08-01"
+  },
+  "enforcement": {
+    "rate_limit_per_ip": 50,
+    "grace_period_seconds": 300,
+    "failover_mode": "deny",
+    "bypass_paths": ["/robots.txt", "/sitemap.xml", "/.well-known/*", "/favicon.ico"]
+  },
+  "license": {
+    "license_issuer": "https://api.technews.com/peek/license",
+    "terms_url": "https://technews.com/legal/ai-terms",
+    "global_pricing": {
+      "currency": "USD",
+      "override_mechanism": "both",
+      "override_header_name": "X-Peek-Page-Cost"
+    },
+    "content_hints": {
+      "average_page_size_kb": 45,
+      "content_types": ["text/html", "application/json"],
+      "update_frequency": "daily",
+      "cache_duration": 3600
+    },
+    "path_rules": [
+      {
+        "path_pattern": "/premium/*",
+        "pricing_multiplier": 2.0
+      },
+      {
+        "path_pattern": "/api/v1/*",
+        "pricing_multiplier": 0.5
+      }
+    ],
+    "tools": {
+      "peek_resource": {
+        "allowed": true,
+        "license_required": false,
+        "output_formats": ["plaintext", "html"],
+        "restrictions": {
+          "rate_limit": {
+            "requests_per_hour": 100,
+            "requests_per_day": 1000,
+            "burst_limit": 10
+          }
+        }
+      },
+      "quote_resource": {
+        "allowed": true,
+        "pricing": {
+          "free_quota": 50
+        },
+        "license_required": false,
+        "output_formats": ["plaintext"],
+        "restrictions": {
+          "attribution_required": true,
+          "commercial_use": true
+        }
+      },
+      "get_metadata": {
+        "allowed": true,
+        "enforcement_method": "tool_required",
+        "license_required": false,
+        "output_formats": ["json"]
+      },
+      "summarize_resource": {
+        "allowed": true,
+        "enforcement_method": "both",
+        "pricing": {
+          "default_per_page": 0.02,
+          "max_per_page": 0.10,
+          "volume_discounts": [
+            {
+              "min_requests": 1000,
+              "price_per_page": 0.015
+            },
+            {
+              "min_requests": 10000,
+              "price_per_page": 0.01
+            }
+          ]
+        },
+        "license_required": true,
+        "output_formats": ["markdown", "json"],
+        "restrictions": {
+          "attribution_required": true,
+          "commercial_use": true,
+          "rate_limit": {
+            "requests_per_hour": 50
+          },
+          "batch_support": {
+            "max_batch_size": 25,
+            "batch_endpoint": "https://api.technews.com/tools/batch/summarize"
+          }
+        }
+      },
+      "generate_embeddings": {
+        "allowed": true,
+        "enforcement_method": "trust",
+        "pricing": {
+          "default_per_page": 0.01,
+          "max_per_page": 0.05
+        },
+        "license_required": true,
+        "output_formats": ["embeddings"],
+        "restrictions": {
+          "commercial_use": true
+        }
+      },
+      "rag_query": {
+        "allowed": true,
+        "pricing": {
+          "default_per_page": 0.03,
+          "max_per_page": 0.15,
+          "free_quota": 10
+        },
+        "license_required": true,
+        "output_formats": ["json", "html", "embeddings"],
+        "restrictions": {
+          "attribution_required": true,
+          "commercial_use": true
+        }
+      },
+      "read_resource": {
+        "allowed": true,
+        "pricing": {
+          "default_per_page": 0.05,
+          "max_per_page": 0.25
+        },
+        "license_required": true,
+        "output_formats": ["html", "markdown"],
+        "restrictions": {
+          "attribution_required": true,
+          "commercial_use": false,
+          "rate_limit": {
+            "requests_per_day": 100
+          }
+        }
+      },
+      "index_resource": {
+        "allowed": false
+      },
+      "train_on_resource": {
+        "allowed": false
+      }
+    }
+  }
+}

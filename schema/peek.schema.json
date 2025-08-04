@@ -1,0 +1,224 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Peek JSON AI Access Manifest - Content Publisher Configuration for AI Licensing",
+  "description": "A JSON-based standard that evolves the robots.txt protocol for the AI era, enabling fair and equitable engagement between content publishers and AI systems through tool-based access control and transparent pricing.",
+  "type": "object",
+  "required": ["version", "meta", "license"],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "meta": {
+      "type": "object",
+      "required": ["site_name", "publisher", "categories", "last_updated", "domains"],
+      "properties": {
+        "site_name": { 
+          "type": "string",
+          "description": "Human-readable name of the specific website or publication (e.g., 'TechNews Daily', 'The New York Times')."
+        },
+        "publisher": { 
+          "type": "string",
+          "description": "Name of the company or organization that owns and publishes the site (e.g., 'TechNews Corp', 'The New York Times Company')."
+        },
+        "domains": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of domains and subdomains covered by this manifest. Use wildcards for subdomain patterns (e.g., '*.example.com' covers all subdomains)."
+        },
+        "categories": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "last_updated": { "type": "string", "format": "date" }
+      }
+    },
+    "enforcement": {
+      "type": "object",
+      "description": "Edge enforcement settings for CDN/worker integration.",
+      "properties": {
+        "rate_limit_per_ip": {
+          "type": "integer",
+          "default": 100,
+          "description": "Requests per hour allowed per IP address for unlicensed traffic."
+        },
+        "grace_period_seconds": {
+          "type": "integer",
+          "default": 300,
+          "description": "Grace period when license API is unavailable before applying failover mode."
+        },
+        "failover_mode": {
+          "type": "string",
+          "enum": ["deny", "allow", "cache_only"],
+          "default": "deny",
+          "description": "Behavior when license API is unavailable: deny (reject), allow (permit), cache_only (serve cached responses only)."
+        },
+        "bypass_paths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Paths that bypass license requirements (e.g., ['/robots.txt', '/sitemap.xml', '/.well-known/*'])."
+        }
+      }
+    },
+    "license": {
+      "type": "object",
+      "required": ["license_issuer", "terms_url", "tools"],
+      "properties": {
+        "license_issuer": {
+          "type": "string",
+          "format": "uri",
+          "description": "Endpoint to request or inspect a license and remaining budget."
+        },
+        "terms_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to the legal terms and conditions for content licensing."
+        },
+        "global_pricing": {
+          "type": "object",
+          "description": "Global pricing settings that apply to all tools unless overridden.",
+          "properties": {
+            "currency": {
+              "type": "string",
+              "description": "Currency used for all pricing (default: 'USD').",
+              "default": "USD"
+            },
+            "override_mechanism": {
+              "type": "string",
+              "enum": ["header", "402-response", "both"],
+              "default": "both",
+              "description": "Mechanism(s) by which a page may declare a price override from the tool's default pricing."
+            },
+            "override_header_name": {
+              "type": "string",
+              "default": "X-Peek-Page-Cost",
+              "description": "Header used by the server to signal an overridden per-page cost."
+            }
+          }
+        },
+        "content_hints": {
+          "type": "object",
+          "description": "Optional efficiency hints for AI systems.",
+          "properties": {
+            "average_page_size_kb": {
+              "type": "number",
+              "description": "Typical page size in kilobytes to help with quota planning."
+            },
+            "content_types": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Available content types (e.g., 'text/html', 'application/json')."
+            },
+            "update_frequency": {
+              "type": "string",
+              "enum": ["hourly", "daily", "weekly", "monthly"],
+              "description": "How often content changes."
+            },
+            "cache_duration": {
+              "type": "number",
+              "description": "Suggested cache duration in seconds."
+            }
+          }
+        },
+        "path_rules": {
+          "type": "array",
+          "description": "Optional path-specific overrides.",
+          "items": {
+            "type": "object",
+            "required": ["path_pattern"],
+            "properties": {
+              "path_pattern": {
+                "type": "string",
+                "description": "Glob pattern for matching paths (e.g., '/premium/*', '/api/v1/*')."
+              },
+              "pricing_multiplier": {
+                "type": "number",
+                "description": "Multiply base tool prices by this factor for matching paths."
+              }
+            }
+          }
+        },
+        "tools": {
+          "type": "object",
+          "description": "Pricing and licensing configuration for each supported tool.",
+          "patternProperties": {
+            "^(peek_resource|quote_resource|get_metadata|summarize_resource|generate_embeddings|rag_query|read_resource|index_resource|train_on_resource|custom_[a-z_]+)$": {
+              "type": "object",
+              "required": ["allowed"],
+              "properties": {
+                "allowed": {
+                  "type": "boolean",
+                  "description": "Whether this tool is permitted for the content."
+                },
+                "enforcement_method": {
+                  "type": "string",
+                  "enum": ["trust", "tool_required", "both"],
+                  "default": "both",
+                  "description": "How the publisher controls this tool's usage: trust (raw content via edge), tool_required (processed via edge worker's tool backend), or both (AI system choice)."
+                },
+                "pricing": {
+                  "type": "object",
+                  "description": "Pricing configuration for this specific tool.",
+                  "properties": {
+                    "default_per_page": {
+                      "type": "number",
+                      "description": "The default price (in specified currency) for any page accessed with this tool."
+                    },
+                    "max_per_page": {
+                      "type": "number",
+                      "description": "Maximum allowable price for any single page with this tool, regardless of override."
+                    },
+                    "free_quota": {
+                      "type": "integer",
+                      "description": "Number of free page accesses allowed per month for this tool.",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "license_required": {
+                  "type": "boolean",
+                  "description": "Whether a license is required for this tool (default: true if pricing is specified)."
+                },
+                "output_formats": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["plaintext", "html", "markdown", "json", "embeddings"]
+                  },
+                  "description": "Supported output formats for this tool."
+                },
+                "restrictions": {
+                  "type": "object",
+                  "description": "Additional restrictions for this tool.",
+                  "properties": {
+                    "rate_limit": {
+                      "type": "object",
+                      "properties": {
+                        "requests_per_hour": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "requests_per_day": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      }
+                    },
+                    "attribution_required": {
+                      "type": "boolean",
+                      "description": "Whether attribution is required when using content for this tool."
+                    },
+                    "commercial_use": {
+                      "type": "boolean",
+                      "description": "Whether commercial use is permitted for this tool."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}
