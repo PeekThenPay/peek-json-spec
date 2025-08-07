@@ -3,7 +3,7 @@
   "title": "Peek JSON AI Access Manifest - Content Publisher Configuration for AI Licensing",
   "description": "A JSON-based standard that evolves the robots.txt protocol for the AI era, enabling fair and equitable engagement between content publishers and AI systems through tool-based access control and transparent pricing.",
   "type": "object",
-  "required": ["version", "meta", "license"],
+  "required": ["version", "meta", "license", "enforcement"],
   "properties": {
     "version": {
       "type": "string"
@@ -35,7 +35,8 @@
     "enforcement": {
       "type": "object",
       "description": "Edge enforcement settings for CDN/worker integration.",
-      "properties": {
+  "required": ["failover_mode"],
+  "properties": {
         "rate_limit_per_ip": {
           "type": "integer",
           "default": 100,
@@ -143,7 +144,7 @@
           "patternProperties": {
             "^(peek_resource|quote_resource|get_metadata|summarize_resource|generate_embeddings|rag_query|read_resource|index_resource|train_on_resource|custom_[a-z_]+)$": {
               "type": "object",
-              "required": ["allowed"],
+              "required": ["allowed", "enforcement_method", "license_required", "output_formats"],
               "properties": {
                 "allowed": {
                   "type": "boolean",
@@ -171,6 +172,43 @@
                       "type": "integer",
                       "description": "Number of free page accesses allowed per month for this tool.",
                       "minimum": 0
+                    },
+                    "volume_discounts": {
+                      "type": "array",
+                      "description": "Optional volume-based pricing tiers for this tool.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "min_requests": {
+                            "type": "integer",
+                            "description": "Minimum requests per month for this tier."
+                          },
+                          "price_per_page": {
+                            "type": "number",
+                            "description": "Discounted price per page at this volume."
+                          }
+                        },
+                        "required": ["min_requests", "price_per_page"]
+                      }
+                    },
+                    "time_based_pricing": {
+                      "type": "object",
+                      "description": "Optional time-of-day pricing variations for this tool.",
+                      "properties": {
+                        "peak_hours": {
+                          "type": "array",
+                          "items": { "type": "string" },
+                          "description": "Hours with higher pricing (e.g., ['09:00-17:00'])."
+                        },
+                        "peak_multiplier": {
+                          "type": "number",
+                          "description": "Price multiplier during peak hours."
+                        },
+                        "timezone": {
+                          "type": "string",
+                          "description": "Timezone for peak_hours, in IANA format (e.g., 'America/New_York')."
+                        }
+                      }
                     }
                   }
                 },
@@ -210,6 +248,11 @@
                     "commercial_use": {
                       "type": "boolean",
                       "description": "Whether commercial use is permitted for this tool."
+                    },
+                    "geographic_restrictions": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "ISO country codes where this tool is restricted (e.g., ['CN', 'RU'])."
                     }
                   }
                 }
