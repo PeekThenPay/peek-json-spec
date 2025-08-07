@@ -40,18 +40,19 @@
     "tools": {
       "peek_resource": {
         "allowed": true,
+        "enforcement_method": "trust",
         "license_required": false,
         "output_formats": ["plaintext", "html"],
         "restrictions": {
           "rate_limit": {
             "requests_per_hour": 100,
-            "requests_per_day": 1000,
-            "burst_limit": 10
+            "requests_per_day": 1000
           }
         }
       },
       "quote_resource": {
         "allowed": true,
+        "enforcement_method": "trust",
         "pricing": {
           "free_quota": 50
         },
@@ -83,7 +84,12 @@
               "min_requests": 10000,
               "price_per_page": 0.01
             }
-          ]
+          ],
+          "time_based_pricing": {
+            "peak_hours": ["09:00-17:00"],
+            "peak_multiplier": 1.5,
+            "timezone": "America/New_York"
+          }
         },
         "license_required": true,
         "output_formats": ["markdown", "json"],
@@ -92,10 +98,6 @@
           "commercial_use": true,
           "rate_limit": {
             "requests_per_hour": 50
-          },
-          "batch_support": {
-            "max_batch_size": 25,
-            "batch_endpoint": "https://api.technews.com/tools/batch/summarize"
           }
         }
       },
@@ -114,6 +116,7 @@
       },
       "rag_query": {
         "allowed": true,
+        "enforcement_method": "both",
         "pricing": {
           "default_per_page": 0.03,
           "max_per_page": 0.15,
@@ -123,11 +126,13 @@
         "output_formats": ["json", "html", "embeddings"],
         "restrictions": {
           "attribution_required": true,
-          "commercial_use": true
+          "commercial_use": true,
+          "geographic_restrictions": ["CN", "RU"]
         }
       },
       "read_resource": {
         "allowed": true,
+        "enforcement_method": "both",
         "pricing": {
           "default_per_page": 0.05,
           "max_per_page": 0.25
@@ -143,10 +148,16 @@
         }
       },
       "index_resource": {
-        "allowed": false
+        "allowed": false,
+        "enforcement_method": "trust",
+        "license_required": false,
+        "output_formats": ["json"]
       },
       "train_on_resource": {
-        "allowed": false
+        "allowed": false,
+        "enforcement_method": "trust",
+        "license_required": false,
+        "output_formats": ["json"]
       }
     }
   }

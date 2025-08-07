@@ -18,7 +18,7 @@ The `peek.json` manifest enables publishers to define granular AI access policie
 
 - `site_name` (string) – Human-readable name of the specific website or publication (e.g., "TechNews Daily", "The New York Times").
 - `publisher` (string) – Name of the company or organization that owns and publishes the site (e.g., "TechNews Corp", "The New York Times Company").
-- `domains` (array[string]) – List of domains and subdomains covered by this manifest. Use wildcards for subdomain patterns (e.g., "*.example.com" covers all subdomains of example.com).
+  - `domains` (array[string]) – List of domains and subdomains covered by this manifest. Use wildcards for subdomain patterns (e.g., "*.example.com" covers all subdomains).
   - Examples: 
     - `["example.com", "www.example.com"]` – Specific domains only
     - `["*.example.com"]` – All subdomains of example.com
@@ -28,16 +28,15 @@ The `peek.json` manifest enables publishers to define granular AI access policie
 
 ## `enforcement`
 
-Edge enforcement settings designed for CDN/worker integration (e.g., peek-enforcer).
+Edge enforcement settings for CDN/worker integration.
 
-- `rate_limit_per_ip` (integer, default: 100) – Requests per hour allowed per IP address for unlicensed traffic. Helps prevent abuse while allowing some organic access.
-- `grace_period_seconds` (integer, default: 300) – Grace period when license API is unavailable before applying failover mode. Provides stability during temporary outages.
+- `rate_limit_per_ip` (integer, default: 100) – Requests per hour allowed per IP address for unlicensed traffic.
+- `grace_period_seconds` (integer, default: 300) – Grace period when license API is unavailable before applying failover mode.
 - `failover_mode` (enum: "deny" | "allow" | "cache_only", default: "deny") – Behavior when license API is unavailable:
   - `"deny"` – Reject all requests (most secure)
-  - `"allow"` – Permit all requests (most available)  
+  - `"allow"` – Permit all requests (most available)
   - `"cache_only"` – Serve only cached responses (balanced approach)
-- `bypass_paths` (array[string]) – Paths that bypass license requirements entirely. Useful for essential files.
-  - Examples: `["/robots.txt", "/sitemap.xml", "/.well-known/*", "/favicon.ico", "/health"]`
+- `bypass_paths` (array[string]) – Paths that bypass license requirements (e.g., `["/robots.txt", "/sitemap.xml", "/.well-known/*"]`).
 
 ## `license`
 
@@ -65,28 +64,18 @@ Global pricing settings that apply to all tools unless overridden.
 
 Pricing and licensing configuration for each supported tool. Each tool key can be one of the predefined tools or a custom tool name following the `custom_` prefix convention.
 
-#### Predefined Tool Keys
-
-**Intent-based Access Control:**
+Predefined tool keys include:
 - `peek_resource` – Short, free previews (typically trust-based)
 - `quote_resource` – Small quoted excerpts (typically trust-based with attribution)
 - `get_metadata` – Non-content metadata (typically service-controlled)
-- `read_resource` – Complete content access (always trust-based, no transformation)
-
-**Processing Intent Declarations:**
 - `summarize_resource` – AI-generated summaries (trust-based OR service-controlled)
-- `generate_embeddings` – Content vectorization (trust-based OR service-controlled) 
+- `generate_embeddings` – Content vectorization (trust-based OR service-controlled)
 - `rag_query` – Retrieval-augmented generation (trust-based OR service-controlled)
+- `read_resource` – Complete content access (always trust-based, no transformation)
 - `index_resource` – Search engine indexing (typically trust-based)
 - `train_on_resource` – Model training data (typically trust-based with strict licensing)
 
-#### Custom Tool Names
-Custom tools must follow the naming pattern `custom_[name]` where `[name]` consists of lowercase letters and underscores only. Examples:
-- `custom_extract_citations` – Extract academic citations
-- `custom_legal_analysis` – Legal document analysis
-- `custom_sentiment_score` – Sentiment analysis scoring
-
-This naming convention ensures clarity between standard tool names and publisher-specific extensions.
+Custom tools must follow the naming pattern `custom_[name]` (lowercase letters and underscores only).
 
 ### Enforcement Method Implications
 
@@ -115,55 +104,66 @@ This naming convention ensures clarity between standard tool names and publisher
 Each tool object supports the following properties:
 
 - `allowed` (boolean) – **Required.** Whether this tool is permitted for the content.
-- `license_required` (boolean) – Whether a license is required for this tool (default: true if pricing is specified).
-- `enforcement_method` (enum) – How the publisher controls this tool's usage:
-  - `"trust"` – Publisher provides raw content and trusts AI system to use it for declared intent
-  - `"tool_required"` – Publisher only provides processed content via tool-specific API
-  - `"both"` – AI system can choose either raw content access or tool API (default)
-- `service_endpoint` (string/uri) – API endpoint for this specific tool (required if enforcement_method includes "tool_required")
+- `license_required` (boolean) – **Required.** Whether a license is required for this tool (default: true if pricing is specified).
+- `enforcement_method` (enum, required) – How the publisher controls this tool's usage:
+  - `"trust"` – Publisher provides raw content and trusts AI system to use it for declared intent.
+  - `"tool_required"` – Publisher only provides processed content via tool-specific API.
+  - `"both"` – AI system can choose either raw content access or tool API (default).
 - `pricing` (object) – Pricing configuration for this specific tool.
   - `default_per_page` (number) – The default price (in specified currency) for any page accessed with this tool.
   - `max_per_page` (number) – Maximum allowable price for any single page with this tool, regardless of override.
   - `free_quota` (integer, minimum: 0) – Number of free page accesses allowed per month for this tool.
-  - `volume_discounts` (array[object]) – Optional volume-based pricing tiers.
+  - `volume_discounts` (array[object], optional) – Optional volume-based pricing tiers for this tool.
     - `min_requests` (integer) – Minimum requests per month for this tier.
     - `price_per_page` (number) – Discounted price per page at this volume.
-  - `time_based_pricing` (object) – Optional time-of-day pricing variations.
-    - `peak_hours` (array[string]) – Hours with higher pricing (e.g., ["09:00-17:00"]).
+  - `time_based_pricing` (object, optional) – Optional time-of-day pricing variations for this tool.
+    - `peak_hours` (array[string]) – Hours with higher pricing (e.g., `["09:00-17:00"]`).
     - `peak_multiplier` (number) – Price multiplier during peak hours.
-- `output_formats` (array[string]) – Supported output formats for this tool. Values: `"plaintext"`, `"html"`, `"markdown"`, `"json"`, `"embeddings"`.
+- `output_formats` (array[string]) – **Required.** Supported output formats for this tool. Values: `"plaintext"`, `"html"`, `"markdown"`, `"json"`, `"embeddings"`. Specifies the formats in which the tool can return results.
 - `restrictions` (object) – Additional restrictions for this tool.
   - `rate_limit` (object) – Rate limiting configuration.
     - `requests_per_hour` (integer, minimum: 1) – Maximum requests per hour.
     - `requests_per_day` (integer, minimum: 1) – Maximum requests per day.
-    - `burst_limit` (integer) – Maximum requests in a short burst (e.g., per minute).
   - `attribution_required` (boolean) – Whether attribution is required when using content for this tool.
   - `commercial_use` (boolean) – Whether commercial use is permitted for this tool.
-  - `geographic_restrictions` (array[string]) – ISO country codes where this tool is restricted (e.g., ["CN", "RU"]).
-  - `batch_support` (object) – Support for bulk operations.
-    - `max_batch_size` (integer) – Maximum number of URLs that can be processed in a single batch request.
-    - `batch_endpoint` (string/uri) – Endpoint for batch processing requests.
+  - `geographic_restrictions` (array[string], optional) – ISO country codes where this tool is restricted (e.g., `["CN", "RU"]`).
 
 ## Example Structure
 
 ```json
 {
   "version": "1.0",
-  "meta": { ... },
+  "meta": {
+    "site_name": "Example Site",
+    "publisher": "Example Publisher",
+    "domains": ["example.com", "www.example.com"],
+    "categories": ["news"],
+    "last_updated": "2025-08-01"
+  },
+  "enforcement": {
+    "rate_limit_per_ip": 100,
+    "grace_period_seconds": 300,
+    "failover_mode": "deny",
+    "bypass_paths": ["/robots.txt", "/sitemap.xml"]
+  },
   "license": {
     "license_issuer": "https://api.example.com/peek/license",
     "terms_url": "https://example.com/legal/ai-terms",
     "global_pricing": {
       "currency": "USD",
-      "override_mechanism": "both"
+      "override_mechanism": "both",
+      "override_header_name": "X-Peek-Page-Cost"
     },
     "tools": {
       "peek_resource": {
         "allowed": true,
-        "license_required": false
+        "enforcement_method": "trust",
+        "license_required": false,
+        "output_formats": ["plaintext", "html"]
       },
       "summarize_resource": {
         "allowed": true,
+        "enforcement_method": "both",
         "pricing": {
           "default_per_page": 0.02,
           "max_per_page": 0.10
