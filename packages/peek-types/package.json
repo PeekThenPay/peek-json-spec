@@ -1,0 +1,12 @@
+{
+  "name": "@peekthenpay/peek-types",
+  "version": "0.1.0",
+  "description": "TypeScript types and interfaces for peek.json manifest, license API, and tool service API.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  }
+}
