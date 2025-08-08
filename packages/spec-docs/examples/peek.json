@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "meta": {
+    "site_name": "TechNews Daily",
+    "publisher": "TechNews Corp",
+    "domains": ["technews.com", "www.technews.com", "blog.technews.com"],
+    "categories": ["technology", "news", "reviews"],
+    "last_updated": "2025-08-01"
+  },
+  "enforcement": {
+    "rate_limit_per_ip": 50,
+    "grace_period_seconds": 300,
+    "failover_mode": "deny",
+    "bypass_paths": ["/robots.txt", "/sitemap.xml", "/.well-known/*", "/favicon.ico"]
+  },
+  "license": {
+    "license_issuer": "https://api.technews.com/peek/license",
+    "terms_url": "https://technews.com/legal/ai-terms",
+    "content_hints": {
+      "average_page_size_kb": 45,
+      "content_types": ["text/html", "application/json"],
+      "update_frequency": "daily",
+      "cache_duration": 3600
+    }
+  }
+}
