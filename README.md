@@ -60,6 +60,7 @@ Example:
   "version": "1.0",
   "meta": {
     "site_name": "TechNews Daily",
+    "publisher_id": "b7e2a8e2-4c3a-4e2a-9c1a-2f7e8b9c1d2e",
     "domains": ["technews.com"],
     "categories": ["technology", "news"],
     "last_updated": "2025-08-04"
@@ -101,8 +102,10 @@ peek.json enables a standardized flow for AI agents to access publisher content:
 
 **License Acquisition**
 
-- The AI agent reviews the peek.json manifest to understand available tools/intents and licensing requirements.
-- The agent contacts the license server (endpoint provided in peek.json) to acquire a license for the desired tools/intents.
+The agent contacts the license server (endpoint provided in peek.json) to
+- Establish an identity and payment method.
+- Request available tools/intents, pricing, and licensing requirements.
+- Acquire a license for the desired tools/intents.
 
 **Content Request & Enforcement**
 
