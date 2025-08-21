@@ -2,18 +2,25 @@
 import { readFile } from 'fs/promises';
 import { resolve } from 'path';
 import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+
+/* eslint-env node */
+/* global console, process */
 
 (async () => {
-  const ajv = new Ajv({ allErrors: true, strict: false });
+  const ajv = new Ajv({
+    allErrors: true,
+    strict: false,
+    validateFormats: true,
+  });
+
+  // Add format validators
+  addFormats(ajv);
 
   // Load peek.schema.json
-  const peekSchema = JSON.parse(
-    await readFile(resolve('packages/spec/schema/peek.schema.json'), 'utf-8'),
-  );
+  const peekSchema = JSON.parse(await readFile(resolve('schema/peek.schema.json'), 'utf-8'));
   // Load example peek.json
-  const peekExample = JSON.parse(
-    await readFile(resolve('packages/spec/examples/peek.json'), 'utf-8'),
-  );
+  const peekExample = JSON.parse(await readFile(resolve('examples/peek.json'), 'utf-8'));
 
   // Validate peek.schema.json against the official meta-schema
   if (!ajv.validateSchema(peekSchema)) {

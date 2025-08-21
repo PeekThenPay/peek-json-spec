@@ -1,10 +1,19 @@
 # Tool Service Implementation Guide
 
-**⚠️ IMPORTANT: Tool services are never exposed directly to AI agents. All access is routed through CDN/Edge Workers (enforcers) that handle license validation, quota, and payment logic. Tool services are assertion-only: they trust the edge worker to enforce licensing and quota.**
+**⚠️ IMPORTANT: Tool services are never exposed directly to AI agents. All access is routed through
+CDN/Edge Workers (enforcers) that handle license validation, quota, and payment logic. Tool services
+are assertion-only: they trust the edge worker to enforce licensing and quota.**
 
-Tool services provide content processing for specific tools when publishers use `tool_required` or `both` enforcement methods. These services receive pre-authenticated requests from edge workers and can be internal, SaaS, or hybrid implementations. Tool services are agnostic to licensing, payment, and quota—they simply process content and return results. All licensing, quota, and payment logic is handled by the edge worker, which validates JWT licenses and enforces quotas before invoking the tool service.
+Tool services provide content processing for specific tools when publishers use `tool_required` or
+`both` enforcement methods. These services receive pre-authenticated requests from edge workers and
+can be internal, SaaS, or hybrid implementations. Tool services are agnostic to licensing, payment,
+and quota—they simply process content and return results. All licensing, quota, and payment logic is
+handled by the edge worker, which validates JWT licenses and enforces quotas before invoking the
+tool service.
 
-> **Note:** If a publisher uses a SaaS tool service that incurs additional costs, those costs will be reflected in the pricing passed on to the AI agent for a license. The enforcer abstracts all licensing, quota, and payment logic, ensuring tool services only focus on content processing.
+> **Note:** If a publisher uses a SaaS tool service that incurs additional costs, those costs will
+> be reflected in the pricing passed on to the AI agent for a license. The enforcer abstracts all
+> licensing, quota, and payment logic, ensuring tool services only focus on content processing.
 
 ## 🏗️ Architecture Overview
 
@@ -63,7 +72,8 @@ Tool services should only receive what they need for content processing:
 - Response formatting for AI agents
 - Abstracting all licensing, quota, and payment logic from tool services
 
-This separation ensures tool services can focus purely on content processing while edge workers handle all business logic, security, and compliance requirements.
+This separation ensures tool services can focus purely on content processing while edge workers
+handle all business logic, security, and compliance requirements.
 
 ## 🌊 Edge-to-Service Flow
 
@@ -114,7 +124,8 @@ flowchart TD
 
 ## 🔧 Edge Worker Configuration
 
-Edge workers maintain internal configuration that maps peek.json tools to service implementations, using the following TypeScript interfaces:
+Edge workers maintain internal configuration that maps peek.json tools to service implementations,
+using the following TypeScript interfaces:
 
 ```typescript
 import { ToolServiceConfig, ToolConfig } from 'peek-types';
@@ -167,9 +178,11 @@ const toolServiceConfig: ToolServiceConfig = {
 
 ### POST {service_endpoint}
 
-**⚠️ These are internal API calls from edge workers to tool services - not directly accessible by AI systems.**
+**⚠️ These are internal API calls from edge workers to tool services - not directly accessible by AI
+systems.**
 
-Edge workers send pre-authenticated requests to tool services with only the information needed for content processing:
+Edge workers send pre-authenticated requests to tool services with only the information needed for
+content processing:
 
 **Headers (from edge worker):**
 
@@ -288,7 +301,8 @@ app.post('/internal/metadata', async (req, res) => {
 
 ### Trust (Raw Content)
 
-When enforcement_method includes "trust", AI systems receive raw content directly through the edge worker:
+When enforcement_method includes "trust", AI systems receive raw content directly through the edge
+worker:
 
 ```http
 GET /articles/ai-ethics-2025 HTTP/1.1
@@ -334,7 +348,8 @@ Edge worker honors the preference when available.
 
 ## Error Handling
 
-Since tool services receive pre-authenticated requests from edge workers, error handling focuses on processing issues rather than license validation:
+Since tool services receive pre-authenticated requests from edge workers, error handling focuses on
+processing issues rather than license validation:
 
 ### 500 Internal Server Error
 
@@ -365,4 +380,5 @@ Since tool services receive pre-authenticated requests from edge workers, error 
 }
 ```
 
-**Note:** License-related errors (402, 403, 429) are handled by edge workers before requests reach tool services.
+**Note:** License-related errors (402, 403, 429) are handled by edge workers before requests reach
+tool services.

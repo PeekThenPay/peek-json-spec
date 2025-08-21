@@ -1,14 +1,18 @@
 ﻿# Recommended Edge Enforcement Implementation Guide
 
-**⚠️ This is a specification with recommended implementation patterns. Publishers are free to implement enforcement using any technology stack that meets the peek.json standard requirements.**
+**⚠️ This is a specification with recommended implementation patterns. Publishers are free to
+implement enforcement using any technology stack that meets the peek.json standard requirements.**
 
-This guide provides recommended patterns for implementing peek.json enforcement at the edge layer, ensuring AI agents never interact directly with tool service endpoints while maintaining security, performance, and compliance with the standard.
+This guide provides recommended patterns for implementing peek.json enforcement at the edge layer,
+ensuring AI agents never interact directly with tool service endpoints while maintaining security,
+performance, and compliance with the standard.
 
 ## 🏗️ Architecture Principles
 
 ### Edge-Centric Design
 
-The peek.json standard is designed for modern edge computing environments where enforcement happens at the CDN/edge worker (enforcer) layer:
+The peek.json standard is designed for modern edge computing environments where enforcement happens
+at the CDN/edge worker (enforcer) layer:
 
 ```
 AI Agent → Enforcer (Edge Worker) → Tool Service → Enforcer → AI Agent
@@ -41,7 +45,9 @@ AI Agent → Enforcer (Edge Worker) → Tool Service → Enforcer → AI Agent
 
 ## 🤖 Bot Detection Integration
 
-Integrate with professional bot detection services (e.g., Cloudflare Bot Management, DataDome, PerimeterX, AWS WAF) for robust request analysis and classification. Apply peek.json policies based on detection results and enforce licensing for detected AI agents.
+Integrate with professional bot detection services (e.g., Cloudflare Bot Management, DataDome,
+PerimeterX, AWS WAF) for robust request analysis and classification. Apply peek.json policies based
+on detection results and enforce licensing for detected AI agents.
 
 ## 🔐 License Validation & Quota Enforcement
 
@@ -65,7 +71,9 @@ Integrate with professional bot detection services (e.g., Cloudflare Bot Managem
 
 ## 🛠️ Platform-Specific Implementation
 
-Enforcement can be implemented on any major edge platform (Cloudflare Workers, AWS Lambda@Edge, Fastly VCL, etc.). Refer to the [peek-enforcer](https://github.com/PeekThenPay/peek-enforcer) project for full implementation examples.
+Enforcement can be implemented on any major edge platform (Cloudflare Workers, AWS Lambda@Edge,
+Fastly VCL, etc.). Refer to the [peek-enforcer](https://github.com/PeekThenPay/peek-enforcer)
+project for full implementation examples.
 
 ## 🔧 Configuration Management
 
@@ -97,4 +105,6 @@ Enforcement can be implemented on any major edge platform (Cloudflare Workers, A
 
 ---
 
-**Remember**: This guide provides recommended patterns. The peek.json standard is implementation-agnostic, and publishers can use any technology stack that correctly implements the specification requirements.
+**Remember**: This guide provides recommended patterns. The peek.json standard is
+implementation-agnostic, and publishers can use any technology stack that correctly implements the
+specification requirements.

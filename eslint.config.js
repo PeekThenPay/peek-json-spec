@@ -1,35 +1,28 @@
-import tseslint from '@typescript-eslint/eslint-plugin';
-import tsparser from '@typescript-eslint/parser';
+import js from '@eslint/js';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
 
 export default [
+  js.configs.recommended,
   {
-    files: ['**/*.ts'],
-    ignores: ['**/node_modules/**', '**/dist/**'],
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
-      ecmaVersion: 2021,
-      sourceType: 'module',
-      parser: tsparser,
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
     },
     plugins: {
-      '@typescript-eslint': tseslint,
+      '@typescript-eslint': tsPlugin,
     },
     rules: {
-      semi: 'error',
-      quotes: ['error', 'single'],
-      '@typescript-eslint/no-unused-vars': 'warn',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      ...tsPlugin.configs.recommended.rules,
+      '@typescript-eslint/explicit-module-boundary-types': 'error',
+      '@typescript-eslint/no-explicit-any': 'error',
     },
   },
   {
-    files: ['**/*.js'],
-    ignores: ['**/node_modules/**', '**/dist/**'],
-    languageOptions: {
-      ecmaVersion: 2021,
-      sourceType: 'module',
-    },
-    rules: {
-      semi: 'error',
-      quotes: ['error', 'single'],
-    },
+    ignores: ['dist/**', 'node_modules/**'],
   },
 ];

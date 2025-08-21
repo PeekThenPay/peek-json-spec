@@ -1,6 +1,7 @@
 # Contributing to peek-json-spec
 
-Thank you for your interest in contributing! We welcome issues, feature requests, and pull requests from the community.
+Thank you for your interest in contributing! We welcome issues, feature requests, and pull requests
+from the community.
 
 ## How to Contribute
 

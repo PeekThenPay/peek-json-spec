@@ -1,22 +1,53 @@
 {
-  "name": "peek-json-spec",
+  "name": "@peekthenpay/peek-json-spec",
+  "packageManager": "pnpm@8.9.0",
   "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PeekThenPay/peek-json-spec.git"
+  },
   "description": "OSS spec and reference implementation for peek.json",
-  "main": "index.js",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "schema",
+    "README.md"
+  ],
   "scripts": {
-    "lint": "eslint . --ext .ts,.js",
-    "format": "prettier --write .",
-    "typecheck": "tsc --noEmit"
+    "build": "tsc",
+    "lint": "pnpm run format:check && eslint 'src/**/*.{ts,js}'",
+    "lint:fix": "pnpm run format && eslint --fix 'src/**/*.{ts,js}'",
+    "format": "prettier --write '**/*.{ts,js,json,md,yml,yaml}'",
+    "format:check": "prettier --check '**/*.{ts,js,json,md,yml,yaml}'",
+    "typecheck": "tsc --noEmit",
+    "validate": "node src/validation/validate.js",
+    "prepublishOnly": "pnpm run build",
+    "version": "pnpm run build && git add -A dist"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
     "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2"
+  },
+  "keywords": [
+    "ai",
+    "licensing",
+    "content",
+    "specification",
+    "peek"
+  ],
+  "author": "PeekThenPay",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   }
 }

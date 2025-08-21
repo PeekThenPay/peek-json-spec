@@ -2,7 +2,9 @@
 
 ## The 31-Year Legacy of robots.txt
 
-Since 1994, robots.txt has been the universal standard for website-crawler communication. This simple text file at `/robots.txt` enabled websites to communicate crawling preferences to search engines using basic directives:
+Since 1994, robots.txt has been the universal standard for website-crawler communication. This
+simple text file at `/robots.txt` enabled websites to communicate crawling preferences to search
+engines using basic directives:
 
 ```
 User-agent: *
@@ -48,7 +50,8 @@ peek.json builds on robots.txt’s success:
 - **Publisher control** over access rules
 - **Respectful interaction**—AI agents honor publisher preferences
 
-**Tool support and pricing are managed in the license server and returned via the license API, not encoded in peek.json.**
+**Tool support and pricing are managed in the license server and returned via the license API, not
+encoded in peek.json.**
 
 And adds modern capabilities:
 
@@ -59,4 +62,7 @@ And adds modern capabilities:
 
 ## Foundation for the Future
 
-peek.json extends the proven robots.txt model for a new era. Simple, standardized protocols create sustainable ecosystems—robots.txt did it for search, peek.json does it for AI agents and content creators. The manifest only points to the license API; all dynamic tool/pricing info is managed in the SaaS license server.
+peek.json extends the proven robots.txt model for a new era. Simple, standardized protocols create
+sustainable ecosystems—robots.txt did it for search, peek.json does it for AI agents and content
+creators. The manifest only points to the license API; all dynamic tool/pricing info is managed in
+the SaaS license server.

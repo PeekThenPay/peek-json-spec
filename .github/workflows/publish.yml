@@ -1,20 +1,24 @@
-name: CI
+name: Publish Package
 
 on:
-  pull_request:
-    branches: [main]
   push:
     branches: [main]
+    tags: ['v*']
 
 jobs:
-  validate:
+  publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@peekthenpay'
 
       - uses: pnpm/action-setup@v2
         with:
@@ -36,14 +40,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate Schema
-        run: pnpm validate
-
-      - name: Run Lint (includes format check)
-        run: pnpm lint
-
-      - name: Type Check
-        run: pnpm typecheck
+      - name: Run checks
+        run: |
+          pnpm validate
+          pnpm lint
+          pnpm typecheck
 
       - name: Build
         run: pnpm build
+
+      - name: Publish to GitHub Packages
+        run: pnpm publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
