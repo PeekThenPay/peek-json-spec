@@ -12,6 +12,10 @@ export default [
         ecmaVersion: 'latest',
         sourceType: 'module',
       },
+      globals: {
+        console: true,
+        process: true,
+      },
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
