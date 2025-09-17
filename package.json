@@ -36,7 +36,7 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "demo": "pnpm run build && node scripts/demo-license-utils.mjs",
-    "test": "vitest run",
+    "test:run": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "lint": "pnpm run format:check && eslint 'src/**/*.{ts,js}'",
