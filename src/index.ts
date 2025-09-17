@@ -1,3 +1,14 @@
+// Export license utilities
+export {
+  createLicenseJwt,
+  createDpopProof,
+  verifyLicenseAndDpop,
+  CreateLicenseOptions,
+  CreateDpopOptions,
+  ReplayGuard,
+  VerifyOptions,
+  VerifiedResult,
+} from './utils/license-utils.js';
 // Barrel file for all Peek types
 export * from './types/common.js';
 export * from './types/license-api.js';

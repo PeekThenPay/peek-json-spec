@@ -20,13 +20,25 @@ Today, the landscape is fragmented:
 The result: publishers feel exploited, operators struggle with inefficiencies, and the ecosystem
 lacks a shared contract for fair collaboration.
 
-Current methodologies either allow access to everything (open crawling, scraping, and ingestion) or block bots completely (hard paywalls, bot detection, and HTTP 403/401 responses). This binary approach leaves publishers with little control and bots with few options for responsible access.
+Current methodologies either allow access to everything (open crawling, scraping, and ingestion) or
+block bots completely (hard paywalls, bot detection, and HTTP 403/401 responses). This binary
+approach leaves publishers with little control and bots with few options for responsible access.
 
-Peek-Then-Pay introduces a middle ground: when a crawler or agent requests content, it may be blocked with a 402 Payment Required response, but is also provided a "peek" at the content and a [`peek.json`](docs/peek-manifest-fields.md) manifest. This manifest lets crawlers and agents discover the potential value, licensing terms, and available tools—enabling informed decisions and fair negotiation.
+Peek-Then-Pay introduces a middle ground: when a crawler or agent requests content, it may be
+blocked with a 402 Payment Required response, but is also provided a "peek" at the content and a
+[`peek.json`](docs/peek-manifest-fields.md) manifest. This manifest lets crawlers and agents
+discover the potential value, licensing terms, and available tools—enabling informed decisions and
+fair negotiation.
 
-Peek-Then-Pay addresses this gap by defining an **open standard** for discovery ([`peek.json`](docs/peek-manifest-fields.md)), licensing ([License API](docs/license-api.md)), enforcement ([Edge Enforcement Guide](docs/recommended-edge-enforcement-guide.md)), and tooling ([Tool Service Guide](docs/tool-service-api.md)). It doesn’t replace existing solutions—it provides a **cohesive starting point** that connects them into a framework that is fair, extensible, and mutually beneficial.
+Peek-Then-Pay addresses this gap by defining an **open standard** for discovery
+([`peek.json`](docs/peek-manifest-fields.md)), licensing ([License API](docs/license-api.md)),
+enforcement ([Edge Enforcement Guide](docs/recommended-edge-enforcement-guide.md)), and tooling
+([Tool Service Guide](docs/tool-service-api.md)). It doesn’t replace existing solutions—it provides
+a **cohesive starting point** that connects them into a framework that is fair, extensible, and
+mutually beneficial.
 
-For historical context and the evolution from robots.txt to peek.json, see [From robots.txt to peek.json](docs/robots-to-peek.md).
+For historical context and the evolution from robots.txt to peek.json, see
+[From robots.txt to peek.json](docs/robots-to-peek.md).
 
 ---
 
@@ -88,10 +100,11 @@ extensible. It creates the foundation for an ecosystem where publishers and oper
 - **Tools**: Configurable endpoints (REST/MCP) for transforms like summarization, search, ingestion,
   or training.
 
-See [`peek-manifest-fields.md`](docs/peek-manifest-fields.md) for a full reference of the manifest fields.
-See [`license-api.md`](docs/license-api.md) for licensing API details.
-See [`recommended-edge-enforcement-guide.md`](docs/recommended-edge-enforcement-guide.md) for enforcement implementation patterns.
-See [`tool-service-api.md`](docs/tool-service-api.md) for tool service implementation guidance.
+See [`peek-manifest-fields.md`](docs/peek-manifest-fields.md) for a full reference of the manifest
+fields. See [`license-api.md`](docs/license-api.md) for licensing API details. See
+[`recommended-edge-enforcement-guide.md`](docs/recommended-edge-enforcement-guide.md) for
+enforcement implementation patterns. See [`tool-service-api.md`](docs/tool-service-api.md) for tool
+service implementation guidance.
 
 ---
 
