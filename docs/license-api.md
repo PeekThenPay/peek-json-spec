@@ -6,32 +6,14 @@ agents, and supports flexible pricing, quota, and enforcement models.
 
 **Roles:**
 
-- Enforcers use the API to validate licenses and monitor/report usage for content access.
-- AI agents use the API to discover pricing and capabilities, create accounts, associate payment
-  methods, acquire licenses, and access content in accordance with license terms. All tool/pricing
-  configuration is managed in the license server and returned via the API.
+- AI agents/operators use the API to discover pricing and capabilities, create accounts, associate
+  payment methods, acquire licenses, and access content in accordance with license terms. All
+  tool/pricing configuration is managed in the license server and returned via the API.
+- Enforcers use the API to report usage for content access.
 
 ---
 
-## Payment Proxy Model
-
-The license server does **not** handle, store, or process credit card numbers or sensitive payment
-data. Instead, it acts as a secure proxy, facilitating direct payment interactions between AI agent
-and publisher accounts using third-party payment providers (e.g., Stripe, PayPal, etc.).
-
-- AI agents register a payment method by providing a tokenized reference (e.g., a payment provider
-  token) to the license server.
-- When a license is acquired, the license server coordinates the payment transaction between the AI
-  agent and publisher accounts using these tokens, but never directly accesses or stores raw payment
-  details.
-- All payment processing is handled by the external payment provider, ensuring PCI compliance and
-  security.
-- The license server only tracks payment status, transaction references, and account associations
-  for licensing purposes.
-
----
-
-## AI Agent Endpoints & Usage
+## AI Agent/Operator Endpoints & Usage
 
 This section covers endpoints and flows used by AI agents to discover pricing, create accounts,
 acquire licenses, and manage payment methods.
@@ -52,131 +34,117 @@ flowchart TD
 
 ## Endpoints
 
-### 1. Account Management
+### 1. Discover Pricing & Tool Capabilities
 
-**POST /account**
-
-- AI agent creates an account with the license server to receive a unique `account_id`.
-- Optionally associates a `default_payment_method` (so the agent does not need to provide a payment
-  method on every license request).
-
-**Example Request:**
-
-```json
-{
-  "name": "AcmeAI Agent",
-  "contact_email": "ops@acmeai.com",
-  "default_payment_method": {
-    "provider": "stripe",
-    "token": "tok_visa_123456",
-    "expires_at": "2025-09-01T00:00:00Z"
-  }
-}
-```
-
-**Example Response:**
-
-```json
-{
-  "account_id": "acc-7890abcd-1234-5678-efgh-9876543210ab",
-  "status": "active",
-  "default_payment_method": {
-    "provider": "stripe",
-    "expires_at": "2025-09-01T00:00:00Z",
-    "valid": true
-  }
-}
-```
-
-### 2. Discover Pricing & Tool Capabilities
-
-**GET /publisher/{publisher_id}/pricing?account_id={account_id}**
+**GET /pricing?publisher_id={publisher_id}&account_id={account_id}**
 
 - Used by AI agents to discover all available pricing options for a publisher.
-- The `account_id` must be provided (as a query parameter or header) so the license API can
-  determine the appropriate pricing scheme for that AI agent account.
+- The `account_id` may be provided to determine any custom pricing scheme for that AI agent account.
 - May return different pricing for different accounts (e.g., discounts for smaller LLMs or preferred
   partners).
-- Includes all supported intents, quotas, path-based multipliers, and a `pricing_scheme_id` (UUID)
-  for cache validation.
+- Response includes all supported intents, quotas, path-based multipliers, and a `pricing_scheme_id`
+  (ULID) for cache validation.
 
 **Example Request:**
 
 ```
-GET /publisher/b7e2a8e2-4c3a-4e2a-9c1a-2f7e8b9c1d2e/pricing?account_id=acc-7890abcd-1234-5678-efgh-9876543210ab
+GET /pricing?publisher_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1X&account_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1Y
 ```
 
 **Example Response:**
 
 ```json
 {
-  "pricing_scheme_id": "b7e2c8e2-1a2b-4c3d-9e4f-123456789abc",
-  "publisher_id": "b7e2a8e2-4c3a-4e2a-9c1a-2f7e8b9c1d2e",
+  "id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T2Y",
+  "publisher_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T1X",
+  "operator_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T1Y",
+  "pricing_digest": "sha256:custom-discount",
+  "currency": "USD",
+  "cache_ttl_seconds": 3600,
   "intents": {
-    "summarize_resource": {
-      "intent": "summarize_resource",
-      "price": 0.02,
+    "read": {
+      "intent": "read",
+      "price_cents": 1,
+      "license_required": true,
+      "enforcement_method": "tool_required"
+    },
+    "summarize": {
+      "intent": "summarize",
+      "price_cents": 2,
       "license_required": true,
       "enforcement_method": "tool_required",
-      "path_multipliers": {
-        "/premium/*": 2.0,
-        "/api/v1/*": 0.5
+      "model": {
+        "id": "sum:gpt-4o-mini@v1",
+        "provider": "openai",
+        "name": "gpt-4o-mini",
+        "version": "v1",
+        "digest": "sha256:gpt4omini-digest-v1"
       }
     },
-    "read_resource": {
-      "intent": "read_resource",
-      "price": 0.05,
+    "train": {
+      "intent": "train",
+      "price_cents": 5,
       "license_required": true,
-      "enforcement_method": "trust"
+      "enforcement_method": "tool_required"
     }
+  },
+  "quotas": {
+    "burst_rps": 50,
+    "max_license_duration_seconds": 3600
   }
 }
 ```
 
-### 3. Acquire License
+### 2. Acquire License
 
-**POST /publisher/{publisher_id}/license**
+**POST /licenses**
 
 - AI agent requests a license for specific intents and enforcement method.
-- May provide a `payment_method` for this license request. If not provided, the account's
-  `default_payment_method` will be used.
-- If neither is provided or the payment method is expired/invalid, an error is returned.
 
-**Example Request (with payment_method):**
+**Example Request (with payload):**
+
+POST /licenses?publisher_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1X
 
 ```json
 {
-  "ai_agent_account_id": "acc-7890abcd-1234-5678-efgh-9876543210ab",
-  "publisher_id": "b7e2a8e2-4c3a-4e2a-9c1a-2f7e8b9c1d2e",
-  "pricing_scheme_id": "b7e2c8e2-1a2b-4c3d-9e4f-123456789abc",
-  "intents": ["summarize_resource", "read_resource"],
-  "budget": 100.0,
-  "payment_method": {
-    "provider": "stripe",
-    "token": "tok_visa_789012",
-    "expires_at": "2025-10-01T00:00:00Z"
+  "publisher_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T1X",
+  "pricing_scheme_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T2Y",
+  "intents": ["read"],
+  "budget_cents": 1000
+}
+```
+
+**Example Response:**
+
+```json
+{
+  "license_id": "01HKQM8Z1A2B3C4D5E6F7G8H9J",
+  "license_jwt": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im9wZXJhdG9yLWtleSJ9.eyJpc3MiOiJmZXRjaHJpZ2h0LWFwaSIsInN1YiI6IjAxSEtRTTdZOFg5WjJCM0M0RDVFNkY3RzhIIiwiYXVkIjoiMDFIS1FNN1k4WDlaYjNDNEQ1RTZGNyIsImV4cCI6MTY5NDQ1MzQwMCwiaWF0IjoxNjk0NDUyNTAwLCJsaWNlbnNlX2lkIjoiMDFIS1FNOFoxQTJCM0M0RDVFNkY3RzhIOUoiLCJwdWJsaXNoZXJfaWQiOiIwMUhLUU03WThYOVoyQjNDNEQ1RTZGN0c4SCIsInByaWNpbmdfc2NoZW1lX2lkIjoiZGVmYXVsdC1yZWFkLXN1bW1hcml6ZSIsInByaWNpbmdfc2NoZW1lX3R5cGUiOiJkZWZhdWx0IiwibGljZW5zZWVfaWQiOiIwMUhLUU03WThYOVoyQjNDNEQ1RTZGN0c4SCIsImludGVudHMiOlsicmVhZCIsInN1bW1hcml6ZSJdLCJidWRnZXRfY2VudHMiOjEwMDAsImlzc3VlZF9hdCI6IjIwMjQtMDktMTdUMTQ6MDg6MjBaIiwiZXhwaXJlc19hdCI6IjIwMjQtMDktMTdUMTQ6MjM6MjBaIiwibWV0YWRhdGEiOnsiY2xpZW50X3ZlcnNpb24iOiIxLjAuMCIsInNlc3Npb25faWQiOiJzZXNzX2FiYzEyMyJ9fQ.M8L2P9x1vC3nB7f8QhGjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfGh",
+  "expires_at": "2024-09-17T14:23:20Z"
+}
+```
+
+**Example format of decoded JWT Payload:**
+
+```json
+{
+  "iss": "fetchright-api",
+  "sub": "01HKQM7Y8X9Z2B3C4D5E6F7G8H",
+  "aud": "01HKQM7Y8X9Zb3C4D5E6F7",
+  "exp": 1694453400,
+  "iat": 1694452500,
+  "license_id": "01HKQM8Z1A2B3C4D5E6F7G8H9J",
+  "publisher_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T1X",
+  "pricing_scheme_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T2Y",
+  "pricing_scheme_type": "default",
+  "licensee_id": "01HKQM7Y8X9Z2B3C4D5E6F7G8H",
+  "intents": ["read", "summarize"],
+  "budget_cents": 1000,
+  "issued_at": "2024-09-17T14:08:20Z",
+  "expires_at": "2024-09-17T14:23:20Z",
+  "metadata": {
+    "client_version": "1.0.0"
   }
-}
-```
-
-**Example Request (no payment_method, uses default):**
-
-```json
-{
-  "ai_agent_account_id": "acc-7890abcd-1234-5678-efgh-9876543210ab",
-  "publisher_id": "b7e2a8e2-4c3a-4e2a-9c1a-2f7e8b9c1d2e",
-  "pricing_scheme_id": "b7e2c8e2-1a2b-4c3d-9e4f-123456789abc",
-  "intents": ["summarize_resource", "read_resource"],
-  "budget": 100.0
-}
-```
-
-**Example Error Response (no valid payment method):**
-
-```json
-{
-  "error": "payment_method_missing_or_expired",
-  "message": "No valid payment method found. Please provide a valid payment method or set a default on your account."
 }
 ```
 
@@ -184,63 +152,9 @@ GET /publisher/b7e2a8e2-4c3a-4e2a-9c1a-2f7e8b9c1d2e/pricing?account_id=acc-7890a
 
 ## Enforcer Endpoints & Usage
 
-This section covers endpoints and flows used by enforcers (e.g., CDN/edge workers) to validate
-licenses locally (using JWTs) and report usage.
+### 1. Usage Reporting (Record)
 
-```mermaid
-flowchart TD
-  enforcer[Enforcer]
-  token[License Token]
-  report[Report Usage]
-  server[License Server]
-
-  enforcer -- Validate License Locally (JWT) --> token
-  enforcer -- Report Usage --> report
-  report -- Sends Usage Report --> server
-```
-
-## Endpoints
-
-### 1. License Validation (Local JWT Validation)
-
-Enforcers validate license tokens locally using the signed JWT provided by the license server. All
-necessary context for enforcement (tools, prices/credits, path cost multipliers, quotas,
-restrictions, and `pricing_scheme_id`) is embedded in the JWT payload. No API call to the license
-server is required for each request.
-
-**Validation Flow:**
-
-- Enforcer receives a license token (JWT) from the AI agent.
-- Enforcer verifies the JWT signature and extracts enforcement context from the payload.
-- Enforcer enforces quotas, pricing, and restrictions locally.
-
-**Example JWT Payload:**
-
-```json
-{
-  "iss": "license-server.example.com",
-  "aud": "publisher.example.com",
-  "sub": "acc-7890abcd-1234-5678-efgh-9876543210ab",
-  "exp": "2025-08-09T12:00:00Z",
-  "publisher_id": "b7e2a8e2-4c3a-4e2a-9c1a-2f7e8b9c1d2e",
-  "tools": [
-    {
-      "intent": "summarize_resource",
-      "price": 0.02,
-      "license_required": true,
-      "enforcement_method": "tool_required",
-      "path_multipliers": { "/premium/*": 2.0 }
-    }
-  ],
-  "budget": 100.0,
-  "license_id": "lease-abc123",
-  "pricing_scheme_id": "b7e2c8e2-1a2b-4c3d-9e4f-123456789abc"
-}
-```
-
-### 2. Usage Reporting (Record)
-
-**POST /publisher/{publisher_id}/license/report**
+**POST /usage/publisher/bulk**
 
 - Enforcer reports usage after content is served to the AI agent.
 - Supports robust reporting and credit management.
@@ -249,29 +163,41 @@ server is required for each request.
 
 ```json
 {
-  "events": [
+  "license_id": "01HKQM8Z1A2B3C4D5E6F7G8H9J",
+  "usage_results": [
     {
-      "license_token": "lease-abc123",
-      "intent": "summarize_resource",
-      "tool_used": true,
+      "reservation_id": "01HKQM9A1B2C3D4E5F6G7H8I9J",
+      "license_id": "01HKQM8Z1A2B3C4D5E6F7G8H9J",
+      "intent": "read",
+      "amount_cents": 150,
+      "path": "/api/v1/documents/123/content",
+      "request_time": "2024-09-17T14:10:00Z",
+      "resolve_time": "2024-09-17T14:10:02Z",
       "success": true,
-      "budget_before": 100,
-      "cost_deducted": 2,
-      "budget_after": 98,
-      "path": "/premium/article-1"
+      "metadata": {
+        "document_size": "2048",
+        "content_type": "application/pdf"
+      }
     },
     {
-      "license_token": "lease-abc123",
-      "intent": "read_resource",
-      "tool_used": false,
-      "success": false,
-      "failure_reason": "quota_exceeded",
-      "budget_before": 98,
-      "cost_deducted": 0,
-      "budget_after": 98,
-      "path": "/api/v1/data"
+      "reservation_id": "01HKQM9B2C3D4E5F6G7H8I9J0K",
+      "license_id": "01HKQM8Z1A2B3C4D5E6F7G8H9J",
+      "intent": "summarize",
+      "amount_cents": 300,
+      "path": "/api/v1/documents/123/summary",
+      "request_time": "2024-09-17T14:10:05Z",
+      "resolve_time": "2024-09-17T14:10:12Z",
+      "success": true,
+      "metadata": {
+        "summary_length": "250",
+        "processing_model": "gpt-4",
+        "agent": "FetchRight-Summarizer/1.0.0"
+      }
     }
-  ]
+  ],
+  "metadata": {
+    "publisher_version": "2.1.0"
+  }
 }
 ```
 
@@ -279,9 +205,15 @@ server is required for each request.
 
 ```json
 {
-  "success": true,
-  "processed": 2,
-  "errors": []
+  "status": "success",
+  "data": {
+    "usage_report_id": "01HKQM9D4E5F6G7H8I9J0K1L2M",
+    "total_results": 2,
+    "successful_results": 2,
+    "failed_results": 0,
+    "total_amount_cents": 450,
+    "failures": undefined
+  }
 }
 ```
 
@@ -289,101 +221,25 @@ server is required for each request.
 
 ## Lease & Credit Management
 
-- Credits are reserved for the lease duration and only consumed on confirmed usage.
-- Unused credits are returned to the publisher’s budget at lease expiry or revocation.
-- The `/report` endpoint must indicate if:
-  1. There was an error (no credits used)
-  2. Usage was successful (credits consumed)
-  3. The request was invalid (no credits used, event logged)
+- Budget should be reserved for the license duration and only consumed on confirmed usage.
+- Unused budget should be returned to the operator’s budget at license expiry or exhaustion.
 
 ---
 
 ## Pricing Scheme IDs
 
-- All pricing responses include a `pricing_scheme_id` field (UUID).
-- Enforcers and AI agents use the `pricing_scheme_id` to ensure they are using the correct pricing
-  logic for spend calculations and compliance.
+- All pricing responses include a `pricing_scheme_id` field (ULID).
+- Enforcers and AI agents/operators use the `pricing_scheme_id` to ensure they are using the correct
+  pricing logic for spend calculations and compliance.
 - A license may reference a custom pricing scheme, which overrides the general pricing for that
   publisher.
 
 ---
 
-## Payment Token Expiration & Validity
+## Security
 
-- When a AI agent registers a payment token, the license server should store and track the token's
-  expiration date (if provided by the payment provider).
-- The API should expose the payment token's status and expiration in account and license acquisition
-  responses.
-- If a token is expired or invalid, the license server should proactively notify the AI agent (via
-  API response or webhook) before a license acquisition fails.
-- License acquisition requests must fail with a clear error if the payment token is expired or
-  invalid, including instructions to update the payment method.
-
-**Example Error Response:**
-
-```json
-{
-  "error": "payment_token_expired",
-  "message": "Your payment method has expired. Please update your payment information to acquire new licenses.",
-  "update_payment_url": "https://license.example.com/account/update-payment"
-}
-```
-
-**Example Account Status Response:**
-
-```json
-{
-  "account_id": "acc-7890abcd-1234-5678-efgh-9876543210ab",
-  "status": "active",
-  "payment_method": {
-    "provider": "stripe",
-    "token": "tok_visa_123456",
-    "expires_at": "2025-09-01T00:00:00Z",
-    "valid": true
-  }
-}
-```
-
----
-
-## Security & DDoS Protection
-
-- All API calls (except account creation) require authentication with a valid account (e.g., OAuth2,
-  JWT).
-- Pricing discovery, license acquisition, validation, and reporting endpoints must verify the
-  caller’s identity and permissions.
-- Account creation should include anti-abuse measures (e.g., CAPTCHA, email verification, rate
-  limiting).
-- No public pricing: all pricing queries require an authenticated account.
-- Apply rate limiting to all endpoints, especially `/account`, `/pricing`, `/license`, and
-  `/authorize`.
-- Use IP-based, account-based, and publisher-based limits to prevent DDoS and brute-force attacks.
-- Integrate with DDoS protection services (e.g., Cloudflare, AWS Shield) as needed.
-- Validate all incoming data to prevent injection and abuse.
-- Log all API activity and monitor for unusual patterns; set up alerts for excessive requests or
-  failed auth.
-- Return clear, secure error messages and throttle repeated failed requests.
-
----
-
-## Best Practices
-
-- Use short-lived, signed tokens (JWT/lease) for efficient, cacheable authorization.
-- Enforcers should perform local spend calculations using cached pricing/config.
-- Batch usage reporting is supported for performance.
-- All events should be logged for audit and compliance.
-
----
-
-## AI Agent Account Acquisition Flow
-
-```mermaid
-flowchart TD
-    agent[AI Agent]
-    account[License Server]
-    agent -- Create Account --> account
-    account -- Returns account_id --> agent
-```
+- All API calls (except pricing) should require authentication with a valid account.
+- License acquisition and reporting endpoints must verify the caller’s identity and permissions.
 
 ## License Acquisition Flow
 

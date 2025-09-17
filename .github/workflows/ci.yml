@@ -36,14 +36,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate Schema
-        run: pnpm validate
-
       - name: Run Lint (includes format check)
         run: pnpm lint
 
       - name: Type Check
         run: pnpm typecheck
+
+      - name: Run Tests (includes schema validation)
+        run: pnpm test:run
 
       - name: Build
         run: pnpm build

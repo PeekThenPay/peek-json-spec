@@ -1,269 +1,195 @@
-# peek.json Specification
+# Peek-Then-Pay (peek.json Specification)
 
-**A modern successor to robots.txt for AI-web interaction**
-
-## Overview
-
-`peek.json` is a proposed web standard that evolves the spirit of `robots.txt` for the AI era. While
-`robots.txt` provides basic crawling directives, `peek.json` enables structured, intent-based access
-policies for AI agents interacting with web content.
-
-This repository contains:
-
-1. The formal **peek.json specification**
-2. The official **JSON Schema** definition
-3. Supporting documentation and examples
-4. Reference implementation tools
-
-## Why peek.json?
-
-As AI systems increasingly interact with web content, we need a standard that goes beyond simple
-allow/deny rules:
-
-- ✅ **Intent-Based Access** - Different permissions for different AI uses (preview, summarize,
-  train)
-- ✅ **Structured Policies** - Machine-readable declarations of access terms
-- ✅ **Fair Use Framework** - Clear paths for commercial AI systems to respect publisher wishes
-- ✅ **Discoverable** - Standard location at `/.well-known/peek.json`
-- ✅ **Backwards Compatible** - Works alongside existing `robots.txt`
-
-## Core Specification
-
-The peek.json specification consists of:
-
-- [`schema/peek.schema.json`](./schema/peek.schema.json) - The normative JSON Schema definition
-- [`docs/peek-manifest-fields.md`](./docs/peek-manifest-fields.md) - Detailed field reference
-- [`examples/peek.json`](./examples/peek.json) - Example implementation
-
-## Implementation Resources
-
-To help adoption of the peek.json specification, this repository includes:
-
-### TypeScript Types
-
-TypeScript interfaces for implementing the specification:
-
-```typescript
-import { PeekManifest } from '@peekthenpay/peek-json-spec';
-```
-
-### Validation Tools
-
-Tools for validating peek.json files against the specification:
-
-```javascript
-import { validatePeekJson } from '@peekthenpay/peek-json-spec/validation';
-```
-
-### Additional Documentation
-
-- [`docs/robots-to-peek.md`](./docs/robots-to-peek.md) - Migration guide from robots.txt
-- [`docs/license-api.md`](./docs/license-api.md) - License API implementation guide
-- [`docs/tool-service-api.md`](./docs/tool-service-api.md) - Tool service API guide
-- [`docs/recommended-edge-enforcement-guide.md`](./docs/recommended-edge-enforcement-guide.md) -
-  Implementation guide
-
-## Repository Structure
-
-```
-peek-json-spec/
-├── schema/                 # Official JSON Schema definition
-├── docs/                   # Specification documentation
-├── examples/              # Example implementations
-└── src/                   # Reference implementation tools
-    ├── types/            # TypeScript interfaces
-    └── validation/       # Schema validation utilities
-```
+**A collaborative standard for AI-era content access and monetization**
 
 ---
 
-## 🧭 Role of peek.json in the Ecosystem
+## The Holistic Problem
 
-peek.json is **not an enforcer**, **not a paywall**, and **not a SaaS platform**. It is a
-machine-readable declaration of access terms (`/.well-known/peek.json`) that enables intent-based
-access control, hints to compatible license/tool APIs, and efficiency hints for AI systems. It
-defines the shared contract between publishers and AI agents.
+The web is shifting. Publishers need ways to protect and monetize their content in a world where AI
+systems and autonomous agents are consuming it at scale. Meanwhile, LLMs and agents need structured,
+reliable, and cost-effective ways to discover, license, and transform that same content.
 
-## 🧱 Key Design Goals
+Today, the landscape is fragmented:
 
-- ✅ **Open and interoperable** — Works with any CDN, enforcement layer, or licensing provider
-- ✅ **Declarative and discoverable** — Crawlable via `/.well-known/peek.json` or returned in 402s
-- ✅ **Intent-aware** — Supports nuanced, intent-based pricing and enforcement
-- ✅ **Modular** — Schema supports integration with licensing APIs, preview tooling, and
-  rate-limited enforcement
-- ✅ **Compatible with robots.txt** — Complements robots.txt for structured LLM access
+- **Paywalls** protect access but rarely account for machine-driven use cases.
+- **Licensing frameworks** exist, but lack enforceability and real-time integration.
+- **Content preparation tools** help make data AI-ready, but don’t tie into licensing.
+- **Agentic interfaces** promise new user experiences, but leave publishers out of the revenue loop.
 
----
+The result: publishers feel exploited, operators struggle with inefficiencies, and the ecosystem
+lacks a shared contract for fair collaboration.
 
-## ✨ Key Concepts
-
-### Tools (Intent Categories)
-
-| Tool Name             | Purpose                         | Example Use Case          |
-| --------------------- | ------------------------------- | ------------------------- |
-| `peek_resource`       | Lightweight preview             | Link discovery            |
-| `summarize_resource`  | Generate summary                | News aggregation          |
-| `quote_resource`      | Allow attribution snippets      | Citation in chatbots      |
-| `generate_embeddings` | Vectorize for semantic indexing | Site-wide search          |
-| `rag_query`           | Chunking for knowledge agents   | RAG pipeline ingestion    |
-| `read_resource`       | Serve full content              | Inference, summarization  |
-| `train_on_resource`   | Use in model training           | Foundation model training |
+Peek-Then-Pay addresses this gap by defining an **open standard** for discovery (`peek.json`),
+licensing, enforcement, and tooling. It doesn’t replace existing solutions—it provides a **cohesive
+starting point** that connects them into a framework that is fair, extensible, and mutually
+beneficial.
 
 ---
 
-## Specification Example
+## How Peek-Then-Pay Solves This
 
-The peek.json file is served at `/.well-known/peek.json` and follows this structure: Example:
+1. **Shared Discovery** — A `/.well-known/peek.json` manifest makes publisher terms, pricing, and
+   tooling discoverable by agents.
+2. **Centralized Licensing & Payments** — A LicenseService provides a single point of integration
+   for payments, pricing schemes, and marketplace discovery.
+3. **Decentralized Enforcement & Control** — Publishers validate and enforce licenses locally,
+   keeping control of content and real-time transformations.
+4. **AI-Ready Content** — Publishers expose structured, agent-friendly tools and transforms that
+   reduce operator compute and improve results.
+5. **Efficiency for Operators** — By offloading search, filtering, and summarization to publishers,
+   LLMs save compute cycles while respecting content ownership.
 
-```json
-{
-  "version": "1.0",
-  "meta": {
-    "site_name": "TechNews Daily",
-    "publisher_id": "b7e2a8e2-4c3a-4e2a-9c1a-2f7e8b9c1d2e",
-    "domains": ["technews.com"],
-    "categories": ["technology", "news"],
-    "last_updated": "2025-08-04"
-  },
-  "license": {
-    "license_issuer": "https://api.technews.com/peek/license"
-  },
-  "enforcement": {
-    "failover_mode": "deny"
-  },
-  "content_hints": {
-    "average_page_size_kb": 32,
-    "content_types": ["text/html", "application/json"],
-    "update_frequency": "daily",
-    "cache_duration": 3600
-  }
-}
+Peek-Then-Pay is designed as a **specification and contract language**: modular, intent-aware, and
+extensible. It creates the foundation for an ecosystem where publishers and operators both win.
+
+---
+
+## For Publishers
+
+- **Stay in Control** — Enforce access policies directly at your domain edge (via Workers/CDNs),
+  without ceding content to third-party proxies.
+- **Simple Monetization** — Define pricing once, and rely on a central LicenseService to manage
+  payments and operator accounts.
+- **AI-Ready by Default** — Provide optional transforms (summarization, search, ingestion) so your
+  content is consistently represented in AI systems.
+- **Extend Your Reach** — Smaller publishers gain visibility in a shared marketplace, surfacing in
+  AI discovery where they might otherwise be missed.
+- **Brand Integrity** — Ensure that when your content is summarized, ingested, or used in AI
+  contexts, it reflects your voice and standards.
+
+---
+
+## For LLMs & Agents
+
+- **Unified Access** — Discover participating publishers automatically through `peek.json`
+  manifests.
+- **One Integration, Many Publishers** — Acquire licenses and handle payments centrally, without
+  negotiating with thousands of sites individually.
+- **Lower Compute Costs** — Use publisher-provided search, summarization, and transforms to avoid
+  expensive, repeated crawling and context building.
+- **Structured Contracts** — Operate within a clear legal and technical framework, reducing risk and
+  improving compliance.
+- **Extensible Tooling** — Access publisher-defined tools (via REST or MCP) for specialized use
+  cases (training ingestion, semantic search, etc.).
+
+---
+
+## Key Components
+
+- **Publisher**: Hosts `peek.json`, implements enforcement at the edge, and provides tools for
+  AI-ready content.
+- **LicenseService**: Centralized payments, account management, and marketplace discovery.
+- **LicenseEnforcer**: Publisher-hosted gateway that validates licenses, enforces budgets, and
+  reconciles usage.
+- **Tools**: Configurable endpoints (REST/MCP) for transforms like summarization, search, ingestion,
+  or training.
+
+---
+
+## Architecture Overview (Mermaid)
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant Agent as LLM/Agent
+  participant Pub as Publisher Site
+  participant Lic as LicenseService
+  participant Enf as Edge LicenseEnforcer
+  participant Tools as Tool Service(s)
+
+  Note over Pub: Serves /.well-known/peek.json
+
+  Agent->>Pub: GET /.well-known/peek.json
+  Pub-->>Agent: peek.json (license_issuer, tools, hints)
+
+  Agent->>Lic: Create/Use account + payment
+  Agent->>Lic: Request license (intent, pricing_scheme)
+  Lic-->>Agent: Short‑lived JWT license (assertion‑only)
+
+  Agent->>Pub: Request /resource with JWT + intent
+  Pub->>Enf: (at edge) validate JWT + budget reserve
+
+  alt Intent == read (raw)
+    Enf-->>Agent: Serve content (200) + usage headers
+  else Intent requires transform
+    Enf->>Tools: Call tool (REST/MCP) with attestation
+    Tools-->>Enf: Result + signed usage receipt
+    Enf-->>Agent: Transformed result + usage headers
+  end
+
+  Enf->>Lic: Usage report (bulk or per‑event)
+  Lic-->>Enf: Acknowledge / reconcile
 ```
 
 ---
 
-## 🔐 License Flows
+## Included Utilities
 
-peek.json supports assertion-only licensing: all licenses are signed JWTs with embedded quota and
-pricing. Edge enforcers validate JWTs and enforce quotas locally, reporting usage in bulk or
-per-event. See [`packages/spec/docs/license-api.md`](./packages/spec/docs/license-api.md) for full
-API details.
+This package provides several utility modules to help with conformance and consistency when working
+with peek.json manifests and license verification:
 
-**Tool support, pricing, and enforcement details are not declared in peek.json.** These are managed
-by the publisher in the license server and returned to AI agents via the license API (`/pricing`
-endpoint) for each publisher/account. AI agents must query the license API to discover available
-tools, pricing, and enforcement models.
+### Factory Utilities (`src/utils/factory.ts`)
 
----
+The factory module provides functions for creating and validating PeekManifest objects:
 
-## 🚦 Access & Enforcement Flow
+- **`createPeekManifest(data: unknown): PeekManifest`** - Creates a validated PeekManifest from
+  unknown data, throwing PeekValidationError if invalid
+- **`createPeekManifestFromFile(filePath: string): Promise<PeekManifest>`** - Loads and validates a
+  PeekManifest from a JSON file
+- **`PeekValidationError`** - Custom error class for validation failures with detailed error
+  information
 
-peek.json enables a standardized flow for AI agents to access publisher content:
+### Schema Utilities (`src/utils/schema.ts`)
 
-**Discovery**
+The schema module handles loading and caching of the peek.json JSON Schema:
 
-- The AI agent requests `/.well-known/peek.json` from the publisher's site.
-- If the agent is detected as a bot and does not provide a valid license, the edge enforcer responds
-  with HTTP 402 (Payment Required), including both the peek.json manifest and a free `peek_resource`
-  preview.
+- **`getSchema(): Promise<JSONSchemaType<PeekManifest>>`** - Asynchronously loads the peek.json
+  schema with caching
+- **`getSchemaSync(): JSONSchemaType<PeekManifest>`** - Synchronously loads the peek.json schema
+  (requires prior async load)
+- **`SchemaError`** - Custom error class for schema-related failures
 
-**License Acquisition**
+### License Utilities (`src/utils/license-utils.ts`)
 
-The agent contacts the license server (endpoint provided in peek.json) to
+The license module provides comprehensive JWT and DPoP (Demonstration of Proof-of-Possession) token
+verification:
 
-- Establish an identity and payment method.
-- Request available tools/intents, pricing, and licensing requirements.
-- Acquire a license for the desired tools/intents.
+- **`createLicense(payload: object, options: CreateLicenseOptions): Promise<string>`** - Creates
+  ES256-signed JWT licenses
+- **`createDpopProof(options: CreateDpopProofOptions): Promise<string>`** - Creates DPoP proof
+  tokens for enhanced security
+- **`verifyLicense(license: string, options: VerifyLicenseOptions): Promise<object>`** - Verifies
+  JWT licenses with comprehensive validation
+- **`verifyDpopProof(dpopProof: string, options: VerifyDpopProofOptions): Promise<object>`** -
+  Verifies DPoP proof tokens
+- **`LicenseError`** - Custom error class for license verification failures
 
-**Content Request & Enforcement**
-
-- The AI agent requests content from the publisher, presenting its license token.
-- The edge enforcer validates the license and enforces the appropriate access mode:
-  - **Tool-required**: The enforcer routes the request to the publisher’s tool service for
-    processing (e.g., summarization).
-  - **Trust**: The enforcer serves raw content directly if the license allows.
-  - **Both**: The agent can choose between raw or processed content, as permitted by the license.
-
-**Usage Reporting**
-
-- The edge enforcer reports usage to the license server, updating quotas and spend.
-
-See the End-to-End Flow Diagram below for a visual overview.
+These utilities ensure consistent implementation of peek.json standards and provide robust security
+features for license-based content access.
 
 ---
 
-## 🌐 Intended Implementations
+## A Starting Point
 
-peek.json is designed to work with edge/CDN enforcers that may be:
+Peek-Then-Pay is not a finished solution to every challenge—it is a **starting point**. By defining
+standards for discovery, licensing, enforcement, and tooling, it creates the groundwork for a fair
+and extensible ecosystem.
 
-- Deployed by the **publisher** (self-hosted enforcement)
-- Provided via **SaaS** (e.g., FetchRight)
-- Backed by **license brokers** and **tool services**
-
----
-
-## 📚 Reference Materials
-
-- [`docs/robots-to-peek.md`](./docs/robots-to-peek.md) — Robots.txt to peek.json evolution
-- [`docs/peek-manifest-fields.md`](./docs/peek-manifest-fields.md) — Manifest field reference
-- [`examples/peek.json`](./examples/peek.json) — Starter file for publishers
-- [`docs/license-api.md`](./docs/license-api.md) — License API reference
-- [`docs/tool-service-api.md`](./docs/tool-service-api.md) — Tool service API reference
-- [`docs/recommended-edge-enforcement-guide.md`](./docs/recommended-edge-enforcement-guide.md) — CDN
-  enforcement checklist
-
----
-
-## 🧠 Why This Matters
-
-- **For Publishers**: Clear monetization rules, transparency for AI use, preview exposure
-- **For AI Crawlers**: Standard discovery, transparent licensing, better agent UX
-- **For the Web**: A shared standard for the AI age, evolving the spirit of `robots.txt` for
-  commercial LLMs
+This project is open source and community-driven. By working together, publishers, operators, and
+developers can evolve it into a standard that ensures the web remains both **sustainable for
+creators** and **usable for AI systems**.
 
 ---
 
 ## Contributing
 
-The peek.json specification is an open standard, and we welcome contributions that help evolve it to
-better serve the needs of publishers and AI systems. Contributions can focus on:
+Contributions are welcome:
 
-- Specification improvements
-- Documentation clarifications
-- Example implementations
-- Reference tooling enhancements
+- Propose changes to the specification
+- Improve documentation and examples
+- Build reference implementations
+- Develop publisher or operator tooling
 
-Please review these documents before contributing:
-
-- [Contributing Guidelines](./CONTRIBUTING.md) - Details on how to contribute
-- [Code of Conduct](./CODE_OF_CONDUCT.md) - Our standards for engaging in the community
-
-We strive to maintain a welcoming and inclusive environment for all contributors.
-
-## 🔄 End-to-End Flow Diagram
-
-```mermaid
-sequenceDiagram
-  participant AI as AI Agent
-  participant Publisher as Content Publisher
-  participant LicenseAPI as License API
-  participant Edge as Edge Worker
-  participant ToolService as Tool Service
-
-  AI->>Publisher: GET /.well-known/peek.json
-  Publisher-->>AI: Returns peek.json
-
-  AI->>LicenseAPI: Request license (tool: summarize_resource)
-  LicenseAPI-->>AI: JWT license
-
-  alt Tool-Required Access
-    AI->>Edge: Request /article with JWT license
-    Edge->>ToolService: Forward to summarize_resource
-    ToolService-->>Edge: Returns summary
-    Edge-->>AI: Returns result
-  else Trust Access
-    AI->>Edge: Request /article with JWT license
-    Edge-->>AI: Serves content directly
-  end
-  Edge->>LicenseAPI: Report usage (bulk or per-event)
-```
+Together, we can make Peek-Then-Pay the **contract of trust** between publishers and the AI systems
+that depend on their content.
