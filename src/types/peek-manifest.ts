@@ -44,17 +44,30 @@ export interface PeekManifest {
     license_issuer: string;
     /** Link to legal terms and conditions for content licensing */
     terms_url?: string;
-  };
-
-  /** Efficiency hints for AI systems */
-  content_hints?: {
-    /** Typical page size in kilobytes to help with quota planning */
-    average_page_size_kb?: number;
-    /** Available content types (e.g., "text/html", "application/json") */
-    content_types?: string[];
-    /** How often content changes ("hourly", "daily", "weekly", "monthly") */
-    update_frequency?: string;
-    /** Suggested cache duration in seconds */
-    cache_duration?: number;
+    /** Supported intents for licensed content */
+    supported_intents?: (
+      | 'peek'
+      | 'read'
+      | 'summarize'
+      | 'quote'
+      | 'embed'
+      | 'rag_ingest'
+      | 'train'
+      | 'qa'
+      | 'translate'
+      | 'analyze'
+      | 'search'
+    )[];
+    /** Efficiency hints for AI systems */
+    content_hints?: {
+      /** Typical page size in kilobytes to help with quota planning */
+      average_page_size_kb?: number;
+      /** Available content types (e.g., "text/html", "application/json") */
+      content_types?: string[];
+      /** How often content changes ("hourly", "daily", "weekly", "monthly") */
+      update_frequency?: string;
+      /** Suggested cache duration in seconds */
+      cache_duration?: number;
+    };
   };
 }

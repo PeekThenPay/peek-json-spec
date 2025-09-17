@@ -12,7 +12,7 @@ from the community.
 
 ## Code Style
 
-- Use TypeScript for all new code in `peek-types` and reference implementations.
+- Use TypeScript for all new code in `types` and reference implementations.
 - Document all public interfaces and functions.
 - Keep documentation up to date with code changes.
 

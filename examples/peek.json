@@ -4,9 +4,9 @@
     "site_name": "TechNews Daily",
     "publisher": "TechNews Corp",
     "publisher_id": "b7e2a8e2-4c3a-4e2a-9c1a-2f7e8b9c1d2e",
-    "domains": ["technews.com", "www.technews.com", "blog.technews.com"],
+    "domains": ["technews.com", "*.technews.com"],
     "categories": ["technology", "news", "reviews"],
-    "last_updated": "2025-08-01"
+    "last_updated": "2025-09-01"
   },
   "enforcement": {
     "rate_limit_per_ip": 50,
@@ -15,8 +15,9 @@
     "bypass_paths": ["/robots.txt", "/sitemap.xml", "/.well-known/*", "/favicon.ico"]
   },
   "license": {
-    "license_issuer": "https://api.technews.com/peek/license",
+    "license_issuer": "https://api.fetchright.ai/v1/license",
     "terms_url": "https://technews.com/legal/ai-terms",
+    "supported_intents": ["peek", "read", "summarize", "quote"],
     "content_hints": {
       "average_page_size_kb": 45,
       "content_types": ["text/html", "application/json"],

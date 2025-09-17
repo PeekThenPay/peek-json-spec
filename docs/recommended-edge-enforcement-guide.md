@@ -69,39 +69,10 @@ on detection results and enforce licensing for detected AI agents.
 - Success responses should include cost and licensing headers
 - Error responses: 402 (Payment Required), 403 (Tool Not Allowed), 429 (Quota Exceeded)
 
-## 🛠️ Platform-Specific Implementation
-
-Enforcement can be implemented on any major edge platform (Cloudflare Workers, AWS Lambda@Edge,
-Fastly VCL, etc.). Refer to the [peek-enforcer](https://github.com/PeekThenPay/peek-enforcer)
-project for full implementation examples.
-
-## 🔧 Configuration Management
-
-- Use environment variables for license API, bot detection, and tool service endpoints
-- Cache peek.json configs for performance
-- Support dynamic configuration per domain
-
 ## 📊 Monitoring and Logging
 
 - Track usage and record analytics for audit and compliance
 - Log errors and monitor for unusual patterns
-
-## 🚀 Production Deployment
-
-### Security Checklist
-
-- Tool services are internal-only
-- JWT secrets are secured and rotated
-- Bot detection is integrated
-- Rate limiting per peek.json settings
-- Audit logging for all license validations
-- Failover modes are tested
-
-### Performance Optimization
-
-- Cache configs with appropriate TTL
-- Async usage recording
-- Geographic distribution of enforcers
 
 ---
 

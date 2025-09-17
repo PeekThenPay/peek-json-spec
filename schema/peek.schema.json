@@ -73,7 +73,7 @@
     },
     "license": {
       "type": "object",
-      "required": ["license_issuer", "terms_url"],
+      "required": ["license_issuer", "terms_url", "supported_intents"],
       "properties": {
         "license_issuer": {
           "type": "string",
@@ -84,6 +84,26 @@
           "type": "string",
           "format": "uri",
           "description": "Link to the legal terms and conditions for content licensing."
+        },
+        "supported_intents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "peek",
+              "read",
+              "summarize",
+              "quote",
+              "embed",
+              "rag_ingest",
+              "train",
+              "qa",
+              "translate",
+              "analyze",
+              "search"
+            ]
+          },
+          "description": "Intended use cases for licensed content."
         },
         "content_hints": {
           "type": "object",
