@@ -1,0 +1,83 @@
+{
+  "name": "@peekthenpay/peek-json-spec",
+  "packageManager": "pnpm@8.9.0",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PeekThenPay/peek-json-spec.git"
+  },
+  "description": "OSS spec and reference implementation for peek.json",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/schema.d.ts",
+      "import": "./dist/schema.js",
+      "default": "./dist/schema.js"
+    },
+    "./factory": {
+      "types": "./dist/factory.d.ts",
+      "import": "./dist/factory.js",
+      "default": "./dist/factory.js"
+    }
+  },
+  "files": [
+    "dist",
+    "schema",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "demo": "pnpm run build && node scripts/demo-license-utils.mjs",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "lint": "pnpm run format:check && eslint 'src/**/*.{ts,js}'",
+    "lint:fix": "pnpm run format && eslint --fix 'src/**/*.{ts,js}'",
+    "format": "prettier --write '**/*.{ts,js,json,md,yml,yaml}'",
+    "format:check": "prettier --check '**/*.{ts,js,json,md,yml,yaml}'",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run build",
+    "version": "pnpm run build && git add -A dist"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@types/node": "^24.5.1",
+    "@types/json-schema": "^7.0.15",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "@vitest/coverage-v8": "3.2.4",
+    "@vitest/ui": "^3.2.4",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "keywords": [
+    "ai",
+    "licensing",
+    "content",
+    "specification",
+    "peek"
+  ],
+  "author": "PeekThenPay",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "jose": "^6.1.0",
+    "json-schema": "^0.4.0",
+    "ulid": "^3.0.1"
+  }
+}

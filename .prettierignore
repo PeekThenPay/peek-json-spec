@@ -1,0 +1,2 @@
+# Ignore Markdown files with Mermaid diagrams to prevent formatting issues
+packages/spec/docs/license-api.md
