@@ -122,35 +122,39 @@ service implementation guidance.
 
 ## Pricing Models
 
-Peek-Then-Pay supports flexible pricing strategies that balance simplicity for smaller publishers with sophistication for larger use cases:
+Peek-Then-Pay supports flexible pricing strategies that balance simplicity for smaller publishers
+with sophistication for larger use cases:
 
-### 🔹 Flat Fee Per-Crawl 
+### 🔹 Flat Fee Per-Crawl
 
 **What it means:** Every crawl request (page fetch + optional transform) incurs a fixed fee.
 
 **Benefits:**
+
 - Simple mental model for both publishers and LLM operators
 - Easy to implement and enforce (each 402 Payment Required maps to one unit)
 - Predictable revenue for publishers; predictable expense line for LLMs
 - Aligns with traditional "API call" economics
 
+### 🔹 Token-Based Pricing
 
-### 🔹 Token-Based Pricing 
-
-**What it means:** Charge based on the number of tokens (or characters/words) delivered after transformation.
+**What it means:** Charge based on the number of tokens (or characters/words) delivered after
+transformation.
 
 **Benefits:**
+
 - Closer alignment with how LLMs themselves are billed (OpenAI, Anthropic, etc. charge per token)
 - More "fair" — large pages or heavy data = more cost, small summaries = less cost
 - Encourages efficient use of content (operators won't over-ingest unnecessarily)
 - Easier for LLM operators to predict ROI because it maps to their training/inference economics
 
-
 ### 🔹 What this means:
-- **Small publishers** can stick to flat per-crawl pricing
-- **Sophisticated publishers** (already vectorizing data) can plug in token-based pricing for transforms
-- **Peek-Then-Pay** stays compatible with both "simple paywall replacement" and "deep AI pipeline licensing"
 
+- **Small publishers** can stick to flat per-crawl pricing
+- **Sophisticated publishers** (already vectorizing data) can plug in token-based pricing for
+  transforms
+- **Peek-Then-Pay** stays compatible with both "simple paywall replacement" and "deep AI pipeline
+  licensing"
 
 ---
 
