@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createPeekManifest, createPeekManifestFromFile, PeekValidationError } from '../factory.js';
+import {
+  createPeekManifest,
+  createPeekManifestFromFile,
+  PeekValidationError,
+} from '../peek-manifest-factory.js';
 import type { PeekManifest } from '../../types/peek-manifest.js';
 
 // Mock the schema module

@@ -1,0 +1,188 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PeekThenPay Pricing Scheme",
+  "description": "Schema for PeekThenPay publisher pricing configurations",
+  "type": "object",
+  "properties": {
+    "pricing_scheme_id": {
+      "type": "string",
+      "pattern": "^[0-9A-Z]{26}$",
+      "description": "Unique pricing scheme identifier (ULID format)"
+    },
+    "pricing_digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-fA-F0-9]{64}$",
+      "description": "SHA256 digest of canonical pricing JSON"
+    },
+    "publisher_id": {
+      "type": "string",
+      "pattern": "^[0-9A-Z]{26}$",
+      "description": "Publisher identifier (ULID format)"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Currency code (e.g., 'USD')"
+    },
+    "cache_ttl_seconds": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 86400,
+      "description": "Cache TTL in seconds for this pricing scheme"
+    },
+    "intents": {
+      "type": "object",
+      "description": "Map of intent name to intent pricing details",
+      "patternProperties": {
+        "^(peek|read|summarize|quote|embed|rag_ingest|train|qa|translate|analyze|search)$": {
+          "$ref": "#/$defs/IntentPricing"
+        }
+      },
+      "additionalProperties": false
+    },
+    "quotas": {
+      "$ref": "#/$defs/PricingQuotas",
+      "description": "Optional quotas for rate limiting and per-request limits"
+    }
+  },
+  "required": [
+    "pricing_scheme_id",
+    "pricing_digest",
+    "publisher_id",
+    "currency",
+    "cache_ttl_seconds",
+    "intents"
+  ],
+  "additionalProperties": true,
+
+  "$defs": {
+    "IntentPricing": {
+      "type": "object",
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "peek",
+            "read",
+            "summarize",
+            "quote",
+            "embed",
+            "rag_ingest",
+            "train",
+            "qa",
+            "translate",
+            "analyze",
+            "search"
+          ],
+          "description": "Name of the intent"
+        },
+        "pricing_mode": {
+          "type": "string",
+          "enum": ["per_request", "per_1000_tokens"],
+          "description": "Pricing model: 'per_request' for flat fee per operation, 'per_1000_tokens' for token-based pricing"
+        },
+        "price_cents": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000,
+          "description": "Price in US cents - interpreted as per-request or per-1000-tokens based on pricing_mode"
+        },
+        "enforcement_method": {
+          "type": "string",
+          "enum": ["trust", "tool_required"],
+          "description": "Enforcement method for this intent"
+        },
+        "path_multipliers": {
+          "type": "object",
+          "description": "Path-based pricing multipliers using glob patterns",
+          "patternProperties": {
+            "^/.*": {
+              "type": "number",
+              "minimum": 0.1,
+              "maximum": 100
+            }
+          },
+          "additionalProperties": false
+        },
+        "path_restrictions": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["allow", "disallow"],
+              "description": "Restriction type: 'allow' permits only matching paths, 'disallow' blocks matching paths"
+            },
+            "patterns": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "description": "Glob pattern for path matching"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "required": ["type", "patterns"],
+          "additionalProperties": false
+        },
+        "model": {
+          "$ref": "#/$defs/ModelMetadata",
+          "description": "Model metadata for transform intents"
+        }
+      },
+      "required": ["intent", "pricing_mode", "price_cents", "enforcement_method"],
+      "additionalProperties": false
+    },
+
+    "ModelMetadata": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_-]+:[a-z0-9._-]+@[a-z0-9]+$",
+          "description": "Model identifier in format: type:name@version"
+        },
+        "provider": {
+          "type": "string",
+          "description": "Model provider (e.g., 'openai', 'anthropic', 'google', 'meta', 'mistral', 'cohere')"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9._-]+$",
+          "description": "Model name"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+$",
+          "description": "Model version"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-fA-F0-9]{64}$",
+          "description": "SHA256 digest of model"
+        }
+      },
+      "required": ["id", "provider", "name", "version", "digest"],
+      "additionalProperties": false
+    },
+
+    "PricingQuotas": {
+      "type": "object",
+      "properties": {
+        "burst_rps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Maximum burst requests per second"
+        },
+        "max_license_duration_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 86400,
+          "description": "Maximum license duration in seconds"
+        }
+      },
+      "required": ["burst_rps"],
+      "additionalProperties": false
+    }
+  }
+}

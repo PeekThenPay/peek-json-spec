@@ -1,7 +1,7 @@
 {
   "name": "@peekthenpay/peek-json-spec",
   "packageManager": "pnpm@8.9.0",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PeekThenPay/peek-json-spec.git"
@@ -21,10 +21,20 @@
       "import": "./dist/schema.js",
       "default": "./dist/schema.js"
     },
-    "./factory": {
-      "types": "./dist/factory.d.ts",
-      "import": "./dist/factory.js",
-      "default": "./dist/factory.js"
+    "./peek-manifest-factory": {
+      "types": "./dist/peek-manifest-factory.d.ts",
+      "import": "./dist/peek-manifest-factory.js",
+      "default": "./dist/peek-manifest-factory.js"
+    },
+    "./pricing-schema-factory": {
+      "types": "./dist/pricing-schema-factory.d.ts",
+      "import": "./dist/pricing-schema-factory.js",
+      "default": "./dist/pricing-schema-factory.js"
+    },
+    "./pricing-schema": {
+      "types": "./dist/pricing-schema.d.ts",
+      "import": "./dist/pricing-schema.js",
+      "default": "./dist/pricing-schema.js"
     }
   },
   "files": [
@@ -71,7 +81,7 @@
     "peek"
   ],
   "author": "PeekThenPay",
-  "license": "MIT",
+  "license": "CC0-1.0",
   "publishConfig": {
     "access": "public"
   },

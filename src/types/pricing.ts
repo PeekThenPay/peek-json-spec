@@ -26,7 +26,13 @@ export interface PricingScheme {
 export interface IntentPricing {
   /** Name of the intent */
   intent: IntentType;
-  /** Flat price in US cents for each use of this intent */
+  /**
+   * How the price_cents field should be interpreted:
+   * - 'per_request': Fixed cost per request/crawl
+   * - 'per_1000_tokens': Cost per 1000 tokens processed
+   */
+  pricing_mode: 'per_request' | 'per_1000_tokens';
+  /** Price in US cents (interpreted based on pricing_mode) */
   price_cents: number;
   /** Enforcement method (e.g., 'trust', 'tool_required') */
   enforcement_method: string;
@@ -39,31 +45,8 @@ export interface IntentPricing {
     /** Glob patterns for path matching */
     patterns: string[];
   };
-  /**
-   * Token-based pricing configuration.
-   * If present, overrides or supplements flat per-crawl pricing.
-   */
-  token_pricing?: TokenPricing;
   /** Model metadata for transform intents (optional) */
   model?: ModelMetadata;
-}
-
-export interface TokenPricing {
-  /** Whether pricing is applied as 'per_1000' or 'tiered' */
-  mode: 'per_1000' | 'tiered';
-
-  /**
-   * Cost per 1,000 tokens in US cents (used when mode = 'per_1000').
-   * Example: 2 = $0.02 per 1K tokens.
-   */
-  price_per_1000_tokens_cents?: number;
-
-  /**
-   * Tiered pricing map for token thresholds (used when mode = 'tiered').
-   * Key = max token count for tier, Value = price in cents.
-   * Example: { 1000: 10, 5000: 25 } → $0.10 up to 1K tokens, $0.25 up to 5K tokens.
-   */
-  tiers?: Record<number, number>;
 }
 
 /**
