@@ -18,10 +18,22 @@ export * from './types/pricing.js';
 
 // Export schema utilities
 export { getSchema, getSchemaSync, type PeekSchema } from './utils/schema.js';
+export {
+  getPricingSchema,
+  getPricingSchemaSync,
+  type PricingSchema,
+  PricingSchemaError,
+} from './utils/pricing-schema.js';
 
-// Export factory functions and validation error
+// Export factory functions and validation errors
 export {
   createPeekManifest,
   createPeekManifestFromFile,
   PeekValidationError,
-} from './utils/factory.js';
+} from './utils/peek-manifest-factory.js';
+
+export {
+  createPricingScheme,
+  createPricingSchemeFromFile,
+  PricingValidationError,
+} from './utils/pricing-schema-factory.js';

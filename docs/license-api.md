@@ -226,6 +226,112 @@ POST /licenses?publisher_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1X
 
 ---
 
+## Pricing Schema Validation
+
+### pricing.schema.json
+
+The pricing configuration returned by the `/pricing` endpoint follows a standardized JSON schema
+defined in `schema/pricing.schema.json`. This schema ensures consistency and validity of pricing
+data across all implementations.
+
+**Key Schema Features:**
+
+- **ULID Validation**: Pricing scheme IDs and publisher IDs must be valid ULIDs (26 character Base32
+  strings)
+- **SHA256 Digest Validation**: Pricing digests must follow the format `sha256:[64-char-hex]`
+  (case-insensitive)
+- **Intent Enforcement**: Only valid intent types are allowed (`peek`, `read`, `summarize`, `quote`,
+  `embed`, `rag_ingest`, `train`, `qa`, `translate`, `analyze`, `search`)
+- **Enforcement Methods**: Limited to `trust` or `tool_required` values
+- **Pricing Modes**: Either `per_request` or `per_1000_tokens`
+- **Currency Support**: Extensible currency support (currently focused on USD)
+
+**Schema Structure:**
+
+```json
+{
+  "pricing_scheme_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T2Y",
+  "pricing_digest": "sha256:a1b2c3d4e5f6789012345678901234567890123456789012345678901234abcd",
+  "publisher_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T1X",
+  "currency": "USD",
+  "cache_ttl_seconds": 3600,
+  "intents": {
+    "read": {
+      "intent": "read",
+      "pricing_mode": "per_request",
+      "price_cents": 1,
+      "enforcement_method": "trust"
+    }
+  },
+  "quotas": {
+    "burst_rps": 100,
+    "max_license_duration_seconds": 3600
+  }
+}
+```
+
+### Validation Utilities
+
+The `@peekthenpay/peek-json-spec` package provides utilities for validating pricing schemes:
+
+**TypeScript/JavaScript:**
+
+```typescript
+import {
+  createPricingScheme,
+  createPricingSchemeFromFile,
+  PricingValidationError,
+} from '@peekthenpay/peek-json-spec/pricing-schema-factory';
+
+// Validate pricing JSON string
+try {
+  const pricingScheme = await createPricingScheme(jsonString);
+  console.log('Valid pricing scheme:', pricingScheme);
+} catch (error) {
+  if (error instanceof PricingValidationError) {
+    console.error('Validation errors:', error.errors);
+  }
+}
+
+// Validate pricing from file
+try {
+  const pricingScheme = await createPricingSchemeFromFile('./pricing.json');
+} catch (error) {
+  console.error('File validation failed:', error.message);
+}
+```
+
+**Schema Access:**
+
+```typescript
+import { getPricingSchema } from '@peekthenpay/peek-json-spec/pricing-schema';
+
+const schema = await getPricingSchema();
+// Use with your preferred JSON Schema validator
+```
+
+### Implementation Guidelines
+
+**For License Servers:**
+
+- Validate all incoming pricing configurations against `pricing.schema.json`
+- Ensure pricing digests are calculated consistently for caching
+- Support both per-request and per-token pricing models
+
+**For AI Agents:**
+
+- Always validate received pricing data before processing
+- Cache pricing schemes using the `pricing_scheme_id` and `cache_ttl_seconds`
+- Handle validation errors gracefully with appropriate fallbacks
+
+**For Publishers:**
+
+- Use the validation utilities when generating pricing configurations
+- Ensure pricing digests match the canonical JSON representation
+- Test pricing configurations against the schema before deployment
+
+---
+
 ## Pricing Scheme IDs
 
 - All pricing responses include a `pricing_scheme_id` field (ULID).

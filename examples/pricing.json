@@ -1,0 +1,42 @@
+{
+  "pricing_scheme_id": "01HZXYZ123456789ABCDEFGHIJ",
+  "pricing_digest": "sha256:a1b2c3d4e5f6789012345678901234567890123456789012345678901234abcd",
+  "publisher_id": "01HZXYZ123456789ABCDEFGHIJ",
+  "currency": "USD",
+  "cache_ttl_seconds": 3600,
+  "intents": {
+    "read": {
+      "intent": "read",
+      "pricing_mode": "per_request",
+      "price_cents": 1,
+      "enforcement_method": "trust"
+    },
+    "quote": {
+      "intent": "quote",
+      "pricing_mode": "per_1000_tokens",
+      "price_cents": 2,
+      "enforcement_method": "tool_required",
+      "path_multipliers": {
+        "/premium/**": 2.0,
+        "/public/**": 0.5
+      }
+    },
+    "summarize": {
+      "intent": "summarize",
+      "pricing_mode": "per_request",
+      "price_cents": 5,
+      "enforcement_method": "tool_required",
+      "model": {
+        "id": "sum:gpt-4.1-mini@v2",
+        "provider": "openai",
+        "name": "gpt-4.1-mini",
+        "version": "v2",
+        "digest": "sha256:b2c3d4e5f6789012345678901234567890123456789012345678901234bcdef0"
+      }
+    }
+  },
+  "quotas": {
+    "burst_rps": 100,
+    "max_license_duration_seconds": 3600
+  }
+}
