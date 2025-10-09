@@ -42,6 +42,38 @@ blocked with a 402 Payment Required response, but is also provided a "peek" at t
 discover the potential value, licensing terms, and available tools—enabling informed decisions and
 fair negotiation.
 
+The specification provides standardized contracts across discrete boundaries through three key
+schemas:
+
+- **`peek.schema.json`** — Schema specification for `peek.json` manifests that identifies who the
+  publisher is and what they bring to the table through Peek-Then-Pay
+- **`pricing.schema.json`** — Schema specification that defines how License Server implementations
+  should provide access availability as configured by the publisher
+- **License requirements** — Standards for how assertion-only JWT licenses can be cryptographically
+  signed on behalf of the publisher by the License Server, enabling the enforcer to manage agentic
+  crawling with confidence in isolation
+- **Specific request parameters and response schemas for each IntentType** - Intent-specific
+  parameters to control the response, and schema specifications to standardize what agents can
+  expect on return.
+  - Standard parameters (X-PTP-Intent, X-PTP-License, X-PTP-MaxSpend, X-PTP-MaxTokens, X-PTP-Usage)
+  - **read**
+  - **quote**
+  - **embed**
+  - **translate**
+  - **analyze**
+  - **summarize**
+  - **qa**
+- **Usage Context** - Declares intended use and determines retention/licensing terms:
+  - **immediate** - One-shot access with no retention (≈50-60% of traffic)
+  - **session** - Ephemeral caching for multi-turn interactions (≈25-30%)
+  - **index** - Persistent retrieval indexes for search/assistant systems (≈10%)
+  - **train** - Permanent model incorporation for fine-tuning (<3%)
+  - **distill** - Synthetic data generation for knowledge distillation (<2%)
+  - **audit** - Compliance and provenance verification (<1%)
+- **Optional Publisher Features** - Additional services publishers may choose to provide:
+  - **search** - Discovery endpoints for content exploration
+  - **rag_ingest** - Batch export services for retrieval-ready datasets
+
 Peek-Then-Pay addresses this gap by defining an **open standard** for discovery
 ([`peek.json`](docs/peek-manifest-fields.md)), licensing ([License API](docs/license-api.md)),
 enforcement ([Edge Enforcement Guide](docs/recommended-edge-enforcement-guide.md)), and tooling
@@ -111,12 +143,16 @@ extensible. It creates the foundation for an ecosystem where publishers and oper
   reconciles usage.
 - **Tools**: Configurable endpoints (REST/MCP) for transforms like summarization, search, ingestion,
   or training.
+- **Normative Intent Definitions**: Standardized intent categories that define how AI systems can
+  interact with content, establishing clear permissions and pricing signals for different use cases.
 
 See [`peek-manifest-fields.md`](docs/peek-manifest-fields.md) for a full reference of the manifest
 fields. See [`license-api.md`](docs/license-api.md) for licensing API details. See
 [`recommended-edge-enforcement-guide.md`](docs/recommended-edge-enforcement-guide.md) for
 enforcement implementation patterns. See [`tool-service-api.md`](docs/tool-service-api.md) for tool
-service implementation guidance.
+service implementation guidance. See
+[`normative-intent-definitions.md`](docs/normative-intent-definitions.md) for standardized intent
+categories and their implications for AI-content interactions.
 
 ---
 
@@ -158,7 +194,7 @@ transformation.
 
 ---
 
-## Architecture Overview (Mermaid)
+## Architecture Overview
 
 ```mermaid
 sequenceDiagram

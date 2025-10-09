@@ -37,15 +37,31 @@ describe('pricing-schema-factory.ts', () => {
       peek: {
         intent: 'peek',
         pricing_mode: 'per_request',
-        price_cents: 1,
         enforcement_method: 'trust',
+        usage: {
+          immediate: { price_cents: 1 },
+          session: { price_cents: 2 },
+        },
       },
       read: {
         intent: 'read',
         pricing_mode: 'per_1000_tokens',
-        price_cents: 10,
         enforcement_method: 'tool_required',
+        usage: {
+          immediate: { price_cents: 10 },
+          session: { price_cents: 20, max_ttl_seconds: 3600 },
+          train: { price_cents: 1000, requires_contract: true },
+        },
       },
+    },
+    search: {
+      endpoint_url: 'https://search.example.com/v1/search',
+      price_cents: 5,
+    },
+    rag_ingest: {
+      endpoint_url: 'https://rag.example.com/v1/ingest',
+      pricing_mode: 'per_1000_tokens',
+      price_cents: 25,
     },
     quotas: {
       burst_rps: 100,

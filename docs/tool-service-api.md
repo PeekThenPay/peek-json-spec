@@ -105,7 +105,7 @@ flowchart TD
   ToolType -->|summarize| Summary[AI Summarization]
   ToolType -->|quote| Quotes[Extract Quotable Segments]
   ToolType -->|embed| Embeddings[Generate Embeddings]
-  ToolType -->|rag_ingest| RAG[Chunk & Embed for RAG]
+  ToolType -->|rag_ingest| RAG[Chunk and Embed for RAG]
   ToolType -.->|read bypasses tool service| Direct[Direct HTTP Access]
   ToolType -->|train| Training[Training Data Format]
   ToolType -->|qa| QA[Structured QA Pair Format]
@@ -120,9 +120,9 @@ flowchart TD
   Direct --> ReturnFull[Return Full Content]
   Training --> ReturnTraining[Return Training-ready Data]
   QA --> ReturnQA[Return Structured QA Pairs]
-  Translate --> ReturnTranslate[Return Translated+source Data]
-  Analyze --> ReturnAnalyze[Return JSON structured annotations (sentiment, entities, etc)]
-  Search --> ReturnSearch[Return Semantic search over embedded content]
+  Translate --> ReturnTranslate[Return Translated and Source Data]
+  Analyze --> ReturnAnalyze[Return JSON Structured Annotations]
+  Search --> ReturnSearch[Return Semantic Search Results]
 ```
 
 **Note:** License-related errors (402, 403, 429) are handled by edge workers before requests reach

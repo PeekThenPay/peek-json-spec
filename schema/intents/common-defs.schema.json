@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://peekthenpay.org/schemas/common-defs-1.0.json",
+  "title": "Peek-Then-Pay Common Schema Definitions",
+  "description": "Reusable schema definitions for Peek-Then-Pay intent responses.",
+  "$defs": {
+    "mediaType": {
+      "type": "string",
+      "description": "MIME type of the resource.",
+      "anyOf": [
+        {
+          "enum": [
+            "text/html",
+            "text/markdown",
+            "text/plain",
+            "application/pdf",
+            "application/json",
+            "image/jpeg",
+            "image/png",
+            "audio/mpeg",
+            "video/mp4",
+            "application/octet-stream",
+            "unknown"
+          ]
+        },
+        { "pattern": "^(text|image|audio|video|application)/[A-Za-z0-9.+-]+$" }
+      ]
+    },
+    "contentType": {
+      "type": "string",
+      "description": "High-level classification for routing.",
+      "enum": ["article", "blog", "doc", "news", "video", "audio", "dataset", "other"]
+    },
+    "modelMetadata": {
+      "type": "object",
+      "description": "Model information for AI-generated content.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_-]+:[a-z0-9._-]+@[a-z0-9]+$",
+          "description": "Model identifier in format: type:name@version"
+        },
+        "provider": {
+          "type": "string",
+          "description": "Model provider (e.g., 'openai', 'anthropic', 'google', 'meta', 'mistral', 'cohere')"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9._-]+$",
+          "description": "Model name"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+$",
+          "description": "Model version"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-fA-F0-9]{64}$",
+          "description": "SHA256 digest of model"
+        }
+      },
+      "required": ["id", "provider", "name", "version", "digest"],
+      "additionalProperties": false
+    },
+    "baseProvenance": {
+      "type": "object",
+      "description": "Core provenance fields for content integrity and generation tracking.",
+      "properties": {
+        "contentHash": {
+          "type": "string",
+          "description": "Stable hash of source content (e.g., sha256:...)."
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the response was generated/computed."
+        }
+      },
+      "required": ["contentHash"],
+      "additionalProperties": false
+    },
+    "baseNormalization": {
+      "type": "object",
+      "description": "Content cleaning and transformation tracking.",
+      "properties": {
+        "htmlStripped": { "type": "boolean", "default": false },
+        "boilerplateRemoved": { "type": "boolean", "default": false },
+        "canonicalizedWhitespace": { "type": "boolean", "default": false },
+        "deduplicated": { "type": "boolean", "default": false }
+      },
+      "additionalProperties": true
+    },
+    "baseLength": {
+      "type": "object",
+      "description": "Token counting and truncation tracking for content delivery and billing.",
+      "properties": {
+        "inputTokens": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Tokens in the source content processed."
+        },
+        "outputTokens": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Tokens delivered or generated in response."
+        },
+        "totalTokens": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total tokens processed (may equal input + output)."
+        },
+        "truncated": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether content was truncated due to limits."
+        },
+        "truncateReason": {
+          "type": "string",
+          "enum": ["budget_limit", "policy_limit", "model_limit", "none"],
+          "default": "none",
+          "description": "Reason for truncation if applicable."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://peekthenpay.org/schemas/ptp-summarize-1.0.json",
+  "title": "Peek-Then-Pay Summarize Intent Response",
+  "description": "Machine-usable semantic summary of a resource, derived from canonical content.",
+  "type": "object",
+
+  "properties": {
+    "canonicalUrl": { "type": "string", "format": "uri" },
+    "language": {
+      "type": "string",
+      "description": "IETF BCP-47 tag for the summary output language; may differ from source."
+    },
+    "contentType": {
+      "$ref": "common-defs.schema.json#/$defs/contentType"
+    },
+    "mediaType": {
+      "$ref": "common-defs.schema.json#/$defs/mediaType"
+    },
+    "summary": {
+      "description": "Primary abstractive or extractive summary text.",
+      "type": "string",
+      "minLength": 20
+    },
+    "lengthClass": {
+      "type": "string",
+      "description": "Compression level of the summary relative to original.",
+      "enum": ["short", "medium", "long"]
+    },
+    "format": {
+      "type": "string",
+      "description": "Presentation format of the summary text.",
+      "enum": ["plain", "markdown", "bullets", "outline", "json"]
+    },
+    "topics": {
+      "type": "array",
+      "description": "High-level topical tags derived from summarization or classifier output.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "topic": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "relevance": { "type": "number", "minimum": 0, "maximum": 1 }
+        },
+        "required": ["topic"]
+      },
+      "maxItems": 20
+    },
+    "keywords": {
+      "type": "array",
+      "description": "Optional flat list of extracted keyphrases.",
+      "items": { "type": "string" },
+      "maxItems": 50
+    },
+    "provenance": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseProvenance" },
+        {
+          "description": "Describes how, when, and from what the summary was produced.",
+          "properties": {
+            "model": { "$ref": "common-defs.schema.json#/$defs/modelMetadata" },
+            "method": {
+              "type": "string",
+              "description": "Summarization approach (extractive, abstractive, hybrid, human-curated).",
+              "enum": ["extractive", "abstractive", "hybrid", "human"]
+            }
+          },
+          "required": ["generatedAt", "method"]
+        }
+      ]
+    },
+    "length": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseLength" },
+        {
+          "required": ["inputTokens", "outputTokens"]
+        }
+      ]
+    }
+  },
+
+  "required": [
+    "canonicalUrl",
+    "summary",
+    "language",
+    "contentType",
+    "mediaType",
+    "provenance",
+    "length"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "provenance": {
+            "properties": {
+              "method": { "not": { "const": "human" } }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "provenance": {
+            "required": ["model"]
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

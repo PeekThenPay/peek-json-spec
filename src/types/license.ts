@@ -1,5 +1,11 @@
 import { JWTPayload } from 'jose';
-import { IntentType, ISO8601, ULID } from './common.js';
+import { IntentType, UsageType, ISO8601, ULID } from './common.js';
+
+/**
+ * Intent-usage permission string in format "intent:usage"
+ * Examples: "read:train", "summarize:immediate", "embed:session"
+ */
+export type IntentUsagePermission = `${IntentType}:${UsageType}`;
 
 /**
  * Immutable license object - embedded in JWT and never modified after creation
@@ -15,8 +21,8 @@ export interface License {
   pricing_scheme_type: 'default' | 'custom';
   /** Licensee identifier (operator account ID) */
   licensee_id: ULID;
-  /** Array of intents this license grants access to */
-  intents: IntentType[];
+  /** Array of intent-usage permissions this license grants (e.g., "read:train", "summarize:immediate") */
+  permissions: IntentUsagePermission[];
   /** Budget reserved for this license (immutable, in US cents) */
   budget_cents: number;
   /** License issue timestamp (ISO8601) */
@@ -53,8 +59,8 @@ export interface LicensePayload extends JWTPayload {
   pricing_scheme_id: string;
   /** Pricing scheme type - either "default" or "custom" */
   pricing_scheme_type: 'default' | 'custom';
-  /** Array of intents this license grants access to */
-  intents: IntentType[];
+  /** Array of intent-usage permissions this license grants (e.g., "read:train", "summarize:immediate") */
+  permissions: IntentUsagePermission[];
   /** Budget reserved for this license (in US cents) */
   budget_cents: number;
   /** Request metadata */
@@ -72,8 +78,8 @@ export interface LicenseUsageResult {
   reported_by: 'operator' | 'publisher';
   /** License that was used */
   license_id: ULID;
-  /** Intent that was used */
-  intent: IntentType;
+  /** Intent-usage permission that was used (e.g., "read:train", "summarize:immediate") */
+  permission: IntentUsagePermission;
   /** Cost for this usage event (in US cents) */
   amount_cents: number;
   /** Path/resource that was accessed */

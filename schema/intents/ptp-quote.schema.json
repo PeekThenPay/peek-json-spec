@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://peekthenpay.org/schemas/ptp-quote-1.0.json",
+  "title": "Peek-Then-Pay Quote Intent Response",
+  "description": "One or more verbatim snippets with precise spans and citation.",
+  "type": "object",
+  "properties": {
+    "canonicalUrl": { "type": "string", "format": "uri" },
+    "language": { "type": "string", "description": "IETF BCP-47 of the source" },
+    "contentType": { "$ref": "common-defs.schema.json#/$defs/contentType" },
+    "mediaType": { "$ref": "common-defs.schema.json#/$defs/mediaType" },
+    "quotes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Verbatim snippet"
+          },
+          "contextBefore": { "type": "string", "maxLength": 100 },
+          "contextAfter": { "type": "string", "maxLength": 100 },
+          "span": {
+            "type": "object",
+            "description": "Exact location of the quote within the normalized content",
+            "properties": {
+              "start": { "type": "integer", "minimum": 0 },
+              "end": { "type": "integer", "minimum": 0 },
+              "unit": { "type": "string", "enum": ["utf8", "char", "token"], "default": "utf8" },
+              "selector": {
+                "type": "string",
+                "description": "Optional CSS selector/fragment id of the container"
+              }
+            },
+            "required": ["start", "end"]
+          },
+          "citation": {
+            "type": "object",
+            "description": "Attribution metadata aligned with schema.org/CreativeWork",
+            "properties": {
+              "title": { "type": "string" },
+              "author": { "type": "string" },
+              "publisher": { "type": "string" },
+              "publishedAt": { "type": "string", "format": "date-time" },
+              "url": { "type": "string", "format": "uri" }
+            },
+            "required": ["title", "url"]
+          }
+        },
+        "required": ["text", "span", "citation"],
+        "additionalProperties": false
+      }
+    },
+    "normalization": { "$ref": "common-defs.schema.json#/$defs/baseNormalization" },
+    "provenance": { "$ref": "common-defs.schema.json#/$defs/baseProvenance" },
+    "limits": {
+      "type": "object",
+      "description": "Applied anti-reconstruction limits",
+      "properties": {
+        "maxCharsPerQuote": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "maxQuotesReturned": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "cumulativeCharsReturned": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["canonicalUrl", "language", "contentType", "mediaType", "quotes", "provenance"],
+  "additionalProperties": false
+}

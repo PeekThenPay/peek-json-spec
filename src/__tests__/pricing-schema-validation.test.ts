@@ -92,7 +92,7 @@ describe('Pricing Schema Validation', () => {
       const intentPricing = pricingSchema.$defs.IntentPricing;
       expect(intentPricing.properties).toHaveProperty('intent');
       expect(intentPricing.properties).toHaveProperty('pricing_mode');
-      expect(intentPricing.properties).toHaveProperty('price_cents');
+      expect(intentPricing.properties).toHaveProperty('usage');
       expect(intentPricing.properties).toHaveProperty('enforcement_method');
 
       // Check that enforcement_method is restricted to trust and tool_required
@@ -182,7 +182,7 @@ describe('Pricing Schema Validation', () => {
         ([intentName, intentData]: [string, IntentPricing]) => {
           expect(intentData).toHaveProperty('intent', intentName);
           expect(intentData).toHaveProperty('pricing_mode');
-          expect(intentData).toHaveProperty('price_cents');
+          expect(intentData).toHaveProperty('usage');
           expect(intentData).toHaveProperty('enforcement_method');
 
           // Validate pricing_mode
@@ -191,9 +191,15 @@ describe('Pricing Schema Validation', () => {
           // Validate enforcement_method
           expect(['trust', 'tool_required']).toContain(intentData.enforcement_method);
 
-          // Validate price_cents
-          expect(typeof intentData.price_cents).toBe('number');
-          expect(intentData.price_cents).toBeGreaterThanOrEqual(0);
+          // Validate usage structure
+          expect(typeof intentData.usage).toBe('object');
+          Object.entries(intentData.usage).forEach(([usageType, usagePricing]) => {
+            expect(['immediate', 'session', 'index', 'train', 'distill', 'audit']).toContain(
+              usageType
+            );
+            expect(typeof usagePricing.price_cents).toBe('number');
+            expect(usagePricing.price_cents).toBeGreaterThanOrEqual(0);
+          });
         }
       );
     });
@@ -339,7 +345,7 @@ describe('Pricing Schema Validation', () => {
 
     it('should reject negative price_cents', () => {
       const invalidPricing = JSON.parse(JSON.stringify(pricingExample)); // Deep clone
-      invalidPricing.intents.read.price_cents = -1;
+      invalidPricing.intents.read.usage.immediate.price_cents = -1;
 
       const validate = ajv.compile(pricingSchema);
       const isValid = validate(invalidPricing);

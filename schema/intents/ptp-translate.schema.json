@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://peekthenpay.org/schemas/ptp-translate-1.0.json",
+  "title": "Peek-Then-Pay Translate Intent Response",
+  "description": "Target-language rendering of a textual resource or selection, with provenance and optional alignments.",
+  "type": "object",
+  "properties": {
+    "canonicalUrl": { "type": "string", "format": "uri" },
+    "contentType": { "$ref": "common-defs.schema.json#/$defs/contentType" },
+    "mediaType": { "$ref": "common-defs.schema.json#/$defs/mediaType" },
+    "normalization": { "$ref": "common-defs.schema.json#/$defs/baseNormalization" },
+    "languages": {
+      "type": "object",
+      "properties": {
+        "source": { "type": "string", "description": "BCP-47; detected or provided" },
+        "detected": { "type": "boolean", "default": false },
+        "target": { "type": "string", "description": "BCP-47 target language" }
+      },
+      "required": ["target"]
+    },
+    "format": {
+      "type": "string",
+      "enum": ["plain", "markdown", "html", "json"],
+      "description": "Presentation of translated text."
+    },
+    "segments": {
+      "type": "array",
+      "description": "Parallel corpus segments in source order.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": { "type": "integer", "minimum": 0 },
+          "source": { "type": "string" },
+          "target": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "preserved": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["links", "code", "entities", "quotes", "casing"] }
+          },
+          "alignment": {
+            "type": "object",
+            "description": "Optional span alignments when ptp_align=1.",
+            "properties": {
+              "unit": { "type": "string", "enum": ["char", "token"], "default": "char" },
+              "pairs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "src": {
+                      "type": "array",
+                      "items": { "type": "integer" },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "tgt": {
+                      "type": "array",
+                      "items": { "type": "integer" },
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  },
+                  "required": ["src", "tgt"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": ["unit", "pairs"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["index", "target"],
+        "additionalProperties": false
+      }
+    },
+    "provenance": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseProvenance" },
+        {
+          "properties": {
+            "method": { "type": "string", "enum": ["mt", "human", "postedit"] },
+            "model": { "$ref": "common-defs.schema.json#/$defs/modelMetadata" },
+            "glossary": { "type": "string", "description": "Glossary id or URL applied" },
+            "memory": { "type": "string", "description": "Translation memory id used" }
+          },
+          "required": ["method", "generatedAt"]
+        }
+      ]
+    },
+    "length": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseLength" },
+        {
+          "required": ["inputTokens", "outputTokens"]
+        }
+      ]
+    }
+  },
+  "required": [
+    "canonicalUrl",
+    "contentType",
+    "mediaType",
+    "languages",
+    "format",
+    "segments",
+    "provenance",
+    "length"
+  ],
+  "additionalProperties": false
+}

@@ -1,6 +1,7 @@
 import { ULID } from 'ulid';
 import { PricingScheme } from './pricing.js';
-import { IntentType, ISO8601 } from '../index.js';
+import { ISO8601 } from '../index.js';
+import { IntentUsagePermission } from './license.js';
 
 export interface PricingRequest {
   publisher_id: string;
@@ -20,8 +21,8 @@ export interface LicenseRequest {
   publisher_id: ULID;
   /** The pricing schema ID that the operator received from pricing discovery */
   pricing_scheme_id: string;
-  /** Array of intents this license grants access to */
-  intents: IntentType[];
+  /** Array of intent-usage permissions to request (e.g., ["read:immediate", "summarize:session", "embed:train"]) */
+  permissions: IntentUsagePermission[];
   /** Budget reservation in US cents for this license */
   budget_cents: number;
   /** License duration in seconds (optional, defaults to system config) */

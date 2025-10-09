@@ -1,4 +1,26 @@
-import { IntentType } from './common.js';
+import { IntentType, UsageType } from './common.js';
+
+/**
+ * Search configuration and pricing for a publisher.
+ */
+export interface SearchConfiguration {
+  /** Search endpoint URL for this publisher */
+  endpoint_url: string;
+  /** Per-request cost in cents */
+  price_cents: number;
+}
+
+/**
+ * RAG ingest configuration and pricing for a publisher.
+ */
+export interface RagIngestConfiguration {
+  /** RAG ingest endpoint URL for this publisher */
+  endpoint_url: string;
+  /** Pricing model: per_request (per job), per_1000_tokens, or per_item */
+  pricing_mode: 'per_request' | 'per_1000_tokens' | 'per_item';
+  /** Base price in cents according to pricing_mode */
+  price_cents: number;
+}
 
 /**
  * Represents a pricing scheme for a publisher.
@@ -16,8 +38,24 @@ export interface PricingScheme {
   cache_ttl_seconds: number;
   /** Map of intent name to intent pricing details */
   intents: Partial<Record<IntentType, IntentPricing>>;
+  /** Search endpoint configuration and pricing */
+  search?: SearchConfiguration;
+  /** RAG ingest endpoint configuration and pricing */
+  rag_ingest?: RagIngestConfiguration;
   /** Quotas for rate limiting and per-request limits */
   quotas?: PricingQuotas;
+}
+
+/**
+ * Pricing configuration for a specific usage context.
+ */
+export interface UsagePricing {
+  /** Price in US cents (interpreted based on intent pricing_mode) */
+  price_cents: number;
+  /** Maximum time-to-live in seconds for cached content (optional) */
+  max_ttl_seconds?: number;
+  /** Whether this usage type requires a separate contract or agreement (defaults to false) */
+  requires_contract?: boolean;
 }
 
 /**
@@ -32,8 +70,8 @@ export interface IntentPricing {
    * - 'per_1000_tokens': Cost per 1000 tokens processed
    */
   pricing_mode: 'per_request' | 'per_1000_tokens';
-  /** Price in US cents (interpreted based on pricing_mode) */
-  price_cents: number;
+  /** Usage-based pricing configuration for different usage contexts */
+  usage: Partial<Record<UsageType, UsagePricing>>;
   /** Enforcement method (e.g., 'trust', 'tool_required') */
   enforcement_method: string;
   /** Path multipliers for pricing adjustments (glob patterns) */

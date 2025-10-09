@@ -37,8 +37,8 @@ export async function createLicenseJwt(opts: CreateLicenseOptions): Promise<stri
     throw new Error('claims.cnf.jkt (operator JWK thumbprint) is required.');
   }
   if (!claims.jti) throw new Error('claims.jti is required.');
-  if (!Array.isArray(claims.intents) || claims.intents.length === 0) {
-    throw new Error('claims.intents must be a non-empty array.');
+  if (!Array.isArray(claims.permissions) || claims.permissions.length === 0) {
+    throw new Error('claims.permissions must be a non-empty array.');
   }
   if (typeof claims.budget_cents !== 'number' || claims.budget_cents <= 0) {
     throw new Error('claims.budget_cents must be a positive number.');
@@ -247,8 +247,8 @@ function assertLicenseClaims(p: JWTPayload): asserts p is LicensePayload {
   if (typeof o.exp !== 'number') throw new Error('License missing exp.');
   if (!o.cnf || typeof (o.cnf as Record<string, unknown>)?.jkt !== 'string')
     throw new Error('License missing cnf.jkt.');
-  if (!Array.isArray(o.intents) || o.intents.length === 0)
-    throw new Error('License missing intents.');
+  if (!Array.isArray(o.permissions) || o.permissions.length === 0)
+    throw new Error('License missing permissions.');
   if (typeof o.budget_cents !== 'number' || o.budget_cents <= 0)
     throw new Error('License budget invalid.');
 }
