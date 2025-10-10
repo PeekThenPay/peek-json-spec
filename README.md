@@ -126,16 +126,6 @@ The specification provides standardized contracts across discrete boundaries to 
 
 For historical context, see [From robots.txt to peek.json](docs/robots-to-peek.md).
 
-Peek-Then-Pay addresses this gap by defining an **open standard** for discovery
-([`peek.json`](docs/peek-manifest-fields.md)), licensing ([License API](docs/license-api.md)),
-enforcement ([Edge Enforcement Guide](docs/recommended-edge-enforcement-guide.md)), and tooling
-([Tool Service Guide](docs/tool-service-api.md)). It doesn’t replace existing solutions—it provides
-a **cohesive starting point** that connects them into a framework that is fair, extensible, and
-mutually beneficial.
-
-For historical context and the evolution from robots.txt to peek.json, see
-[From robots.txt to peek.json](docs/robots-to-peek.md).
-
 ---
 
 ## How It Works
