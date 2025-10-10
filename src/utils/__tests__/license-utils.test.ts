@@ -10,7 +10,7 @@ import {
 } from '../license-utils.js';
 import { ulid } from 'ulid';
 import { generateKeyPair, exportJWK, calculateJwkThumbprint, type JWK } from 'jose';
-import type { IntentType, LicensePayload } from '../../index.js';
+import type { LicensePayload } from '../../index.js';
 
 describe('license-utils', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -61,7 +61,7 @@ describe('license-utils', () => {
         exp: now + 3600,
         pricing_scheme_id: 'scheme-123',
         pricing_scheme_type: 'default',
-        intents: ['read', 'summarize'] as IntentType[],
+        permissions: ['read:immediate', 'summarize:session'],
         budget_cents: 100,
         metadata: {},
         cnf: { jkt: 'test-thumbprint' },
@@ -90,7 +90,7 @@ describe('license-utils', () => {
         exp: Math.floor(Date.now() / 1000) + 3600,
         pricing_scheme_id: 'scheme-123',
         pricing_scheme_type: 'default',
-        intents: ['read'] as IntentType[],
+        permissions: ['read:immediate'],
         budget_cents: 100,
         metadata: {},
         cnf: { jkt: 'test-thumbprint' },
@@ -111,7 +111,7 @@ describe('license-utils', () => {
         exp: Math.floor(Date.now() / 1000) + 3600,
         pricing_scheme_id: 'scheme-123',
         pricing_scheme_type: 'default',
-        intents: ['read'] as IntentType[],
+        permissions: ['read:immediate'],
         budget_cents: 100,
         metadata: {},
         // Missing cnf.jkt
@@ -132,14 +132,14 @@ describe('license-utils', () => {
         exp: Math.floor(Date.now() / 1000) + 3600,
         pricing_scheme_id: 'scheme-123',
         pricing_scheme_type: 'default',
-        intents: [], // Empty array
+        permissions: [], // Empty array
         budget_cents: 100,
         metadata: {},
         cnf: { jkt: 'test-thumbprint' },
       };
 
       await expect(createLicenseJwt({ publisherPrivateJwk, kid: 'test', claims })).rejects.toThrow(
-        'claims.intents must be a non-empty array'
+        'claims.permissions must be a non-empty array'
       );
     });
 
@@ -153,7 +153,7 @@ describe('license-utils', () => {
         exp: Math.floor(Date.now() / 1000) + 3600,
         pricing_scheme_id: 'scheme-123',
         pricing_scheme_type: 'default',
-        intents: ['read'] as IntentType[],
+        permissions: ['read:immediate'],
         budget_cents: -10, // Invalid negative budget
         metadata: {},
         cnf: { jkt: 'test-thumbprint' },
@@ -266,7 +266,7 @@ describe('license-utils', () => {
         exp: now + 3600,
         pricing_scheme_id: 'scheme-123',
         pricing_scheme_type: 'default',
-        intents: ['read'] as IntentType[],
+        permissions: ['read:immediate'],
         budget_cents: 100,
         metadata: {},
         cnf: { jkt: operatorJkt },
@@ -409,7 +409,7 @@ describe('license-utils', () => {
           exp: Math.floor(Date.now() / 1000) + 3600,
           pricing_scheme_id: 'scheme-123',
           pricing_scheme_type: 'default',
-          intents: ['read'] as IntentType[],
+          permissions: ['read:immediate'],
           budget_cents: 100,
           metadata: {},
           cnf: { jkt: operatorJkt },
@@ -564,7 +564,7 @@ describe('license-utils', () => {
           exp: Math.floor(Date.now() / 1000) + 3600,
           pricing_scheme_id: 'scheme-123',
           pricing_scheme_type: 'default',
-          intents: ['read'] as IntentType[],
+          permissions: ['read:immediate'],
           budget_cents: 100,
           metadata: {},
           cnf: { jkt: 'wrong-thumbprint' }, // Wrong JKT
@@ -619,7 +619,7 @@ describe('license-utils', () => {
         exp: Math.floor(Date.now() / 1000) + 3600,
         pricing_scheme_id: 'scheme-123',
         pricing_scheme_type: 'default',
-        intents: ['read'] as IntentType[],
+        permissions: ['read:immediate'],
         budget_cents: 100,
         metadata: {},
         cnf: { jkt: 'test-thumbprint' },
@@ -645,7 +645,7 @@ describe('license-utils', () => {
         exp: Math.floor(Date.now() / 1000) + 3600,
         pricing_scheme_id: 'scheme-123',
         pricing_scheme_type: 'default',
-        intents: ['read'] as IntentType[],
+        permissions: ['read:immediate'],
         budget_cents: 100,
         metadata: {},
         cnf: { jkt: 'test-thumbprint' },
@@ -670,7 +670,7 @@ describe('license-utils', () => {
         exp: Math.floor(Date.now() / 1000) + 3600,
         pricing_scheme_id: 'scheme-123',
         pricing_scheme_type: 'default',
-        intents: ['read'] as IntentType[],
+        permissions: ['read:immediate'],
         budget_cents: 0, // Zero budget
         metadata: {},
         cnf: { jkt: 'test-thumbprint' },
@@ -697,7 +697,7 @@ describe('license-utils', () => {
         nbf: now + 60, // Not before 1 minute from now
         pricing_scheme_id: 'scheme-123',
         pricing_scheme_type: 'default',
-        intents: ['read'] as IntentType[],
+        permissions: ['read:immediate'],
         budget_cents: 100,
         metadata: {},
         cnf: { jkt: 'test-thumbprint' },
@@ -769,7 +769,7 @@ describe('license-utils', () => {
         exp: now + 3600,
         pricing_scheme_id: 'scheme-123',
         pricing_scheme_type: 'default',
-        intents: ['read'] as IntentType[],
+        permissions: ['read:immediate'],
         budget_cents: 100,
         metadata: {},
         cnf: { jkt: operatorJkt },

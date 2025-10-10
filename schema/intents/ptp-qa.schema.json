@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://peekthenpay.org/schemas/ptp-qa-1.0.json",
+  "title": "Peek-Then-Pay QA Intent Response",
+  "description": "Structured question–answer pairs derived from a resource, with confidence and provenance.",
+  "type": "object",
+  "properties": {
+    "canonicalUrl": { "type": "string", "format": "uri" },
+    "language": { "type": "string", "description": "BCP-47 language of the source" },
+    "contentType": { "$ref": "common-defs.schema.json#/$defs/contentType" },
+    "mediaType": { "$ref": "common-defs.schema.json#/$defs/mediaType" },
+    "model": { "$ref": "common-defs.schema.json#/$defs/modelMetadata" },
+    "qa_pairs": {
+      "type": "array",
+      "description": "Structured answers to each question.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": { "type": "integer", "minimum": 0 },
+          "question": { "type": "string" },
+          "answer": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "unanswered": { "type": "boolean", "default": false },
+          "answerType": {
+            "type": "string",
+            "enum": ["factual", "analytical", "summative", "definition", "other"]
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "canonicalUrl": { "type": "string", "format": "uri" },
+                "span": {
+                  "type": "object",
+                  "properties": {
+                    "start": { "type": "integer" },
+                    "end": { "type": "integer" },
+                    "unit": { "type": "string", "enum": ["token", "char"], "default": "char" }
+                  },
+                  "required": ["start", "end"]
+                },
+                "quote": { "type": "string", "maxLength": 300 }
+              },
+              "required": ["canonicalUrl"]
+            }
+          }
+        },
+        "required": ["index", "question"],
+        "additionalProperties": false
+      }
+    },
+    "provenance": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseProvenance" },
+        {
+          "required": ["generatedAt"]
+        }
+      ]
+    },
+    "length": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseLength" },
+        {
+          "required": ["inputTokens", "outputTokens"]
+        }
+      ]
+    }
+  },
+  "required": ["canonicalUrl", "language", "model", "qa_pairs", "provenance", "length"],
+  "additionalProperties": false
+}

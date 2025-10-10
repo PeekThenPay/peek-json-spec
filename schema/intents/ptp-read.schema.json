@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://peekthenpay.org/schemas/ptp-read-1.0.json",
+  "title": "Peek-Then-Pay Read Intent Response",
+  "description": "Canonical, transient full-content response for LLM/agent consumption.",
+  "type": "object",
+  "properties": {
+    "canonicalUrl": { "type": "string", "format": "uri" },
+    "language": {
+      "type": "string",
+      "description": "IETF BCP-47 tag, e.g., en or en-US. Use 'und' (undefined) for non-linguistic media like images/video/audio."
+    },
+    "contentType": {
+      "$ref": "common-defs.schema.json#/$defs/contentType"
+    },
+    "mediaType": {
+      "$ref": "common-defs.schema.json#/$defs/mediaType"
+    },
+    "content": {
+      "description": "Primary body. If `application/json+ptp-structured`, see `structured`. Null for non-text media.",
+      "type": ["string", "null"]
+    },
+    "structured": {
+      "description": "Optional normalized structure; used when mediaType is application/json+ptp-structured.",
+      "type": "object",
+      "properties": {
+        "blocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "heading",
+                  "paragraph",
+                  "list",
+                  "quote",
+                  "code",
+                  "table",
+                  "figure",
+                  "callout",
+                  "footnote",
+                  "other"
+                ]
+              },
+              "role": {
+                "type": "string",
+                "description": "Optional semantic hint, e.g., abstract, intro, methods, results."
+              },
+              "text": { "type": "string" },
+              "attrs": { "type": "object", "additionalProperties": true },
+              "assetRef": { "type": "string", "format": "uri" }
+            },
+            "required": ["type"]
+          }
+        }
+      },
+      "required": ["blocks"],
+      "additionalProperties": false
+    },
+    "normalization": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseNormalization" },
+        {
+          "description": "Describes cleaning/transformation applied.",
+          "properties": {
+            "adsRemoved": { "type": "boolean", "default": false }
+          }
+        }
+      ]
+    },
+    "provenance": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseProvenance" },
+        {
+          "properties": {
+            "etag": { "type": "string" },
+            "lastModified": { "type": "string", "format": "date-time" }
+          }
+        }
+      ]
+    },
+    "length": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseLength" },
+        {
+          "required": ["inputTokens", "outputTokens"]
+        }
+      ]
+    },
+    "assets": {
+      "type": "array",
+      "description": "Optional referenced assets (images, tables, attachments).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rel": { "type": "string", "enum": ["image", "table", "supplement", "other"] },
+          "href": { "type": "string", "format": "uri" },
+          "mime": { "type": "string" },
+          "title": { "type": "string" }
+        },
+        "required": ["rel", "href"]
+      },
+      "maxItems": 100
+    }
+  },
+  "required": ["canonicalUrl", "contentType", "mediaType", "language", "provenance", "length"],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mediaType": {
+            "pattern": "^(text/|application/(json|.*\\+json|.*\\+xml)|text/markdown|text/html)$"
+          }
+        }
+      },
+      "then": {
+        "anyOf": [{ "required": ["content"] }, { "required": ["structured"] }],
+        "properties": {
+          "content": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mediaType": {
+            "pattern": "^(image/|audio/|video/|application/pdf|application/octet-stream)$"
+          }
+        }
+      },
+      "then": {
+        "properties": { "content": { "type": "null" } },
+        "required": ["assets"]
+      }
+    }
+  ],
+  "additionalProperties": false
+}

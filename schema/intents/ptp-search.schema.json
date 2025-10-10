@@ -1,0 +1,33 @@
+{
+  "$schema": "https://peekthenpay.org/schemas/ptp-search-core-1.0.json",
+  "title": "Peek-Then-Pay Search Intent Response",
+  "type": "object",
+  "properties": {
+    "query": { "type": "string" },
+    "mode": { "type": "string", "enum": ["keyword", "vector", "hybrid"] },
+    "scoringId": {
+      "type": "string",
+      "description": "Identifier of scoring func/model (e.g., bm25, te3l@v1)"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rank": { "type": "integer", "minimum": 1 },
+          "score": {
+            "type": "number",
+            "description": "Higher = more relevant. Comparable within same scoringId."
+          },
+          "canonicalUrl": { "type": "string", "format": "uri" },
+          "contentType": { "$ref": "common-defs.schema.json#/$defs/contentType" },
+          "mediaType": { "$ref": "common-defs.schema.json#/$defs/mediaType" }
+        },
+        "required": ["rank", "score", "canonicalUrl"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["query", "mode", "scoringId", "paging", "results"],
+  "additionalProperties": false
+}

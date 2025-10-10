@@ -33,11 +33,19 @@
       "type": "object",
       "description": "Map of intent name to intent pricing details",
       "patternProperties": {
-        "^(peek|read|summarize|quote|embed|rag_ingest|train|qa|translate|analyze|search)$": {
+        "^(peek|read|summarize|quote|embed|qa|translate|analyze)$": {
           "$ref": "#/$defs/IntentPricing"
         }
       },
       "additionalProperties": false
+    },
+    "search": {
+      "$ref": "#/$defs/SearchConfiguration",
+      "description": "Search endpoint configuration and pricing"
+    },
+    "rag_ingest": {
+      "$ref": "#/$defs/RagIngestConfiguration",
+      "description": "RAG ingest endpoint configuration and pricing"
     },
     "quotas": {
       "$ref": "#/$defs/PricingQuotas",
@@ -60,19 +68,7 @@
       "properties": {
         "intent": {
           "type": "string",
-          "enum": [
-            "peek",
-            "read",
-            "summarize",
-            "quote",
-            "embed",
-            "rag_ingest",
-            "train",
-            "qa",
-            "translate",
-            "analyze",
-            "search"
-          ],
+          "enum": ["peek", "read", "summarize", "quote", "embed", "qa", "translate", "analyze"],
           "description": "Name of the intent"
         },
         "pricing_mode": {
@@ -80,11 +76,15 @@
           "enum": ["per_request", "per_1000_tokens"],
           "description": "Pricing model: 'per_request' for flat fee per operation, 'per_1000_tokens' for token-based pricing"
         },
-        "price_cents": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 1000000,
-          "description": "Price in US cents - interpreted as per-request or per-1000-tokens based on pricing_mode"
+        "usage": {
+          "type": "object",
+          "description": "Usage-based pricing configuration for different usage contexts",
+          "patternProperties": {
+            "^(immediate|session|index|train|distill|audit)$": {
+              "$ref": "#/$defs/UsagePricing"
+            }
+          },
+          "additionalProperties": false
         },
         "enforcement_method": {
           "type": "string",
@@ -129,12 +129,77 @@
           "description": "Model metadata for transform intents"
         }
       },
-      "required": ["intent", "pricing_mode", "price_cents", "enforcement_method"],
+      "required": ["intent", "pricing_mode", "usage", "enforcement_method"],
       "additionalProperties": false
     },
-
+    "UsagePricing": {
+      "type": "object",
+      "properties": {
+        "price_cents": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000,
+          "description": "Price in US cents - interpreted as per-request or per-1000-tokens based on intent pricing_mode"
+        },
+        "max_ttl_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 31536000,
+          "description": "Maximum time-to-live in seconds for cached content (31536000 = 1 year)"
+        },
+        "requires_contract": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this usage type requires a separate contract or agreement (defaults to false)"
+        }
+      },
+      "required": ["price_cents"],
+      "additionalProperties": false
+    },
+    "SearchConfiguration": {
+      "type": "object",
+      "properties": {
+        "endpoint_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Search endpoint URL for this publisher"
+        },
+        "price_cents": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000,
+          "description": "Per-request cost in cents"
+        }
+      },
+      "required": ["endpoint_url", "price_cents"],
+      "additionalProperties": false
+    },
+    "RagIngestConfiguration": {
+      "type": "object",
+      "properties": {
+        "endpoint_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "RAG ingest endpoint URL for this publisher"
+        },
+        "pricing_mode": {
+          "type": "string",
+          "enum": ["per_request", "per_1000_tokens", "per_item"],
+          "description": "Pricing model: per_request (per job), per_1000_tokens, or per_item"
+        },
+        "price_cents": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000,
+          "description": "Base price in cents according to pricing_mode"
+        }
+      },
+      "required": ["endpoint_url", "pricing_mode", "price_cents"],
+      "additionalProperties": false
+    },
     "ModelMetadata": {
       "type": "object",
+      "description": "Model information for AI-generated content.",
       "properties": {
         "id": {
           "type": "string",
@@ -164,7 +229,6 @@
       "required": ["id", "provider", "name", "version", "digest"],
       "additionalProperties": false
     },
-
     "PricingQuotas": {
       "type": "object",
       "properties": {

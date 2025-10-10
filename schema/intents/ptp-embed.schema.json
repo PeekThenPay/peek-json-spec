@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://peekthenpay.org/schemas/ptp-embed-1.0.json",
+  "title": "Peek-Then-Pay Embed Intent Response",
+  "description": "Numeric vector representations (embeddings) for a resource or its regions, with provenance and token accounting.",
+  "type": "object",
+  "properties": {
+    "canonicalUrl": { "type": "string", "format": "uri" },
+    "language": {
+      "type": "string",
+      "description": "BCP-47 tag of the source/selection (use \"und\" for non-linguistic media)."
+    },
+    "contentType": { "$ref": "common-defs.schema.json#/$defs/contentType" },
+    "mediaType": { "$ref": "common-defs.schema.json#/$defs/mediaType" },
+    "model": { "$ref": "common-defs.schema.json#/$defs/modelMetadata" },
+    "normalization": { "$ref": "common-defs.schema.json#/$defs/baseNormalization" },
+    "embeddingMetadata": {
+      "type": "object",
+      "description": "Global embedding configuration.",
+      "properties": {
+        "embedding_dim": { "type": "integer", "minimum": 1 },
+        "dtype": { "type": "string", "enum": ["f32", "f16", "q8"] },
+        "normalized": { "type": "boolean", "description": "L2-normalized vectors." },
+        "encode": { "type": "string", "enum": ["array", "base64"], "default": "array" },
+        "num_items": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["embedding_dim", "dtype", "encode"]
+    },
+    "chunking": {
+      "type": "object",
+      "description": "How the source was partitioned prior to embedding.",
+      "properties": {
+        "mode": { "type": "string", "enum": ["doc", "chunks", "selection"] },
+        "unit": { "type": "string", "enum": ["token", "utf8", "char"] },
+        "chunk_size": { "type": "integer", "minimum": 1 },
+        "overlap": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "provenance": { "$ref": "common-defs.schema.json#/$defs/baseProvenance" },
+    "length": { "$ref": "common-defs.schema.json#/$defs/baseLength" },
+    "embeddings": {
+      "type": "array",
+      "description": "Per-item vectors with source localization.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": { "type": "integer", "minimum": 0 },
+          "embedding": {
+            "description": "Vector as numeric array (present when encode=array).",
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 1
+          },
+          "b64": {
+            "description": "Base64-encoded vector bytes (present when encode=base64).",
+            "type": "string",
+            "contentEncoding": "base64"
+          },
+          "meta": {
+            "type": "object",
+            "description": "Localizing metadata for this item.",
+            "properties": {
+              "span": {
+                "type": "object",
+                "properties": {
+                  "start": { "type": "integer", "minimum": 0 },
+                  "end": { "type": "integer", "minimum": 0 },
+                  "unit": {
+                    "type": "string",
+                    "enum": ["token", "utf8", "char"],
+                    "default": "token"
+                  }
+                },
+                "required": ["start", "end"],
+                "additionalProperties": false
+              },
+              "selector": {
+                "type": "string",
+                "description": "CSS selector / element id for region, if applicable."
+              },
+              "sectionId": { "type": "string" },
+              "itemId": {
+                "type": "string",
+                "description": "Stable publisher id for this block/asset."
+              },
+              "textHash": {
+                "type": "string",
+                "description": "Hash of text span used to generate the vector."
+              },
+              "assetRef": {
+                "type": "string",
+                "format": "uri",
+                "description": "For image/audio/video embeddings."
+              },
+              "language": { "type": "string", "description": "Overrides global language if mixed." }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": ["index"],
+        "additionalProperties": false
+      }
+    }
+  },
+
+  "required": [
+    "canonicalUrl",
+    "language",
+    "contentType",
+    "mediaType",
+    "model",
+    "embeddingMetadata",
+    "provenance",
+    "embeddings"
+  ],
+  "additionalProperties": false,
+
+  "allOf": [
+    {
+      "if": {
+        "properties": { "embeddingMetadata": { "properties": { "encode": { "const": "array" } } } }
+      },
+      "then": {
+        "properties": { "embeddings": { "items": { "required": ["index", "embedding"] } } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "embeddingMetadata": { "properties": { "encode": { "const": "base64" } } } }
+      },
+      "then": { "properties": { "embeddings": { "items": { "required": ["index", "b64"] } } } }
+    }
+  ]
+}

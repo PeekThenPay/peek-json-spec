@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://peekthenpay.org/schemas/ptp-analyze-1.0.json",
+  "title": "Peek-Then-Pay Analyze Intent Response",
+  "description": "Structured annotations (topics, entities, sentiment, etc.) for a resource or selection.",
+  "type": "object",
+  "properties": {
+    "canonicalUrl": { "type": "string", "format": "uri" },
+    "language": { "type": "string", "description": "BCP-47; may be detected" },
+    "contentType": { "$ref": "common-defs.schema.json#/$defs/contentType" },
+    "mediaType": { "$ref": "common-defs.schema.json#/$defs/mediaType" },
+    "model": { "$ref": "common-defs.schema.json#/$defs/modelMetadata" },
+    "normalization": { "$ref": "common-defs.schema.json#/$defs/baseNormalization" },
+    "provenance": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseProvenance" },
+        {
+          "properties": {
+            "tasks": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Analysis tasks that were performed."
+            }
+          },
+          "required": ["generatedAt", "tasks"]
+        }
+      ]
+    },
+    "analysis": {
+      "type": "object",
+      "properties": {
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "topic": { "type": "string" },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+              "relevance": { "type": "number", "minimum": 0, "maximum": 1 }
+            },
+            "required": ["topic"]
+          }
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": { "type": "string" },
+              "type": { "type": "string" },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+              "offset": { "type": "integer", "minimum": 0 },
+              "length": { "type": "integer", "minimum": 0 }
+            },
+            "required": ["text", "type"]
+          }
+        },
+        "sentiment": {
+          "type": "object",
+          "properties": {
+            "overall": { "type": "string", "enum": ["positive", "neutral", "negative", "mixed"] },
+            "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+            "scores": {
+              "type": "object",
+              "properties": {
+                "positive": { "type": "number", "minimum": 0, "maximum": 1 },
+                "neutral": { "type": "number", "minimum": 0, "maximum": 1 },
+                "negative": { "type": "number", "minimum": 0, "maximum": 1 }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "keyPhrases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": { "type": "string" },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+            },
+            "required": ["text"]
+          }
+        },
+        "categories": {
+          "type": "array",
+          "description": "Taxonomy-based labels",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+            },
+            "required": ["id", "label"]
+          }
+        },
+        "readability": {
+          "type": "object",
+          "properties": {
+            "score": { "type": "number" },
+            "metric": { "type": "string", "enum": ["fkgl", "smog", "dale_chall", "custom"] },
+            "complexity": { "type": "string", "enum": ["basic", "intermediate", "advanced"] }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "length": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseLength" },
+        {
+          "required": ["inputTokens", "outputTokens"]
+        }
+      ]
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+
+  "required": [
+    "canonicalUrl",
+    "contentType",
+    "mediaType",
+    "model",
+    "provenance",
+    "analysis",
+    "length"
+  ],
+  "additionalProperties": false
+}

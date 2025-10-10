@@ -2,15 +2,22 @@
 
 ## Reference for peek.schema.json (AI Content Licensing Manifest)
 
+> **📋 Document Status**: This document provides **NORMATIVE** field definitions for the peek.json
+> manifest format. All field specifications are binding requirements for compliance with the
+> peek.schema.json schema.
+
 This document is the authoritative field reference for the `peek.json` manifest format, as defined
-by the latest `peek.schema.json`. It does not cover additional schemas (e.g., license API, tool
-service API).
+by the `peek.schema.json`. It does not cover additional schemas (e.g., pricing schema, license API,
+intent schemas). For comprehensive information about usage contexts and intent-based permissions,
+see the [Usage Context Guide](usage-context-guide.md) and
+[Normative Intent Definitions](normative-intent-definitions.md).
 
 ## Overview
 
 The `peek.json` manifest enables publishers to declare AI access policies for their content in a
-structured, machine-readable format. This reference describes all fields supported by the current
-schema.
+structured, machine-readable format. The manifest works in conjunction with the usage-based pricing
+system and intent-specific permissions to provide fine-grained control over content access. This
+reference describes all fields supported by the current schema.
 
 ## Root Object
 
@@ -47,7 +54,8 @@ Edge enforcement settings for CDN/worker integration.
 
 ## `license`
 
-- `license_issuer` (string/uri) – API endpoint to acquire a license and inspect remaining spend.
+- `license_issuer` (string/uri) – API endpoint to acquire a license with intent-usage permissions
+  and inspect remaining spend.
 - `terms_url` (string/uri) – Link to legal terms and conditions for content licensing.
 - `content_hints` (object, optional) – Efficiency hints for AI systems:
   - `average_page_size_kb` (number) – Typical page size in kilobytes to help with quota planning.
@@ -55,7 +63,7 @@ Edge enforcement settings for CDN/worker integration.
     "application/json").
   - `update_frequency` (string) – How often content changes ("hourly", "daily", "weekly",
     "monthly").
-  - `cache_duration` (number) – Suggested cache duration in seconds.
+  - `cache_duration` (number) – Suggested cache duration in seconds for immediate usage context.
 
 ## Example Structure
 
@@ -91,5 +99,15 @@ Edge enforcement settings for CDN/worker integration.
 
 ---
 
-_This document is the reference for the peek.json manifest only. For license API and other schemas,
-see their respective field references._
+## Related Documentation
+
+- [Usage Context Guide](usage-context-guide.md) – Comprehensive guide to usage types and pricing
+- [Normative Intent Definitions](normative-intent-definitions.md) – Standard intent categories and
+  parameters
+- [License API](license-api.md) – License request/response specifications
+- [Tool Service API](tool-service-api.md) – Content transformation API
+
+---
+
+_This document is the reference for the peek.json manifest only. For pricing schemas, license API,
+and intent specifications, see their respective documentation._

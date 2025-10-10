@@ -2,7 +2,12 @@
 
 This document defines the API for securely acquiring, validating, and reporting licenses for AI
 access to publisher content. It is designed for use by enforcers (e.g., CDN/edge workers) and AI
-agents, and supports flexible pricing, quota, and enforcement models.
+agents, and supports usage-based pricing, intent-specific permissions, and flexible enforcement
+models.
+
+For comprehensive information about usage contexts and pricing, see the
+[Usage Context Guide](usage-context-guide.md) and
+[Normative Intent Definitions](normative-intent-definitions.md).
 
 **Roles:**
 
@@ -20,16 +25,56 @@ acquire licenses, and manage payment methods.
 
 ```mermaid
 flowchart TD
-    agent[AI Agent]
-    account[Account]
-    pricing[Pricing]
-    license[License]
-    token[License Token]
+    agent[AI Agent/Bot]
+    license_server[License Server<br/>-MCP Support Optional-]
+    publisher[Publisher Origin<br/>-MCP Support Optional-]
+    bot_detector[Bot Detection Service<br/>-Cloudflare Enterprise-<br/>-Other SaaS Solutions-]
+    enforcer[Edge Enforcer<br/>-Cloudflare Worker-<br/>-Edge Runtime-]
+    tooling[Tooling Service<br/>-Publisher Provided-<br/>-SaaS Solutions-<br/>-Configurable-]
 
-    agent -- Create Account --> account
-    agent -- Discover Pricing --> pricing
-    agent -- Acquire License --> license
-    license -- Returns License Token --> token
+    %% Discovery & License Acquisition
+    agent -- "1. GET /pricing" --> license_server
+    agent -- "2. POST /licenses (permissions, budget)" --> license_server
+    license_server -- "3. Returns JWT License" --> agent
+
+    %% Content Access Flow
+    agent -- "4. Request Content (with License JWT)" --> publisher
+    publisher -- "5a. Bot Detection Check" --> bot_detector
+    bot_detector -- "5b. If Bot Detected" --> enforcer
+
+    %% Edge Enforcement Decision
+    enforcer -- "6a. Validate License JWT<br/>Check Budget/Permissions" --> enforcer
+
+    %% Enforcement Branches
+    enforcer -- "6b. If Invalid/Insufficient<br/>Return 402/403" --> agent
+    enforcer -- "6c. If Valid + trust enforcement<br/>OR simple read intent" --> publisher
+    enforcer -- "6d. If Valid + requires tooling" --> tooling
+
+    %% Tooling Responses & Token Reporting
+    tooling -- "7a. Sync Response + Token Count<br/>-summarize, transform-" --> enforcer
+    tooling -- "7b. Async Callback + Token Count<br/>-rag_ingest completion-" --> enforcer
+    publisher -- "7c. Direct Content" --> agent
+
+    %% Enforcer Budget Management & Responses
+    enforcer -- "8a. Content + reservation_id<br/>-after budget deduction-" --> agent
+    enforcer -- "8b. Async Completion + reservation_id<br/>-commit/release reservation-" --> agent
+
+    %% Bilateral Usage Reporting
+    enforcer -- "9a. POST /usage (reservation_id, enforcer_cost)" --> license_server
+    agent -- "9b. POST /usage (reservation_id, agent_metrics)" --> license_server
+
+    %% Styling
+    classDef agentStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef serverStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef pubStyle fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef edgeStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef toolStyle fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+
+    class agent agentStyle
+    class license_server serverStyle
+    class publisher pubStyle
+    class bot_detector,enforcer edgeStyle
+    class tooling toolStyle
 ```
 
 ## Endpoints
@@ -64,15 +109,22 @@ GET /pricing?publisher_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1X&account_id=01HQ2Z3Y4K5M6N7P
   "intents": {
     "read": {
       "intent": "read",
-      "price_cents": 1,
-      "license_required": true,
-      "enforcement_method": "tool_required"
+      "pricing_mode": "per_request",
+      "enforcement_method": "tool_required",
+      "usage": {
+        "immediate": { "price_cents": 1 },
+        "session": { "price_cents": 2, "max_ttl_seconds": 3600 },
+        "train": { "price_cents": 500, "requires_contract": true }
+      }
     },
     "summarize": {
       "intent": "summarize",
-      "price_cents": 2,
-      "license_required": true,
+      "pricing_mode": "per_request",
       "enforcement_method": "tool_required",
+      "usage": {
+        "immediate": { "price_cents": 2 },
+        "session": { "price_cents": 4, "max_ttl_seconds": 1800 }
+      },
       "model": {
         "id": "sum:gpt-4o-mini@v1",
         "provider": "openai",
@@ -80,12 +132,6 @@ GET /pricing?publisher_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1X&account_id=01HQ2Z3Y4K5M6N7P
         "version": "v1",
         "digest": "sha256:gpt4omini-digest-v1"
       }
-    },
-    "train": {
-      "intent": "train",
-      "price_cents": 5,
-      "license_required": true,
-      "enforcement_method": "tool_required"
     }
   },
   "quotas": {
@@ -109,7 +155,7 @@ POST /licenses?publisher_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1X
 {
   "publisher_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T1X",
   "pricing_scheme_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T2Y",
-  "intents": ["read"],
+  "permissions": ["read:immediate", "read:session"],
   "budget_cents": 1000
 }
 ```
@@ -138,7 +184,7 @@ POST /licenses?publisher_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1X
   "pricing_scheme_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T2Y",
   "pricing_scheme_type": "default",
   "licensee_id": "01HKQM7Y8X9Z2B3C4D5E6F7G8H",
-  "intents": ["read", "summarize"],
+  "permissions": ["read:immediate", "summarize:session"],
   "budget_cents": 1000,
   "issued_at": "2024-09-17T14:08:20Z",
   "expires_at": "2024-09-17T14:23:20Z",
@@ -168,7 +214,7 @@ POST /licenses?publisher_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1X
     {
       "reservation_id": "01HKQM9A1B2C3D4E5F6G7H8I9J",
       "license_id": "01HKQM8Z1A2B3C4D5E6F7G8H9J",
-      "intent": "read",
+      "permission": "read:immediate",
       "amount_cents": 150,
       "path": "/api/v1/documents/123/content",
       "request_time": "2024-09-17T14:10:00Z",
@@ -182,7 +228,7 @@ POST /licenses?publisher_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1X
     {
       "reservation_id": "01HKQM9B2C3D4E5F6G7H8I9J0K",
       "license_id": "01HKQM8Z1A2B3C4D5E6F7G8H9J",
-      "intent": "summarize",
+      "permission": "summarize:session",
       "amount_cents": 300,
       "path": "/api/v1/documents/123/summary",
       "request_time": "2024-09-17T14:10:05Z",
@@ -241,7 +287,11 @@ data across all implementations.
 - **SHA256 Digest Validation**: Pricing digests must follow the format `sha256:[64-char-hex]`
   (case-insensitive)
 - **Intent Enforcement**: Only valid intent types are allowed (`peek`, `read`, `summarize`, `quote`,
-  `embed`, `rag_ingest`, `train`, `qa`, `translate`, `analyze`, `search`)
+  `embed`, `qa`, `translate`, `analyze`)
+- **Usage-Based Pricing**: Each intent supports multiple usage contexts (`immediate`, `session`,
+  `index`, `train`, `distill`, `audit`)
+- **Permission System**: Licenses use compound permission strings (e.g., `"read:train"`,
+  `"summarize:immediate"`)
 - **Enforcement Methods**: Limited to `trust` or `tool_required` values
 - **Pricing Modes**: Either `per_request` or `per_1000_tokens`
 - **Currency Support**: Extensible currency support (currently focused on USD)
@@ -259,8 +309,12 @@ data across all implementations.
     "read": {
       "intent": "read",
       "pricing_mode": "per_request",
-      "price_cents": 1,
-      "enforcement_method": "trust"
+      "enforcement_method": "trust",
+      "usage": {
+        "immediate": { "price_cents": 1 },
+        "session": { "price_cents": 2, "max_ttl_seconds": 3600 },
+        "train": { "price_cents": 1000, "requires_contract": true }
+      }
     }
   },
   "quotas": {
@@ -270,65 +324,8 @@ data across all implementations.
 }
 ```
 
-### Validation Utilities
-
-The `@peekthenpay/peek-json-spec` package provides utilities for validating pricing schemes:
-
-**TypeScript/JavaScript:**
-
-```typescript
-import {
-  createPricingScheme,
-  createPricingSchemeFromFile,
-  PricingValidationError,
-} from '@peekthenpay/peek-json-spec/pricing-schema-factory';
-
-// Validate pricing JSON string
-try {
-  const pricingScheme = await createPricingScheme(jsonString);
-  console.log('Valid pricing scheme:', pricingScheme);
-} catch (error) {
-  if (error instanceof PricingValidationError) {
-    console.error('Validation errors:', error.errors);
-  }
-}
-
-// Validate pricing from file
-try {
-  const pricingScheme = await createPricingSchemeFromFile('./pricing.json');
-} catch (error) {
-  console.error('File validation failed:', error.message);
-}
-```
-
-**Schema Access:**
-
-```typescript
-import { getPricingSchema } from '@peekthenpay/peek-json-spec/pricing-schema';
-
-const schema = await getPricingSchema();
-// Use with your preferred JSON Schema validator
-```
-
-### Implementation Guidelines
-
-**For License Servers:**
-
-- Validate all incoming pricing configurations against `pricing.schema.json`
-- Ensure pricing digests are calculated consistently for caching
-- Support both per-request and per-token pricing models
-
-**For AI Agents:**
-
-- Always validate received pricing data before processing
-- Cache pricing schemes using the `pricing_scheme_id` and `cache_ttl_seconds`
-- Handle validation errors gracefully with appropriate fallbacks
-
-**For Publishers:**
-
-- Use the validation utilities when generating pricing configurations
-- Ensure pricing digests match the canonical JSON representation
-- Test pricing configurations against the schema before deployment
+For detailed validation utilities, error handling, and implementation guidelines, see the
+[Validation Utilities Technical Reference](validation-utilities.md).
 
 ---
 
@@ -349,38 +346,106 @@ const schema = await getPricingSchema();
 
 ## License Acquisition Flow
 
-```mermaid
-flowchart TD
-    agent[AI Agent]
-    account[License Server]
-    publisher[Publisher]
-    agent -- Request License (account_id, publisher_id, intents, payment) --> account
-    account -- Issues License Token --> agent
-```
+The license acquisition process corresponds to steps 1-3 in the [main workflow diagram](#overview)
+above:
+
+- **Step 1**: Agent discovers available permissions and pricing via `GET /pricing`
+- **Step 2**: Agent requests license with specific permissions and budget via `POST /licenses`
+- **Step 3**: Server returns JWT license token for authorized usage
 
 ## License Usage & Enforcement Flow
 
-```mermaid
-flowchart TD
-    agent[AI Agent]
-    publisher[Publisher]
-    enforcer[Enforcer]
-    agent -- Request Content (with License Token) --> publisher
-    publisher -- Forwards Request --> enforcer
-    enforcer -- Validates License Token --> enforcer
-    enforcer -- Updates Local Budget/Quota --> enforcer
-    enforcer -- Serves Content --> agent
-```
+Content access and enforcement involves multiple edge services and decision points (steps 4-7 in the
+[main workflow diagram](#overview)):
+
+### Edge Detection & Enforcement (Steps 4-6)
+
+- **Step 4**: Agent requests content from publisher origin, including JWT license
+- **Step 5a-5b**: Bot detection service (e.g., Cloudflare Enterprise) identifies automated traffic
+  and routes to edge enforcer
+- **Step 6a**: Edge enforcer (Cloudflare Worker, etc.) validates JWT license and checks
+  budget/permissions
+- **Step 6b**: Invalid/insufficient licenses receive immediate 402/403 response
+- **Step 6c**: Valid licenses with `enforcement_method=trust` or simple `read` intents fetch content
+  directly from publisher
+- **Step 6d**: Valid licenses requiring transformation route to configurable tooling services
+
+### Tooling & Budget Management (Steps 7-8)
+
+- **Step 7a**: **Synchronous tooling** - `summarize`, `transform` return content + token counts to
+  enforcer
+- **Step 7b**: **Asynchronous tooling** - `rag_ingest` callbacks return completion status + token
+  counts to enforcer
+- **Step 7c**: **Direct content** - trusted read operations served directly from publisher,
+  bypassing tooling
+- **Step 8a**: **Enforcer response** - calculates final cost, deducts from local budget, serves
+  content + `reservation_id` to agent
+- **Step 8b**: **Async completion** - enforcer commits or releases budget reservations, notifies
+  agent with `reservation_id`
+
+### Budget Reservation & Coordination Model
+
+- **Synchronous Operations**: Enforcer reserves estimated budget, adjusts after receiving actual
+  token counts, responds with `reservation_id`
+- **Asynchronous Operations**: Enforcer reserves estimated budget, provides initial
+  `reservation_id`, updates on completion
+- **Reservation Tracking**: All agent responses include `reservation_id` for bilateral usage
+  reporting coordination
+- **Tooling Services**: Report token usage (input/output tokens) but do not handle budgets,
+  licensing, or reservation IDs
+
+### Composable Architecture Notes
+
+- **Bot Detection**: Best-of-breed SaaS solutions (Cloudflare Enterprise, others) handle detection
+- **Tooling Services**: Configurable - publisher-provided or third-party SaaS solutions
+- **MCP Support**: Both publishers and license servers may optionally support Model Context Protocol
+  for enhanced agent integration
 
 ## Usage Reporting Flow
 
-```mermaid
-flowchart TD
-    enforcer[Enforcer]
-    account[License Server]
-    enforcer -- Report Usage (license_token, intent, cost) --> account
-    account -- Updates Spend/Quota --> account
-```
+Usage reporting follows a **bilateral model** with coordination via reservation IDs (step 9 in the
+[main workflow diagram](#overview)):
 
-_This document is the reference for the license API only. For peek.json manifest fields, see
-`peek-manifest-fields.md`._
+- **Dual Reporting**: Both enforcer and agent report usage to the license server via `POST /usage`
+- **Reservation Coordination**: All enforcer responses include `reservation_id` for usage
+  correlation
+- **Enforcer Reporting**: Reports actual costs, budget deductions, and enforcement decisions
+- **Agent Reporting**: Reports client-side metrics, performance data, and usage confirmation
+
+### Reservation-Based Coordination
+
+- **Step 9a**: **Enforcer reports** `reservation_id` with actual costs, token usage, processing time
+- **Step 9b**: **Agent reports** same `reservation_id` with client metrics, success/failure status,
+  latency
+
+### Budget Reservation Lifecycle
+
+1. **Initial Reservation**: Enforcer reserves estimated budget when routing to sync/async tooling
+2. **Response with ID**: All responses to agent include `reservation_id` for usage tracking
+3. **Bilateral Reporting**: Both enforcer and agent report their perspective on the same transaction
+4. **License Server Reconciliation**: Server correlates reports by `reservation_id` for complete
+   usage picture
+
+### Benefits of Bilateral Reporting
+
+- **Accuracy Verification**: Cross-validation between enforcer costs and agent-received value
+- **Dispute Resolution**: Complete transaction audit trail from both perspectives
+- **Performance Monitoring**: End-to-end latency and success rate tracking
+- **Fraud Detection**: Identifies discrepancies between reported and actual usage
+
+This bilateral model ensures accurate usage tracking while providing comprehensive transaction
+visibility for both billing accuracy and system optimization.
+
+## Related Documentation
+
+- [Usage Context Guide](usage-context-guide.md) – Comprehensive guide to usage types and pricing
+  implications
+- [Normative Intent Definitions](normative-intent-definitions.md) – Standard intent categories and
+  parameters
+- [Peek Manifest Fields](peek-manifest-fields.md) – peek.json manifest specification
+- [Tool Service API](tool-service-api.md) – Content transformation API
+
+---
+
+_This document is the reference for the license API only. For usage contexts, pricing schemas, and
+intent specifications, see their respective documentation._

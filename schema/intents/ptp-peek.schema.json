@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://peekthenpay.org/schemas/ptp-peek-1.0.json",
+  "title": "Peek-Then-Pay Peek Intent Response",
+  "type": "object",
+  "description": "Minimal, discovery-only preview of a resource.",
+  "properties": {
+    "canonicalUrl": { "type": "string", "format": "uri" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 220 },
+    "snippet": {
+      "type": "string",
+      "description": "Ultra-short preview or summary (not full content).",
+      "minLength": 20,
+      "maxLength": 500
+    },
+    "language": {
+      "type": "string",
+      "description": "IETF BCP-47 language tag, e.g., en or en-US."
+    },
+    "contentType": {
+      "$ref": "common-defs.schema.json#/$defs/contentType"
+    },
+    "mediaType": {
+      "$ref": "common-defs.schema.json#/$defs/mediaType"
+    },
+    "signals": {
+      "type": "object",
+      "description": "Non-content signals for ranking/UX; safe to cache.",
+      "properties": {
+        "tokenCountEstimate": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "maxItems": 12
+    },
+    "peekManifestUrl": { "type": "string", "format": "uri" }
+  },
+  "required": ["canonicalUrl", "title", "snippet", "peekManifestUrl", "mediaType"],
+  "additionalProperties": false
+}
