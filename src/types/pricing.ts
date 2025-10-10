@@ -64,11 +64,6 @@ export interface UsagePricing {
 export interface IntentPricing {
   /** Name of the intent */
   intent: IntentType;
-  /**
-   * How the price_cents field should be interpreted:
-   * - 'per_request': Fixed cost per request/crawl
-   * - 'per_1000_tokens': Cost per 1000 tokens processed
-   */
   pricing_mode: 'per_request' | 'per_1000_tokens';
   /** Usage-based pricing configuration for different usage contexts */
   usage: Partial<Record<UsageType, UsagePricing>>;

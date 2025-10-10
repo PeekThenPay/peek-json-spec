@@ -1,5 +1,29 @@
 # Normative Intent Definitions for Peek-Then-Pay
 
+## Specification Compliance
+
+This document contains both **NORMATIVE** requirements and **INFORMATIVE** guidelines. The key words
+"MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY",
+and "OPTIONAL" in this document are to be interpreted as described in
+[RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.html).
+
+### Normative vs. Informative Content
+
+| Content Type    | RFC 2119 Keywords                          | Compliance                       | Section Marking    |
+| --------------- | ------------------------------------------ | -------------------------------- | ------------------ |
+| **NORMATIVE**   | MUST, MUST NOT, SHALL, SHALL NOT, REQUIRED | Mandatory for compliance         | `## NORMATIVE:`    |
+| **RECOMMENDED** | SHOULD, SHOULD NOT, RECOMMENDED            | Optional but strongly encouraged | `### RECOMMENDED:` |
+| **INFORMATIVE** | MAY, OPTIONAL, or descriptive text         | Guidance only, not binding       | `## INFORMATIVE:`  |
+
+**Implementation Requirements:**
+
+- **NORMATIVE** sections contain mandatory requirements that implementors MUST follow for
+  specification compliance
+- **RECOMMENDED** sections contain best practices that implementors SHOULD follow for ecosystem
+  consistency
+- **INFORMATIVE** sections provide examples, explanations, and design rationale that are helpful but
+  not binding
+
 ## Overview
 
 Normative intent definitions provide standardized categories that define how AI systems can interact
@@ -16,11 +40,14 @@ By standardizing intent categories, we enable:
 
 ---
 
-## Normative Intent Categories
+## NORMATIVE: Intent Categories
 
-The following table covers **content transformation intents** - the core operations for processing
-and extracting information from publisher content. **Search** and **Rag Ingest** are covered
-separately as optional feature with different implementation requirements.
+**This section contains normative requirements for intent classification and behavior.**
+
+The following table defines **content transformation intents** - the core operations for processing
+and extracting information from publisher content. Implementations MUST support these intent
+categories as defined. **Search** and **Rag Ingest** are optional features covered separately with
+their own normative requirements.
 
 | Intent        | Description                                                                  | Default Persistence                              | Default Pricing Mode             | Notes                                                                |
 | ------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------- | -------------------------------------------------------------------- |
@@ -33,7 +60,9 @@ separately as optional feature with different implementation requirements.
 | **analyze**   | Structured annotations (sentiment, entities, topics, readability, PII, etc.) | derived_ttl                                      | per_request (bundle)             | Include spans + confidence; can combine multiple analyses.           |
 | **qa**        | Retrieval-augmented answers to supplied questions (with citations)           | transient                                        | per_1000_tokens (input + output) | qa ≠ search; it synthesizes language. Auto-QA is optional extension. |
 
-### Key Design Principles
+### INFORMATIVE: Key Design Principles
+
+**This section provides informative guidance about the design rationale behind intent categories.**
 
 These intent definitions follow several important principles:
 
@@ -52,7 +81,9 @@ These intent definitions follow several important principles:
 
 ---
 
-## Usage Context Parameter
+## NORMATIVE: Usage Context Parameter
+
+**This section contains normative requirements for usage context implementation.**
 
 All content access requests MUST include a usage context parameter that declares the intended use
 and determines retention policies and licensing terms.
@@ -85,12 +116,16 @@ on declared usage.
 
 ---
 
-## Search Discovery Feature (Optional)
+## NORMATIVE: Search Discovery Feature (Optional)
 
-Search is an **optional discovery feature** that publishers may choose to provide to enable content
-discovery across their catalog. Unlike the core content transformation intents, search is not called
-via the standard intent mechanism (on a per-URL request) but through a dedicated search endpoint
-specified in the publisher's pricing configuration.
+**This section contains normative requirements for publishers implementing optional search
+features.**
+
+Search is an **optional discovery feature** that publishers MAY choose to provide to enable content
+discovery across their catalog. When implemented, publishers MUST follow these normative
+requirements: Unlike the core content transformation intents, search is not called via the standard
+intent mechanism (on a per-URL request) but through a dedicated search endpoint specified in the
+publisher's pricing configuration.
 
 Search returns ranked matches against a publisher-controlled index (keyword, semantic, or hybrid),
 with snippets, highlights, and filters so agents can quickly identify relevant content for
@@ -186,12 +221,16 @@ since it's called via a dedicated endpoint.
 
 ---
 
-## RAG Ingest Feature (Optional)
+## NORMATIVE: RAG Ingest Feature (Optional)
+
+**This section contains normative requirements for publishers implementing optional RAG ingest
+features.**
 
 The rag_ingest endpoint provides a publisher-authorized export of retrieval-ready data — text
 chunks, embeddings, and metadata — for long-term indexing and use in retrieval-augmented generation
-(RAG) systems. Unlike the embed intent, which returns vectors for a single document in real time,
-rag_ingest operates as a batch export service over one or more resources or collections.
+(RAG) systems. When implemented, publishers MUST follow these normative requirements: Unlike the
+embed intent, which returns vectors for a single document in real time, rag_ingest operates as a
+batch export service over one or more resources or collections.
 
 It's designed for persistent ingestion rather than transient analysis: publishers pre-process,
 normalize, and embed their own content, then deliver a manifest pointing to the dataset's location
@@ -248,10 +287,17 @@ parameters.
 
 ---
 
-## Intent Request Parameters and Response Schemas
+## NORMATIVE: Intent Request Parameters and Response Schemas
 
-Each intent supports specific request parameters and returns structured response data. These
-specifications ensure consistent implementation across publishers and operators.
+**This section contains normative requirements for intent parameter handling and response formats.**
+
+Each intent MUST support the specified request parameters and return structured response data as
+defined. These specifications are REQUIRED for consistent implementation across publishers and
+operators.
+
+**Note:** All "Response Example" sections in this document are INFORMATIVE and provided for
+illustration purposes only. The normative requirements are specified in the parameter tables and
+normative definitions.
 
 ### General Parameter Precedence Rules
 
@@ -1074,17 +1120,71 @@ qa responses are transformative and MAY be retained under the license terms.
 
 ---
 
-## Implementation and Enforcement
+## NORMATIVE: Implementation and Enforcement
+
+**This section contains normative requirements for license enforcement and JWT security
+implementation.**
 
 ### License Enforcer and License Service Collaboration
 
-The **LicenseEnforcer** (deployed at the publisher's edge) works in collaboration with the
-**LicenseService** to manage intent handling and track usage:
+The **Edge Enforcer** (deployed at the publisher's edge) works in collaboration with the **License
+Server** to manage intent handling and track usage:
 
 - **Intent Validation**: Verify that requested intents match those granted in the license
-- **Usage Tracking**: Monitor how content is accessed under different intent categories
+- **Local Budget Management**: Maintain license usage locally using self-contained JWT assertions to
+  avoid latency and connectivity dependencies during request processing
+- **Autonomous Operation**: Edge Enforcer operates independently without requiring real-time License
+  Server connectivity for budget validation
+- **Usage Tracking**: Monitor how content is accessed under different intent categories with local
+  budget accounting
 - **Compliance Reporting**: Generate detailed usage reports for billing and audit purposes
 - **Real-time Enforcement**: Block or allow requests based on intent permissions and usage limits
+- **Usage Reconciliation**: Bilateral reporting with both Edge Enforcer and AI Agent/Operator
+  reporting usage to License Server
+
+### JWT License Architecture Requirements
+
+Implementations SHALL use **assertion-only JWT licenses** designed for distributed, low-latency
+enforcement:
+
+- **Self-Contained Operation**: License Servers MUST embed all necessary budget, permissions, and
+  validation information within the JWT payload. Edge Enforcers MUST NOT require real-time License
+  Server connectivity for authorization decisions
+- **Autonomous Enforcement**: Edge Enforcers SHALL validate and enforce licenses independently
+  without contacting the License Server during request processing
+- **Local Budget Management**: Edge Enforcers MUST maintain license usage state locally to enable
+  sub-millisecond authorization decisions without network dependencies
+- **Disconnect Resilience**: Edge Enforcers SHALL continue operating when License Server
+  connectivity is interrupted, using locally cached budget information
+- **Asynchronous Reconciliation**: Both Edge Enforcers and AI Operators MUST report usage to the
+  License Server via bilateral reporting for audit and billing reconciliation
+
+### JWT License Security Requirements
+
+License Servers and Edge Enforcers SHALL implement the following cryptographic security
+requirements:
+
+- **Digital Signatures**: License Servers MUST sign JWTs using ES256 (ECDSA P-256 with SHA-256).
+  Edge Enforcers MUST validate signatures using publisher public keys
+- **Tampering Protection**: Edge Enforcers MUST reject any JWT where signature validation fails,
+  indicating tampering with license claims, budgets, or permissions
+- **Time-Bounded Validity**: License Servers MUST include `exp`, `iat`, and optionally `nbf` claims.
+  Edge Enforcers MUST validate token expiration with configurable clock skew tolerance
+- **Issuer Verification**: Edge Enforcers MUST validate the JWT `iss` claim against expected License
+  Server identifiers before accepting licenses
+- **Audience Validation**: Edge Enforcers MUST validate the JWT `aud` claim to ensure licenses are
+  bound to the correct publisher domain
+- **Token Binding via DPoP**: License Servers MUST include `cnf.jkt` claim containing SHA-256
+  thumbprint of operator's public key. AI Operators MUST provide DPoP proof with `typ: "dpop+jwt"`
+  header containing their public key. Edge Enforcers MUST verify token binding by matching `cnf.jkt`
+  to the thumbprint of the DPoP proof's embedded public key
+- **DPoP Validation**: Edge Enforcers MUST validate DPoP proofs include correct HTTP method (`htm`),
+  target URL (`htu`), timestamp (`iat`), and unique identifier (`jti`). Edge Enforcers MUST reject
+  stale DPoP proofs beyond configurable age limits
+- **Replay Protection**: Edge Enforcers MUST track both license JTIs and DPoP JTIs to prevent replay
+  attacks within their respective validity windows
+- **Key Management**: License Servers MUST use `kid` header for key identification. Edge Enforcers
+  MUST support key rotation via JWKS endpoint discovery without service interruption
 
 ### For Publishers
 
@@ -1104,15 +1204,18 @@ The **LicenseEnforcer** (deployed at the publisher's edge) works in collaboratio
 
 ---
 
-## Technical Considerations
+## INFORMATIVE: Technical Considerations
+
+**This section provides informative guidance on technical implementation approaches.**
 
 ### Intent Verification and Enforcement
 
 - **Cryptographic Validation**: JWT licenses specify which intents are granted for specific content
   access
-- **Real-time Monitoring**: LicenseEnforcer tracks actual usage patterns against declared intents
+- **Real-time Monitoring**: Edge Enforcer tracks actual usage patterns against declared intents
 - **Audit Trails**: Comprehensive logging of intent-based access for compliance verification
-- **Usage Reconciliation**: Collaborative reporting between LicenseEnforcer and LicenseService
+- **Usage Reconciliation**: Bilateral reporting with both Edge Enforcer and AI Agent/Operator
+  reporting usage to License Server
 
 ### Contract and Legal Framework
 
@@ -1124,7 +1227,9 @@ The **LicenseEnforcer** (deployed at the publisher's edge) works in collaboratio
 
 ---
 
-## Conclusion
+## INFORMATIVE: Conclusion
+
+**This section provides informative summary of the specification's purpose and benefits.**
 
 Normative intent definitions provide the foundational vocabulary for controlled AI-content
 interactions within the Peek-Then-Pay ecosystem. These standardized categories serve two critical
