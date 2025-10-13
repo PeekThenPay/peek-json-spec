@@ -1,0 +1,44 @@
+{
+  "canonicalUrl": "https://example.com/articles/neural-networks",
+  "language": "en",
+  "contentType": "article",
+  "mediaType": "text/html",
+  "content": "# Neural Networks: An Introduction\n\nNeural networks are computational models inspired by the biological neural networks that constitute animal brains. These artificial networks consist of interconnected nodes, called neurons, which are organized in layers.\n\n## Architecture\n\nA typical neural network has three types of layers:\n- **Input layer**: Receives the initial data\n- **Hidden layer(s)**: Process the data through weighted connections\n- **Output layer**: Produces the final result\n\n## Learning Process\n\nEach connection between neurons has an associated weight that adjusts as learning proceeds. The network learns by:\n1. Processing training examples\n2. Comparing outputs to expected results\n3. Adjusting weights to minimize errors\n4. Repeating until performance is satisfactory\n\n## Applications\n\nNeural networks excel at recognizing complex patterns in data, making them valuable for:\n- Image recognition\n- Natural language processing\n- Predictive analytics\n- Autonomous systems\n\nThrough training on large datasets, neural networks can learn to perform tasks that would be extremely difficult to program explicitly.",
+  "normalization": {
+    "htmlStripped": true,
+    "boilerplateRemoved": true,
+    "canonicalizedWhitespace": true,
+    "deduplicated": false,
+    "adsRemoved": true
+  },
+  "provenance": {
+    "contentHash": "sha256:e5f6789012345678901234567890abcdef1234567890abcdef1234567890ab",
+    "generatedAt": "2024-10-13T16:30:00Z",
+    "sourceUrl": "https://example.com/articles/neural-networks",
+    "sourceTitle": "Neural Networks: An Introduction",
+    "sourceAuthor": "Dr. Alex Chen",
+    "etag": "\"1234567890abcdef\"",
+    "lastModified": "2024-10-10T14:20:00Z"
+  },
+  "length": {
+    "inputTokens": 1250,
+    "outputTokens": 1250,
+    "totalTokens": 1250,
+    "truncated": false,
+    "truncateReason": "none"
+  },
+  "assets": [
+    {
+      "rel": "image",
+      "href": "https://example.com/images/neural-network-diagram.png",
+      "mime": "image/png",
+      "title": "Neural Network Architecture Diagram"
+    },
+    {
+      "rel": "table",
+      "href": "https://example.com/data/activation-functions.csv",
+      "mime": "text/csv",
+      "title": "Common Activation Functions"
+    }
+  ]
+}

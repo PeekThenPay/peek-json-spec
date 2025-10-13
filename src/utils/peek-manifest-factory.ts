@@ -1,9 +1,9 @@
 import { readFile } from 'fs/promises';
-import Ajv from 'ajv';
+import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import type { PeekManifest } from '../types/peek-manifest.js';
-import { getSchema } from './schema.js';
-import { ErrorObject, ValidateFunction } from 'ajv';
+import { getSchema } from './peek-schema.js';
+import type { ErrorObject, ValidateFunction } from 'ajv';
 
 /**
  * Error thrown when peek.json validation fails
@@ -25,14 +25,13 @@ let validateFn: ValidateFunction<PeekManifest> | undefined;
  */
 async function getValidator(): Promise<ValidateFunction<PeekManifest>> {
   if (!validateFn) {
-    const ajv = new Ajv({
-      allErrors: true,
-      strict: false,
+    const ajv = new Ajv2020({
       validateFormats: true,
+      allErrors: true,
+      coerceTypes: false,
+      useDefaults: true,
     });
-
-    // Add format validators
-    addFormats(ajv);
+    addFormats(ajv, { mode: 'full' });
 
     const schema = await getSchema();
     validateFn = ajv.compile(schema) as ValidateFunction<PeekManifest>;

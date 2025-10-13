@@ -1,0 +1,63 @@
+{
+  "canonicalUrl": "https://example.com/articles/ai-research-paper",
+  "language": "en",
+  "contentType": "article",
+  "mediaType": "application/pdf",
+  "quotes": [
+    {
+      "text": "Machine learning algorithms have achieved remarkable success in various domains, particularly in natural language processing and computer vision.",
+      "contextBefore": "In recent years, ",
+      "contextAfter": " These advances have led to widespread adoption across industries.",
+      "span": {
+        "start": 156,
+        "end": 295,
+        "unit": "utf8",
+        "selector": "#abstract"
+      },
+      "citation": {
+        "title": "Advances in Machine Learning: A Comprehensive Survey",
+        "author": "Dr. Sarah Johnson, Prof. Michael Chen",
+        "publisher": "Journal of AI Research",
+        "publishedAt": "2024-09-15T00:00:00Z",
+        "url": "https://example.com/articles/ai-research-paper"
+      }
+    },
+    {
+      "text": "The transformer architecture has fundamentally changed how we approach sequence-to-sequence tasks.",
+      "contextBefore": "Among these innovations, ",
+      "contextAfter": " This has enabled breakthrough applications in translation and text generation.",
+      "span": {
+        "start": 1240,
+        "end": 1335,
+        "unit": "utf8",
+        "selector": "#section-2"
+      },
+      "citation": {
+        "title": "Advances in Machine Learning: A Comprehensive Survey",
+        "author": "Dr. Sarah Johnson, Prof. Michael Chen",
+        "publisher": "Journal of AI Research",
+        "publishedAt": "2024-09-15T00:00:00Z",
+        "url": "https://example.com/articles/ai-research-paper"
+      }
+    }
+  ],
+  "normalization": {
+    "htmlStripped": false,
+    "boilerplateRemoved": true,
+    "canonicalizedWhitespace": true,
+    "deduplicated": false
+  },
+  "provenance": {
+    "contentHash": "sha256:d4e5f6789012345678901234567890abcdef1234567890abcdef1234567890a",
+    "generatedAt": "2024-10-13T16:15:00Z",
+    "selectionMethod": "spans",
+    "sourceUrl": "https://example.com/articles/ai-research-paper",
+    "sourceTitle": "Advances in Machine Learning: A Comprehensive Survey",
+    "sourceAuthor": "Dr. Sarah Johnson, Prof. Michael Chen"
+  },
+  "limits": {
+    "maxCharsPerQuote": 500,
+    "maxQuotesReturned": 10,
+    "cumulativeCharsReturned": 234
+  }
+}

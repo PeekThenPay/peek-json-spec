@@ -1,0 +1,13 @@
+{
+  "canonicalUrl": "https://example.com/article/ai-breakthrough",
+  "title": "Revolutionary AI System Achieves Human-Level Performance",
+  "snippet": "Scientists at leading AI research lab have developed a groundbreaking artificial intelligence system that demonstrates human-level performance across multiple cognitive tasks, marking a significant milestone in the field.",
+  "language": "en-US",
+  "contentType": "article",
+  "mediaType": "text/html",
+  "signals": {
+    "tokenCountEstimate": 1250
+  },
+  "tags": ["ai", "research", "breakthrough", "technology"],
+  "peekManifestUrl": "https://example.com/.well-known/peek.json"
+}

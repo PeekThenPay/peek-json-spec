@@ -17,7 +17,7 @@ export * from './types/peek-manifest.js';
 export * from './types/pricing.js';
 
 // Export schema utilities
-export { getSchema, getSchemaSync, type PeekSchema } from './utils/schema.js';
+export { getSchema, getSchemaSync, type PeekSchema } from './utils/peek-schema.js';
 export {
   getPricingSchema,
   getPricingSchemaSync,

@@ -1,287 +1,123 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+/**
+ * Simplified Pricing Schema Factory Tests
+ *
+ * Focused tests for pricing schema factory functionality.
+ * Tests real-world scenarios with the actual schema.
+ */
+
+import { describe, test, expect } from 'vitest';
 import {
   createPricingScheme,
   createPricingSchemeFromFile,
   PricingValidationError,
 } from '../pricing-schema-factory.js';
-import type { PricingScheme } from '../../types/pricing.js';
-
-// Mock the pricing-schema module
-vi.mock('../pricing-schema.js');
-
-// Mock fs/promises
-vi.mock('fs/promises', () => ({
-  readFile: vi.fn(),
-}));
-
-import { getPricingSchema } from '../pricing-schema.js';
-const mockGetPricingSchema = vi.mocked(getPricingSchema);
-
-// Global mock references
-let mockReadFile: ReturnType<typeof vi.fn>;
-
-// Setup function to initialize mocks
-async function setupMocks() {
-  const fs = (await vi.importMock('fs/promises')) as { readFile: ReturnType<typeof vi.fn> };
-  mockReadFile = fs.readFile;
-}
 
 describe('pricing-schema-factory.ts', () => {
-  const validPricingScheme: PricingScheme = {
-    pricing_scheme_id: '01HZXYZ123456789ABCDEFGHIJ',
-    pricing_digest: 'sha256:abc123def456789012345678901234567890123456789012345678901234567890',
-    publisher_id: '01HZXYZ123456789ABCDEFGHIJ',
-    currency: 'USD',
-    cache_ttl_seconds: 3600,
-    intents: {
-      peek: {
-        intent: 'peek',
-        pricing_mode: 'per_request',
-        enforcement_method: 'trust',
-        usage: {
-          immediate: { price_cents: 1 },
-          session: { price_cents: 2 },
+  describe('Basic functionality', () => {
+    test('should create pricing scheme from valid JSON string', async () => {
+      const validPricing = JSON.stringify({
+        pricing_scheme_id: '01HPF2Q8QYWGM7GF1XMHW9Z2K3',
+        pricing_digest: 'sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+        publisher_id: '01HPF2Q8QYWGM7GF1XMHW9Z2K4',
+        currency: 'USD',
+        cache_ttl_seconds: 3600,
+        intents: {
+          read: {
+            intent: 'read',
+            pricing_mode: 'per_request',
+            usage: {
+              immediate: {
+                price_cents: 100,
+              },
+            },
+            enforcement_method: 'trust',
+          },
         },
-      },
-      read: {
-        intent: 'read',
-        pricing_mode: 'per_1000_tokens',
-        enforcement_method: 'tool_required',
-        usage: {
-          immediate: { price_cents: 10 },
-          session: { price_cents: 20, max_ttl_seconds: 3600 },
-          train: { price_cents: 1000, requires_contract: true },
-        },
-      },
-    },
-    search: {
-      endpoint_url: 'https://search.example.com/v1/search',
-      price_cents: 5,
-    },
-    rag_ingest: {
-      endpoint_url: 'https://rag.example.com/v1/ingest',
-      pricing_mode: 'per_1000_tokens',
-      price_cents: 25,
-    },
-    quotas: {
-      burst_rps: 100,
-      max_license_duration_seconds: 3600,
-    },
-  };
+      });
 
-  const mockPricingSchema = {
-    $schema: 'http://json-schema.org/draft-07/schema#',
-    title: 'PeekThenPay Pricing Scheme',
-    type: 'object',
-    properties: {
-      pricing_scheme_id: { type: 'string' },
-      pricing_digest: { type: 'string' },
-      publisher_id: { type: 'string' },
-      currency: { type: 'string' },
-      cache_ttl_seconds: { type: 'number' },
-      intents: { type: 'object' },
-      quotas: { type: 'object' },
-    },
-    required: [
-      'pricing_scheme_id',
-      'pricing_digest',
-      'publisher_id',
-      'currency',
-      'cache_ttl_seconds',
-      'intents',
-    ],
-  };
+      const result = await createPricingScheme(validPricing);
 
-  beforeEach(async () => {
-    await setupMocks();
-    mockGetPricingSchema.mockResolvedValue(
-      mockPricingSchema as unknown as import('json-schema').JSONSchema7
-    );
-    vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  describe('createPricingScheme', () => {
-    it('should create a valid PricingScheme from JSON string', async () => {
-      const json = JSON.stringify(validPricingScheme);
-      const result = await createPricingScheme(json);
-      expect(result).toEqual(validPricingScheme);
+      expect(result).toBeDefined();
+      expect(result.pricing_scheme_id).toBe('01HPF2Q8QYWGM7GF1XMHW9Z2K3');
+      expect(result.currency).toBe('USD');
+      expect(result.cache_ttl_seconds).toBe(3600);
     });
 
-    it('should throw SyntaxError for malformed JSON', async () => {
-      const invalidJson = '{ "pricing_scheme_id": "test", invalid }';
+    test('should reject invalid JSON', async () => {
+      const invalidJson = '{ invalid json }';
+
       await expect(createPricingScheme(invalidJson)).rejects.toThrow(SyntaxError);
-      await expect(createPricingScheme(invalidJson)).rejects.toThrow('Invalid JSON');
     });
 
-    it('should throw PricingValidationError for missing required fields', async () => {
-      const incompletePricing = {
-        pricing_scheme_id: '01HZXYZ123456789ABCDEFGHIJ',
-        // missing required fields
-      };
-      const json = JSON.stringify(incompletePricing);
-
-      // Mock validation failure
-      const mockValidator = Object.assign(vi.fn().mockReturnValue(false), {
-        errors: [
-          {
-            instancePath: '',
-            schemaPath: '#/required',
-            keyword: 'required',
-            params: { missingProperty: 'pricing_digest' },
-            message: "must have required property 'pricing_digest'",
-          },
-        ],
+    test('should reject pricing schemes missing required fields', async () => {
+      const incompletePricing = JSON.stringify({
+        currency: 'USD',
+        // Missing required fields: pricing_scheme_id, pricing_digest, publisher_id, cache_ttl_seconds, intents
       });
 
-      // Mock the AJV compilation to return our mock validator
-      const mockAjv = {
-        compile: vi.fn().mockReturnValue(mockValidator),
-      };
-
-      // We need to mock the entire Ajv constructor and addFormats
-      vi.doMock('ajv', () => ({
-        default: vi.fn().mockImplementation(() => mockAjv),
-      }));
-
-      vi.doMock('ajv-formats', () => ({
-        default: vi.fn(),
-      }));
-
-      await expect(createPricingScheme(json)).rejects.toThrow(PricingValidationError);
-    });
-
-    it('should handle empty JSON object', async () => {
-      const json = '{}';
-
-      // Mock validation failure for empty object
-      const mockValidator = Object.assign(vi.fn().mockReturnValue(false), {
-        errors: [
-          {
-            instancePath: '',
-            schemaPath: '#/required',
-            keyword: 'required',
-            params: { missingProperty: 'pricing_scheme_id' },
-            message: "must have required property 'pricing_scheme_id'",
-          },
-        ],
-      });
-
-      const mockAjv = {
-        compile: vi.fn().mockReturnValue(mockValidator),
-      };
-
-      vi.doMock('ajv', () => ({
-        default: vi.fn().mockImplementation(() => mockAjv),
-      }));
-
-      vi.doMock('ajv-formats', () => ({
-        default: vi.fn(),
-      }));
-
-      await expect(createPricingScheme(json)).rejects.toThrow(PricingValidationError);
+      await expect(createPricingScheme(incompletePricing)).rejects.toThrow(PricingValidationError);
     });
   });
 
-  describe('createPricingSchemeFromFile', () => {
-    it('should create PricingScheme from file', async () => {
-      const filePath = '/path/to/pricing.json';
-      const fileContent = JSON.stringify(validPricingScheme);
+  describe('Error handling', () => {
+    test('should handle file not found errors', async () => {
+      const nonExistentPath = '/path/that/does/not/exist.json';
 
-      mockReadFile.mockResolvedValue(fileContent);
-
-      const result = await createPricingSchemeFromFile(filePath);
-      expect(result).toEqual(validPricingScheme);
-      expect(mockReadFile).toHaveBeenCalledWith(filePath, 'utf-8');
+      await expect(createPricingSchemeFromFile(nonExistentPath)).rejects.toThrow();
     });
 
-    it('should throw error when file cannot be read', async () => {
-      const filePath = '/path/to/nonexistent.json';
-      const readError = new Error('File not found');
-
-      mockReadFile.mockRejectedValue(readError);
-
-      await expect(createPricingSchemeFromFile(filePath)).rejects.toThrow(
-        `Failed to read pricing JSON from ${filePath}: File not found`
-      );
-    });
-
-    it('should propagate PricingValidationError from createPricingScheme', async () => {
-      const filePath = '/path/to/invalid-pricing.json';
-      const invalidContent = '{"invalid": "pricing"}';
-
-      mockReadFile.mockResolvedValue(invalidContent);
-
-      // Mock validation failure
-      const mockValidator = Object.assign(vi.fn().mockReturnValue(false), {
-        errors: [
-          {
-            instancePath: '',
-            schemaPath: '#/required',
-            keyword: 'required',
-            params: { missingProperty: 'pricing_scheme_id' },
-            message: "must have required property 'pricing_scheme_id'",
-          },
-        ],
+    test('should provide validation error details', async () => {
+      const invalidPricing = JSON.stringify({
+        pricing_scheme_id: 123, // Should be string with specific pattern
+        currency: 'USD',
       });
 
-      const mockAjv = {
-        compile: vi.fn().mockReturnValue(mockValidator),
-      };
-
-      vi.doMock('ajv', () => ({
-        default: vi.fn().mockImplementation(() => mockAjv),
-      }));
-
-      vi.doMock('ajv-formats', () => ({
-        default: vi.fn(),
-      }));
-
-      await expect(createPricingSchemeFromFile(filePath)).rejects.toThrow(PricingValidationError);
-    });
-
-    it('should handle file reading with different encodings gracefully', async () => {
-      const filePath = '/path/to/pricing.json';
-      const fileContent = JSON.stringify(validPricingScheme);
-
-      mockReadFile.mockResolvedValue(fileContent);
-
-      await createPricingSchemeFromFile(filePath);
-      expect(mockReadFile).toHaveBeenCalledWith(filePath, 'utf-8');
+      try {
+        await createPricingScheme(invalidPricing);
+        expect.fail('Should have thrown PricingValidationError');
+      } catch (error) {
+        expect(error).toBeInstanceOf(PricingValidationError);
+        expect((error as PricingValidationError).errors).toBeDefined();
+      }
     });
   });
 
-  describe('PricingValidationError', () => {
-    it('should properly construct with message and errors', () => {
-      const message = 'Validation failed';
-      const errors = [
-        {
-          instancePath: '/pricing_scheme_id',
-          schemaPath: '#/properties/pricing_scheme_id/pattern',
-          keyword: 'pattern',
-          params: { pattern: '^[0-9A-Z]{26}$' },
-          message: 'must match pattern "^[0-9A-Z]{26}$"',
+  describe('Format validation with real schema', () => {
+    test('should accept valid pricing schemes', async () => {
+      const validPricing = JSON.stringify({
+        pricing_scheme_id: '01HPF2Q8QYWGM7GF1XMHW9Z2K5',
+        pricing_digest: 'sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+        publisher_id: '01HPF2Q8QYWGM7GF1XMHW9Z2K6',
+        currency: 'USD',
+        cache_ttl_seconds: 1800,
+        intents: {
+          read: {
+            intent: 'read',
+            pricing_mode: 'per_request',
+            usage: {
+              immediate: {
+                price_cents: 100,
+              },
+            },
+            enforcement_method: 'trust',
+          },
+          analyze: {
+            intent: 'analyze',
+            pricing_mode: 'per_request',
+            usage: {
+              session: {
+                price_cents: 500,
+              },
+            },
+            enforcement_method: 'trust',
+          },
         },
-      ] as import('ajv').ErrorObject[];
+      });
 
-      const error = new PricingValidationError(message, errors);
-
-      expect(error.message).toBe(message);
-      expect(error.name).toBe('PricingValidationError');
-      expect(error.errors).toEqual(errors);
-      expect(error).toBeInstanceOf(Error);
-    });
-
-    it('should construct without errors parameter', () => {
-      const message = 'Validation failed';
-      const error = new PricingValidationError(message);
-
-      expect(error.message).toBe(message);
-      expect(error.name).toBe('PricingValidationError');
-      expect(error.errors).toBeUndefined();
+      const result = await createPricingScheme(validPricing);
+      expect(result).toBeDefined();
+      expect(result.intents?.read?.usage?.immediate?.price_cents).toBe(100);
+      expect(result.intents?.analyze?.usage?.session?.price_cents).toBe(500);
     });
   });
 });

@@ -1,0 +1,57 @@
+{
+  "canonicalUrl": "https://example.com/research/quantum-computing-paper",
+  "language": "en",
+  "contentType": "article",
+  "mediaType": "application/pdf",
+  "summary": "This research examines quantum computing's current state and future potential, focusing on quantum advantage demonstrations and remaining technical challenges. Quantum processors have achieved demonstrable advantages in specific computational tasks, but widespread practical deployment requires advances in error correction and fault tolerance. Organizations should begin exploring quantum algorithms while acknowledging current limitations.",
+  "lengthClass": "medium",
+  "format": "plain",
+  "topics": [
+    {
+      "topic": "quantum computing",
+      "confidence": 0.98,
+      "relevance": 0.95
+    },
+    {
+      "topic": "error correction",
+      "confidence": 0.89,
+      "relevance": 0.82
+    },
+    {
+      "topic": "quantum advantage",
+      "confidence": 0.94,
+      "relevance": 0.87
+    }
+  ],
+  "keywords": [
+    "quantum computing",
+    "superposition",
+    "entanglement",
+    "quantum advantage",
+    "error correction",
+    "decoherence",
+    "fault tolerance"
+  ],
+  "provenance": {
+    "contentHash": "sha256:6789012345678901234567890abcdef1234567890abcdef1234567890abcd",
+    "generatedAt": "2024-10-13T17:00:00Z",
+    "model": {
+      "id": "llm:gpt4@20240806",
+      "provider": "openai",
+      "name": "gpt-4",
+      "version": "20240806",
+      "digest": "sha256:4567890123abcdef4567890123abcdef4567890123abcdef4567890123abcdef"
+    },
+    "method": "abstractive",
+    "sourceUrl": "https://example.com/research/quantum-computing-paper",
+    "sourceTitle": "Quantum Computing: Current State and Future Prospects",
+    "sourceAuthor": "Dr. Emily Watson, Prof. David Kumar"
+  },
+  "length": {
+    "inputTokens": 8450,
+    "outputTokens": 156,
+    "totalTokens": 8606,
+    "truncated": false,
+    "truncateReason": "none"
+  }
+}

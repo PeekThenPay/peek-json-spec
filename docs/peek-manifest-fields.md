@@ -106,6 +106,7 @@ Edge enforcement settings for CDN/worker integration.
   parameters
 - [License API](license-api.md) – License request/response specifications
 - [Tool Service API](tool-service-api.md) – Content transformation API
+- [Edge Enforcement Guide](recommended-edge-enforcement-guide.md) – Implementation patterns
 
 ---
 

@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Peek JSON AI Access Manifest - Content Publisher Configuration for AI Licensing",
   "description": "A JSON-based standard that evolves the robots.txt protocol for the AI era, enabling fair and equitable engagement between content publishers and AI systems through tool-based access control and transparent pricing.",
   "type": "object",

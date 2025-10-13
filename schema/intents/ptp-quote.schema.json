@@ -56,7 +56,21 @@
       }
     },
     "normalization": { "$ref": "common-defs.schema.json#/$defs/baseNormalization" },
-    "provenance": { "$ref": "common-defs.schema.json#/$defs/baseProvenance" },
+    "provenance": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseProvenance" },
+        {
+          "properties": {
+            "selectionMethod": {
+              "type": "string",
+              "enum": ["query", "selector", "spans"],
+              "description": "Method used to locate quoted text"
+            }
+          },
+          "required": ["generatedAt", "selectionMethod"]
+        }
+      ]
+    },
     "limits": {
       "type": "object",
       "description": "Applied anti-reconstruction limits",

@@ -1,7 +1,7 @@
 {
   "name": "@peekthenpay/peek-json-spec",
   "packageManager": "pnpm@8.9.0",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PeekThenPay/peek-json-spec.git"
@@ -60,7 +60,6 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@types/node": "^24.5.1",
-    "@types/json-schema": "^7.0.15",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
     "@vitest/coverage-v8": "3.2.4",
@@ -86,8 +85,8 @@
     "access": "public"
   },
   "dependencies": {
+    "@peekthenpay/peek-json-spec": "link:",
     "jose": "^6.1.0",
-    "json-schema": "^0.4.0",
     "ulid": "^3.0.1"
   }
 }

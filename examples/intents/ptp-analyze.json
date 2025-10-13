@@ -1,0 +1,118 @@
+{
+  "canonicalUrl": "https://example.com/research/climate-data",
+  "language": "en",
+  "contentType": "article",
+  "mediaType": "text/html",
+  "normalization": {
+    "htmlStripped": true,
+    "boilerplateRemoved": true,
+    "canonicalizedWhitespace": true,
+    "deduplicated": false
+  },
+  "provenance": {
+    "contentHash": "sha256:a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+    "generatedAt": "2024-10-13T15:30:00Z",
+    "model": {
+      "id": "llm:gpt4@20240806",
+      "provider": "openai",
+      "name": "gpt-4",
+      "version": "20240806",
+      "digest": "sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    },
+    "tasks": ["entity_extraction", "topic_modeling", "sentiment_analysis"],
+    "sourceUrl": "https://example.com/research/climate-data",
+    "sourceTitle": "Global Climate Change Data Analysis"
+  },
+  "analysis": {
+    "topics": [
+      {
+        "topic": "climate_change",
+        "confidence": 0.95,
+        "relevance": 0.89
+      },
+      {
+        "topic": "global_warming",
+        "confidence": 0.88,
+        "relevance": 0.92
+      },
+      {
+        "topic": "greenhouse_gases",
+        "confidence": 0.82,
+        "relevance": 0.75
+      }
+    ],
+    "entities": [
+      {
+        "text": "1.1°C",
+        "type": "MEASUREMENT",
+        "confidence": 0.98,
+        "offset": 45,
+        "length": 5
+      },
+      {
+        "text": "Arctic regions",
+        "type": "LOCATION",
+        "confidence": 0.92,
+        "offset": 142,
+        "length": 14
+      },
+      {
+        "text": "CO2",
+        "type": "CHEMICAL",
+        "confidence": 0.99,
+        "offset": 285,
+        "length": 3
+      },
+      {
+        "text": "415 ppm",
+        "type": "MEASUREMENT",
+        "confidence": 0.97,
+        "offset": 318,
+        "length": 7
+      }
+    ],
+    "sentiment": {
+      "overall": "neutral",
+      "confidence": 0.76,
+      "scores": {
+        "positive": 0.15,
+        "neutral": 0.7,
+        "negative": 0.15
+      }
+    },
+    "keyPhrases": [
+      {
+        "text": "global temperature increase",
+        "confidence": 0.94
+      },
+      {
+        "text": "greenhouse gas concentrations",
+        "confidence": 0.91
+      }
+    ],
+    "categories": [
+      {
+        "id": "env_001",
+        "label": "Environmental Science",
+        "confidence": 0.96
+      },
+      {
+        "id": "cli_002",
+        "label": "Climate Research",
+        "confidence": 0.89
+      }
+    ],
+    "readability": {
+      "score": 12.5,
+      "metric": "fkgl",
+      "complexity": "advanced"
+    }
+  },
+  "length": {
+    "inputTokens": 850,
+    "outputTokens": 420,
+    "totalTokens": 1270,
+    "truncated": false,
+    "truncateReason": "none"
+  }
+}

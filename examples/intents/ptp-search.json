@@ -1,0 +1,28 @@
+{
+  "query": "machine learning algorithms for time series forecasting",
+  "mode": "hybrid",
+  "scoringId": "bm25_te3l@v2",
+  "results": [
+    {
+      "rank": 1,
+      "score": 0.94,
+      "canonicalUrl": "https://example.com/articles/lstm-time-series",
+      "contentType": "article",
+      "mediaType": "text/html"
+    },
+    {
+      "rank": 2,
+      "score": 0.89,
+      "canonicalUrl": "https://example.com/comparisons/arima-ml",
+      "contentType": "article",
+      "mediaType": "text/html"
+    },
+    {
+      "rank": 3,
+      "score": 0.86,
+      "canonicalUrl": "https://example.com/tutorials/prophet-forecasting",
+      "contentType": "doc",
+      "mediaType": "text/html"
+    }
+  ]
+}

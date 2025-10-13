@@ -1,82 +1,132 @@
-// TypeScript wrapper for pricing.schema.json
-import type { JSONSchema7 } from 'json-schema';
-import { readFile } from 'fs/promises';
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
+/**
+ * Pricing Schema Loader - AI Usage Pricing Validation
+ *
+ * This module provides TypeScript utilities for loading and validating PeekThenPay pricing schemes.
+ *
+ * ## Purpose
+ * The pricing.schema.json defines the structure of pricing configuration files that specify
+ * how much AI agents should pay for different types of content usage. It includes:
+ *
+ * - Intent-based pricing (analyze, embed, quote, read, summarize, translate, etc.)
+ * - Usage context pricing (commercial vs non-commercial, attribution requirements)
+ * - Enforcement methods and access controls
+ * - Pricing tiers and volume discounts
+ * - Billing and payment processing integration
+ *
+ * ## Usage Context
+ * - **Publishers**: Create pricing schemes that define AI usage costs
+ * - **AI Agents**: Parse pricing to make informed access decisions
+ * - **Billing Systems**: Process payments based on validated pricing schemes
+ * - **Tools**: Validate user-created pricing configurations
+ *
+ * ## Business Model Integration
+ * peek.json manifest → references pricing scheme → this schema validates → AI agent pays → content access
+ *
+ * @example
+ * ```typescript
+ * import { getPricingSchema } from './pricing-schema.js';
+ *
+ * // Load pricing schema for validation
+ * const schema = await getPricingSchema();
+ *
+ * // Validate a pricing scheme
+ * const ajv = new Ajv();
+ * const validate = ajv.compile(schema);
+ * const isValid = validate(pricingSchemeData);
+ * ```
+ */
 
-let _pricingSchema: JSONSchema7 | undefined;
+import type { SchemaObject } from 'ajv';
+
+/**
+ * JSON Schema Draft 2020-12 type - using AJV's native SchemaObject type
+ * which is designed for JSON Schema Draft 2020-12 compliance.
+ *
+ * @see https://json-schema.org/draft/2020-12/schema
+ */
+export type JSONSchema202012 = SchemaObject;
+import { BaseSchemaError, createSchemaLoader } from './schema-loader.js';
 
 /**
  * Custom error class for pricing schema-related errors
  */
-export class PricingSchemaError extends Error {
+export class PricingSchemaError extends BaseSchemaError {
   constructor(
     message: string,
     public cause?: Error
   ) {
-    super(message);
+    super(message, cause);
     this.name = 'PricingSchemaError';
   }
 }
 
+// Create schema loader using the shared utility
+const { loadSchema, loadSchemaSync } = createSchemaLoader({
+  schemaPath: '../../schema/pricing.schema.json',
+  ErrorClass: PricingSchemaError,
+  schemaDisplayName: 'pricing schema',
+});
+
 /**
- * Get the pricing.json schema. The schema is loaded lazily on first access
- * and cached for subsequent calls.
- * @throws {PricingSchemaError} if the schema file cannot be read or parsed
+ * Loads the pricing schema asynchronously with caching
+ *
+ * The schema is loaded lazily on first access and cached for subsequent calls.
+ * This function loads the JSON Schema that defines the structure of pricing
+ * configuration files used in the PeekThenPay billing system.
+ *
+ * @returns Promise resolving to the pricing JSONSchema202012 object
+ * @throws {PricingSchemaError} if the schema file cannot be read, parsed, or is invalid
+ *
+ * @example
+ * ```typescript
+ * import { getPricingSchema } from './utils/pricing-schema.js';
+ * import Ajv from 'ajv';
+ *
+ * const schema = await getPricingSchema();
+ * const ajv = new Ajv();
+ * const validate = ajv.compile(schema);
+ *
+ * // Validate a pricing scheme
+ * const isValid = validate(pricingData);
+ * if (!isValid) {
+ *   console.error('Pricing validation errors:', validate.errors);
+ * }
+ * ```
  */
-export async function getPricingSchema(): Promise<JSONSchema7> {
-  if (_pricingSchema) return _pricingSchema;
-
-  try {
-    const __dirname = dirname(fileURLToPath(import.meta.url));
-    const schemaPath = resolve(__dirname, '../../schema/pricing.schema.json');
-
-    let schemaContent: string;
-    try {
-      schemaContent = await readFile(schemaPath, 'utf-8');
-    } catch (err) {
-      throw new PricingSchemaError(
-        `Failed to read pricing schema file at ${schemaPath}. ` +
-          'Make sure the schema file is included in the package.',
-        err instanceof Error ? err : undefined
-      );
-    }
-
-    try {
-      _pricingSchema = JSON.parse(schemaContent) as JSONSchema7;
-    } catch (err) {
-      throw new PricingSchemaError(
-        'Failed to parse pricing schema file. The schema file appears to be corrupted or contain invalid JSON.',
-        err instanceof Error ? err : undefined
-      );
-    }
-
-    return _pricingSchema;
-  } catch (err) {
-    // If it's already a PricingSchemaError, rethrow it
-    if (err instanceof PricingSchemaError) throw err;
-
-    // Otherwise wrap it in a PricingSchemaError
-    throw new PricingSchemaError(
-      'Unexpected error while loading pricing schema',
-      err instanceof Error ? err : undefined
-    );
-  }
+export async function getPricingSchema(): Promise<JSONSchema202012> {
+  return loadSchema();
 }
 
 /**
- * Synchronous access to the pricing schema. Only use this if you're sure the schema
- * has been loaded previously via getPricingSchema().
+ * Synchronous access to the cached pricing schema
+ *
+ * Only use this function if you're certain the schema has been loaded previously
+ * via getPricingSchema(). This is useful for performance-critical code paths
+ * where you can guarantee the schema is already in memory.
+ *
+ * @returns The cached pricing JSONSchema202012 object
  * @throws {Error} if the schema hasn't been loaded yet
+ *
+ * @example
+ * ```typescript
+ * // Load schema first
+ * await getPricingSchema();
+ *
+ * // Then access synchronously in hot code paths
+ * const schema = getPricingSchemaSync();
+ * ```
  */
-export function getPricingSchemaSync(): JSONSchema7 {
-  if (!_pricingSchema) {
-    throw new Error(
-      'Pricing schema not loaded. Call getPricingSchema() first or use synchronous file loading if blocking is acceptable.'
-    );
-  }
-  return _pricingSchema;
+export function getPricingSchemaSync(): JSONSchema202012 {
+  return loadSchemaSync();
 }
 
-export { type JSONSchema7 as PricingSchema };
+/**
+ * Type alias for the pricing schema
+ * Represents the JSONSchema202012 structure that validates pricing configuration files
+ */
+export { type JSONSchema202012 as PricingSchema };
+
+/**
+ * Default export for convenient importing
+ */
 export default getPricingSchema;
