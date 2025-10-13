@@ -1,5 +1,21 @@
 # Normative Intent Definitions for Peek-Then-Pay
 
+## Overview
+
+Normative intent definitions provide standardized categories that define how AI systems can interact
+with content within the Peek-Then-Pay ecosystem. These definitions establish clear permissions,
+persistence rights, and pricing signals for different use cases, creating a common vocabulary
+between publishers and AI operators.
+
+By standardizing intent categories, we enable:
+
+- **Clear Communication**: Publishers can express precise terms for different types of access
+- **Consistent Pricing**: Different intents can carry different pricing implications
+- **Legal Clarity**: Well-defined categories reduce ambiguity in licensing agreements
+- **Ecosystem Interoperability**: Standard intents work across different publishers and operators
+
+---
+
 ## Specification Compliance
 
 This document contains both **NORMATIVE** requirements and **INFORMATIVE** guidelines. The key words
@@ -23,20 +39,6 @@ and "OPTIONAL" in this document are to be interpreted as described in
   consistency
 - **INFORMATIVE** sections provide examples, explanations, and design rationale that are helpful but
   not binding
-
-## Overview
-
-Normative intent definitions provide standardized categories that define how AI systems can interact
-with content within the Peek-Then-Pay ecosystem. These definitions establish clear permissions,
-persistence rights, and pricing signals for different use cases, creating a common vocabulary
-between publishers and AI operators.
-
-By standardizing intent categories, we enable:
-
-- **Clear Communication**: Publishers can express precise terms for different types of access
-- **Consistent Pricing**: Different intents can carry different pricing implications
-- **Legal Clarity**: Well-defined categories reduce ambiguity in licensing agreements
-- **Ecosystem Interoperability**: Standard intents work across different publishers and operators
 
 ---
 
@@ -113,73 +115,6 @@ The usage context is specified via the `X-PTP-Usage` header and affects:
 
 Publishers MAY restrict certain intents to specific usage contexts or apply different pricing based
 on declared usage.
-
----
-
-## NORMATIVE: Attribution Requirements
-
-**This section contains normative requirements for attribution implementation across all intents.**
-
-All content transformation responses MUST include provenance metadata that covers both technical
-provenance and legal attribution requirements.
-
-**Required Fields**:
-
-- **`contentHash`** (string): SHA-256 hash of source content for integrity verification
-
-**Optional Core Fields** (available to all intents):
-
-- **`generatedAt`** (string): ISO8601 timestamp when response was generated
-- **`model`** (object): Model used for content processing or generation (see `modelMetadata` schema)
-
-**Optional Attribution Fields**:
-
-- **`sourceUrl`** (string): Original URL where content was retrieved
-- **`sourceTitle`** (string): Title of the original source document
-- **`sourceAuthor`** (string): Author or creator of the original content
-- **`rights`** (string): Copyright or rights statement for the source content
-- **`attribution`** (string): Required attribution text or format
-- **`license`** (string): License identifier or URL for the source content
-- **`algorithm`** (string): Processing algorithm or method used for content transformation
-- **`confidence`** (number): Confidence score for generated or processed content (0.0-1.0)
-
-**Reference**: See
-[`common-defs.schema.json#/$defs/baseProvenance`](../schema/intents/common-defs.schema.json) for the
-canonical field definitions and validation constraints.
-
-### **Intent-Specific Provenance Extensions**
-
-Each intent schema extends `baseProvenance` using the `allOf` pattern with intent-specific fields.
-Note that `baseProvenance` now includes an optional `model` field available to all intents:
-
-| Intent        | Schema Extensions                                                                                                              | Purpose                                                             |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| **read**      | `etag`, `lastModified`                                                                                                         | HTTP caching and freshness tracking                                 |
-| **analyze**   | `tasks` (required), `generatedAt` (required)                                                                                   | Analysis methodology tracking                                       |
-| **embed**     | `vectorDimensions` (required), `chunkingMethod` (required), `chunkSize`, `chunkOverlap`, `chunkUnit`, `generatedAt` (required) | Vector generation and chunking methodology                          |
-| **quote**     | `selectionMethod` (required), `generatedAt` (required)                                                                         | Citation methodology (per-quote attribution in `quotes[].citation`) |
-| **summarize** | `method` (required), `generatedAt` (required)                                                                                  | Summarization methodology (model in base provenance)                |
-| **translate** | `method` (required), `glossary`, `memory`, `generatedAt` (required)                                                            | Translation methodology and resources                               |
-
-**Implementation Note**: All intent schemas use the `allOf` pattern to extend `baseProvenance` with
-intent-specific fields. Model information, processing parameters, and transformation metadata are
-consolidated within the provenance object to maintain comprehensive audit trails and ensure
-consistent traceability across all intents.
-
-**Reference**: Each intent's provenance structure is defined in their respective schema files (e.g.,
-[`ptp-analyze.schema.json`](../schema/intents/ptp-analyze.schema.json),
-[`ptp-summarize.schema.json`](../schema/intents/ptp-summarize.schema.json)).
-
-### **Usage Context Provenance Requirements**
-
-Provenance completeness SHOULD scale with usage context retention policies:
-
-- **`immediate`**: Minimal provenance (contentHash)
-- **`session`**: Session provenance (+ generatedAt, basic source attribution)
-- **`index`**: Persistent provenance (+ sourceUrl, sourceTitle, license information)
-- **`train`**: Complete provenance (+ rights, attribution requirements, algorithm disclosure)
-- **`distill`**: Derivative provenance (+ confidence scores, transformation methodology)
-- **`audit`**: Full audit provenance (+ all available attribution and legal metadata)
 
 ---
 

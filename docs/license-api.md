@@ -24,57 +24,56 @@ This section covers endpoints and flows used by AI agents to discover pricing, c
 acquire licenses, and manage payment methods.
 
 ```mermaid
-flowchart TD
-    agent[AI Agent/Bot]
-    license_server[License Server<br/>-MCP Support Optional-]
-    publisher[Publisher Origin<br/>-MCP Support Optional-]
-    bot_detector[Bot Detection Service<br/>-Cloudflare Enterprise-<br/>-Other SaaS Solutions-]
-    enforcer[Edge Enforcer<br/>-Cloudflare Worker-<br/>-Edge Runtime-]
-    tooling[Tooling Service<br/>-Publisher Provided-<br/>-SaaS Solutions-<br/>-Configurable-]
+flowchart LR
+    subgraph AI["AI System"]
+        Agent[AI Agent/Bot]
+    end
 
-    %% Discovery & License Acquisition
-    agent -- "1. GET /pricing" --> license_server
-    agent -- "2. POST /licenses (permissions, budget)" --> license_server
-    license_server -- "3. Returns JWT License" --> agent
+    subgraph LS["License Server (Centralized)"]
+        License[JWT Licensing<br/>GET /pricing<br/>POST /licenses]
+        Billing[Billing & Analytics<br/>POST /usage]
+    end
+
+    subgraph PUB["Publisher Domain"]
+        Manifest[peek.json<br/>Manifest]
+        Detector[Bot Detection<br/>Cloudflare Enterprise]
+        Enforcer[Edge Enforcer<br/>Workers/CDN]
+        Origin[Publisher Origin]
+        Tools[Transform Services<br/>summarize, embed, etc.]
+    end
+
+    %% Discovery & Licensing Flow
+    Agent -->|1. GET /pricing| License
+    Agent -->|2. POST /licenses| License
+    License -->|3. JWT License| Agent
 
     %% Content Access Flow
-    agent -- "4. Request Content (with License JWT)" --> publisher
-    publisher -- "5a. Bot Detection Check" --> bot_detector
-    bot_detector -- "5b. If Bot Detected" --> enforcer
+    Agent -->|4. Request + JWT| Origin
+    Origin -->|5a. Bot Check| Detector
+    Detector -->|5b. Route| Enforcer
 
-    %% Edge Enforcement Decision
-    enforcer -- "6a. Validate License JWT<br/>Check Budget/Permissions" --> enforcer
+    %% Enforcement Decision Tree
+    Enforcer -->|6a. Invalid| Agent
+    Enforcer -->|6b. Valid + Trust| Origin
+    Enforcer -->|6c. Valid + Transform| Tools
 
-    %% Enforcement Branches
-    enforcer -- "6b. If Invalid/Insufficient<br/>Return 402/403" --> agent
-    enforcer -- "6c. If Valid + trust enforcement<br/>OR simple read intent" --> publisher
-    enforcer -- "6d. If Valid + requires tooling" --> tooling
+    %% Response Paths
+    Origin -->|7a. Direct Content| Agent
+    Tools -->|7b. Transformed + Tokens| Enforcer
+    Enforcer -->|8. Content + reservation_id| Agent
 
-    %% Tooling Responses & Token Reporting
-    tooling -- "7a. Sync Response + Token Count<br/>-summarize, transform-" --> enforcer
-    tooling -- "7b. Async Callback + Token Count<br/>-rag_ingest completion-" --> enforcer
-    publisher -- "7c. Direct Content" --> agent
-
-    %% Enforcer Budget Management & Responses
-    enforcer -- "8a. Content + reservation_id<br/>-after budget deduction-" --> agent
-    enforcer -- "8b. Async Completion + reservation_id<br/>-commit/release reservation-" --> agent
-
-    %% Bilateral Usage Reporting
-    enforcer -- "9a. POST /usage (reservation_id, enforcer_cost)" --> license_server
-    agent -- "9b. POST /usage (reservation_id, agent_metrics)" --> license_server
+    %% Bilateral Reporting
+    Enforcer -.->|9a. Usage Report| Billing
+    Agent -.->|9b. Usage Report| Billing
 
     %% Styling
-    classDef agentStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef serverStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef pubStyle fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef edgeStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef toolStyle fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef aiStyle fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef licenseStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef pubStyle fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
 
-    class agent agentStyle
-    class license_server serverStyle
-    class publisher pubStyle
-    class bot_detector,enforcer edgeStyle
-    class tooling toolStyle
+    class AI aiStyle
+    class LS licenseStyle
+    class PUB pubStyle
 ```
 
 ## Endpoints
@@ -365,7 +364,7 @@ Content access and enforcement involves multiple edge services and decision poin
   and routes to edge enforcer
 - **Step 6a**: Edge enforcer (Cloudflare Worker, etc.) validates JWT license and checks
   budget/permissions
-- **Step 6b**: Invalid/insufficient licenses receive immediate 402/403 response
+- **Step 6b**: Invalid/insufficient licenses receive immediate 203/403 response
 - **Step 6c**: Valid licenses with `enforcement_method=trust` or simple `read` intents fetch content
   directly from publisher
 - **Step 6d**: Valid licenses requiring transformation route to configurable tooling services

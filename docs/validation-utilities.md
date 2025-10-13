@@ -2,7 +2,8 @@
 
 This document provides technical reference for validation utilities in the
 `@peekthenpay/peek-json-spec` package. These utilities help validate pricing schemes, license
-structures, and other Peek-Then-Pay components against their respective JSON schemas.
+structures, intent schemas, and other Peek-Then-Pay components against their respective JSON
+schemas.
 
 ## Installation
 
@@ -11,6 +12,58 @@ npm install @peekthenpay/peek-json-spec
 # or
 pnpm add @peekthenpay/peek-json-spec
 ```
+
+## Intent Schema Validation
+
+### High-Performance Intent Validation
+
+The package provides optimized utilities for validating AI response data against intent schemas:
+
+```typescript
+import {
+  loadIntentSchema,
+  validateIntentResponse,
+  createIntentValidator,
+} from '@peekthenpay/peek-json-spec/schema-loader';
+
+// High-level validation (recommended)
+const result = await validateIntentResponse('ptp-summarize', responseData);
+if (!result.valid) {
+  console.error('Validation failed:', result.errors);
+} else {
+  console.log('Valid response:', result.data);
+}
+
+// Create compiled validator for repeated use
+const validator = await createIntentValidator('ptp-analyze');
+const isValid = validator(responseData);
+if (!isValid) {
+  console.error('Validation errors:', validator.errors);
+}
+
+// Load schema directly
+const schema = await loadIntentSchema('ptp-embed');
+```
+
+### Available Intent Types
+
+- `ptp-analyze` - Structured content analysis (sentiment, entities, topics)
+- `ptp-embed` - Vector embeddings with metadata
+- `ptp-peek` - Content previews and discovery
+- `ptp-qa` - Question-answer pairs with citations
+- `ptp-quote` - Verbatim content excerpts
+- `ptp-read` - Full content with normalization
+- `ptp-search` - Search results with ranking
+- `ptp-summarize` - Content summarization
+- `ptp-translate` - Language translation with alignment
+- `common-defs` - Shared type definitions
+
+### Performance Features
+
+- **Lazy Loading**: Schemas loaded on-demand with memory caching
+- **Cross-Reference Resolution**: Automatic handling of schema dependencies
+- **Compiled Validators**: AJV 2020-12 with format validation
+- **Pipeline Optimized**: Minimal latency for request/response validation
 
 ## Pricing Schema Validation
 
@@ -124,9 +177,91 @@ try {
 - Format: `"${IntentType}:${UsageType}"`
 - Examples: `"read:immediate"`, `"summarize:session"`, `"embed:train"`
 
-## Example Usage
+## Complete Validation Examples
 
-### Basic Validation
+### Comprehensive Workflow
+
+```typescript
+import {
+  validatePeekManifest,
+  validatePricingConfig,
+  validateIntentResponse,
+} from '@peekthenpay/peek-json-spec';
+
+// 1. Validate publisher manifest
+const manifest = {
+  version: '1.0',
+  publisher: {
+    name: 'Example Publisher',
+    domain: 'example.com',
+    publisher_id: '01HQ2Z3Y4K5M6N7P8Q9R0S1T1X',
+  },
+  content: {
+    discovery: {
+      robots_txt: true,
+      sitemap: true,
+    },
+    pricing: {
+      url: 'https://example.com/.well-known/peek-pricing.json',
+    },
+  },
+};
+
+const manifestResult = validatePeekManifest(manifest);
+if (!manifestResult.valid) {
+  console.error('Manifest validation failed:', manifestResult.errors);
+  return;
+}
+
+// 2. Validate pricing configuration
+const pricingConfig = {
+  pricing_scheme_id: '01HQ2Z3Y4K5M6N7P8Q9R0S1T2Y',
+  pricing_digest: 'sha256:a1b2c3d4e5f6789012345678901234567890123456789012345678901234abcd',
+  publisher_id: '01HQ2Z3Y4K5M6N7P8Q9R0S1T1X',
+  currency: 'USD',
+  cache_ttl_seconds: 3600,
+  intents: {
+    read: {
+      intent: 'read',
+      pricing_mode: 'per_request',
+      enforcement_method: 'trust',
+      usage: {
+        immediate: { price_cents: 1 },
+        session: { price_cents: 2, max_ttl_seconds: 3600 },
+      },
+    },
+  },
+};
+
+const pricingResult = validatePricingConfig(pricingConfig);
+if (!pricingResult.valid) {
+  console.error('Pricing validation failed:', pricingResult.errors);
+  return;
+}
+
+// 3. Validate AI response data
+const aiResponse = {
+  summary: 'Article discusses climate change impacts on coastal regions',
+  key_points: ['Rising sea levels', 'Increased storm intensity', 'Ecosystem disruption'],
+  metadata: {
+    source_url: 'https://example.com/article',
+    timestamp: new Date().toISOString(),
+    confidence: 0.95,
+  },
+};
+
+const intentResult = await validateIntentResponse('ptp-summarize', aiResponse);
+if (!intentResult.valid) {
+  console.error('Intent validation failed:', intentResult.errors);
+  return;
+}
+
+console.log('✅ All validations passed - system ready for production');
+```
+
+### Individual Validation Examples
+
+#### Pricing Validation
 
 ```typescript
 import { createPricingScheme } from '@peekthenpay/peek-json-spec/pricing-schema-factory';
@@ -184,46 +319,113 @@ async function validatePricingWithDetails(jsonString: string) {
 }
 ```
 
+## Manifest Schema Validation
+
+### Peek Manifest Validation
+
+Validate publisher manifest configurations using the built-in utilities:
+
+```typescript
+import { validatePeekManifest } from '@peekthenpay/peek-json-spec';
+
+const manifest = {
+  version: '1.0',
+  publisher: {
+    name: 'Example Publisher',
+    domain: 'example.com',
+    publisher_id: '01HQ2Z3Y4K5M6N7P8Q9R0S1T1X',
+  },
+  content: {
+    discovery: {
+      robots_txt: true,
+      sitemap: true,
+    },
+    pricing: {
+      url: 'https://example.com/.well-known/peek-pricing.json',
+    },
+  },
+};
+
+const result = validatePeekManifest(manifest);
+if (!result.valid) {
+  console.error('Manifest validation failed:', result.errors);
+} else {
+  console.log('✅ Manifest is valid');
+}
+```
+
+### Factory-Based Manifest Creation
+
+For more comprehensive validation with detailed error handling:
+
+```typescript
+import { createPeekManifest, PeekValidationError } from '@peekthenpay/peek-json-spec/factory';
+
+try {
+  const manifest = createPeekManifest(manifestData);
+  console.log('✅ Manifest created successfully');
+} catch (error) {
+  if (error instanceof PeekValidationError) {
+    console.error('Validation errors:');
+    error.errors?.forEach((err) => {
+      console.log(`- ${err.instancePath}: ${err.message}`);
+    });
+  }
+}
+```
+
 ## Package Utility Modules
 
 This package provides several utility modules to help with conformance and consistency when working
 with peek.json manifests and license verification:
 
-### Factory Utilities (`src/utils/factory.ts`)
+### Peek Manifest Factory (`src/utils/peek-manifest-factory.ts`)
 
-The factory module provides functions for creating and validating PeekManifest objects:
+The peek manifest factory module provides functions for creating and validating PeekManifest
+objects:
 
-- **`createPeekManifest(data: unknown): PeekManifest`** - Creates a validated PeekManifest from
-  unknown data, throwing PeekValidationError if invalid
+- **`createPeekManifest(json: string): Promise<PeekManifest>`** - Creates a validated PeekManifest
+  from a JSON string, throwing PeekValidationError if invalid
 - **`createPeekManifestFromFile(filePath: string): Promise<PeekManifest>`** - Loads and validates a
   PeekManifest from a JSON file
 - **`PeekValidationError`** - Custom error class for validation failures with detailed error
   information
 
-### Schema Utilities (`src/utils/schema.ts`)
+### Peek Schema Utilities (`src/utils/peek-schema.ts`)
 
 The schema module handles loading and caching of the peek.json JSON Schema:
 
-- **`getSchema(): Promise<JSONSchemaType<PeekManifest>>`** - Asynchronously loads the peek.json
-  schema with caching
-- **`getSchemaSync(): JSONSchemaType<PeekManifest>`** - Synchronously loads the peek.json schema
-  (requires prior async load)
+- **`getSchema(): Promise<JSONSchema202012>`** - Asynchronously loads the peek.json schema with
+  caching
+- **`getSchemaSync(): JSONSchema202012`** - Synchronously loads the peek.json schema (requires prior
+  async load)
 - **`SchemaError`** - Custom error class for schema-related failures
+
+### Pricing Schema Utilities (`src/utils/pricing-schema.ts`)
+
+The pricing schema module provides schema loading and validation:
+
+- **`getPricingSchema(): Promise<JSONSchema202012>`** - Asynchronously loads the pricing schema with
+  caching
+- **`getPricingSchemaSync(): JSONSchema202012`** - Synchronously loads the pricing schema (requires
+  prior async load)
+- **`PricingSchemaError`** - Custom error class for pricing schema failures
 
 ### License Utilities (`src/utils/license-utils.ts`)
 
 The license module provides comprehensive JWT and DPoP (Demonstration of Proof-of-Possession) token
-verification:
+creation and verification:
 
-- **`createLicense(payload: object, options: CreateLicenseOptions): Promise<string>`** - Creates
-  ES256-signed JWT licenses
-- **`createDpopProof(options: CreateDpopProofOptions): Promise<string>`** - Creates DPoP proof
-  tokens for enhanced security
-- **`verifyLicense(license: string, options: VerifyLicenseOptions): Promise<object>`** - Verifies
-  JWT licenses with comprehensive validation
-- **`verifyDpopProof(dpopProof: string, options: VerifyDpopProofOptions): Promise<object>`** -
-  Verifies DPoP proof tokens
-- **`LicenseError`** - Custom error class for license verification failures
+- **`createLicenseJwt(options: CreateLicenseOptions): Promise<string>`** - Creates ES256-signed JWT
+  licenses with operator key binding
+- **`createDpopProof(options: CreateDpopOptions): Promise<string>`** - Creates DPoP proof tokens for
+  enhanced security
+- **`verifyLicenseAndDpop(options: VerifyOptions): Promise<VerifiedResult>`** - Verifies JWT
+  licenses and DPoP proofs with comprehensive validation
+- **`CreateLicenseOptions`** - Interface for license creation parameters
+- **`CreateDpopOptions`** - Interface for DPoP proof creation parameters
+- **`VerifyOptions`** - Interface for verification parameters
+- **`VerifiedResult`** - Interface for verification results
 
 These utilities ensure consistent implementation of peek.json standards and provide robust security
 features for license-based content access.

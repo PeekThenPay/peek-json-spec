@@ -75,13 +75,10 @@ const validation = {
 
 ### 3. Usage Context & Enforcement Methods
 
-| Enforcement Method | Implementation           | Usage Context Applicability            |
-| ------------------ | ------------------------ | -------------------------------------- |
-| `trust`            | Direct content serving   | All contexts - simple budget deduction |
-| `tool_required`    | Route to tooling service | Context-dependent processing required  |
-
-**Key Point**: `enforcement_method=trust` bypasses tooling services entirely - critical for
-performance and `immediate` usage context optimization.
+| Enforcement Method | Implementation           | Purpose & Use Cases                                                                                                                                                                                                                 |
+| ------------------ | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trust`            | Direct content serving   | **Two scenarios**: (1) **AI Agent Processing** - agents receive raw content and run their own transformation pipelines, (2) **Publisher Flexibility** - publishers can license intents without implementing transformation services |
+| `tool_required`    | Route to tooling service | Publisher-controlled content transformation before delivery to AI agents                                                                                                                                                            |
 
 ## Budget Management Implementation
 
@@ -150,7 +147,7 @@ Content-Type: application/json
 
 ### Standard Error Responses
 
-- **402 Payment Required**: Insufficient budget or invalid license
+- **203 Non-Authoritative Information**: Preview content provided, full access requires license
 - **403 Forbidden**: Permission denied for requested intent:usage combination
 - **429 Too Many Requests**: Rate limiting or quota exceeded
 - **503 Service Unavailable**: Tooling service failure (check `failover_mode`)

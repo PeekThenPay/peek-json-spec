@@ -1,57 +1,77 @@
 # Tool Service API Guide
 
-**Internal content processing services for `enforcement_method=tool_required` intents**
+**Informational guidelines for publishers implementing content transformation services**
 
-| Tool services provide content transformation behind edge en | Intent     | Typical Input Tokens | Output Tokens                                        | Processing Pattern | Cache TTL                   | Usage Context Fit |
-| ----------------------------------------------------------- | ---------- | -------------------- | ---------------------------------------------------- | ------------------ | --------------------------- | ----------------- |
-| `read`                                                      | N/A        | N/A                  | **Bypass tool service** (`enforcement_method=trust`) | N/A                | All contexts                |
-| `summarize`                                                 | 1000-5000  | 100-500              | Synchronous LLM processing                           | 1-24 hours         | `immediate`, `session`      |
-| `quote`                                                     | 500-2000   | 50-200               | Text extraction + formatting                         | 1-24 hours         | `immediate`, `session`      |
-| `embed`                                                     | 500-2000   | Vector array         | Synchronous embedding model                          | 24 hours-7 days    | `session`, `index`          |
-| `rag_ingest`                                                | 2000-10000 | 100-1000             | **Asynchronous** chunking + embedding                | 7-30 days          | `session`, `index`          |
-| `analyze`                                                   | 2000-8000  | 500-2000             | Complex LLM analysis                                 | 30+ days           | `train`, `distill`, `audit` |
-| `translate`                                                 | 1000-5000  | 1000-5000            | Language model processing                            | 1-24 hours         | `immediate`, `session`      |
+This guide provides architectural patterns and implementation guidance for publishers who need to
+handle `enforcement_method=tool_required` intents. Publishers can achieve content transformation
+through:
+
+- **In-house development** - Build custom transformation services using your preferred tech stack
+- **SaaS solutions** - Integrate with third-party providers for summarization, embedding,
+  translation, etc.
+- **Hybrid approach** - Combine internal services for sensitive content with external APIs for
+  standard transformations
+
+## Composable Architecture & Implementation Flexibility
+
+This specification supports **composable tooling structures** with clear separation of concerns:
+
+### Third-Party (SaaS) Enforcers
+
+When using **third-party enforcement services**, this API specification ensures interoperability
+between the SaaS enforcer (JWT validation, budget management, usage reporting) and your
+transformation services (content processing). The standardized API enables plug-and-play
+compatibility across different enforcer and tooling providers.
+
+**Implementation Guidelines:**
+
+- **Standardized API**: Follow these patterns for interoperability with SaaS enforcers
+- **Internal Only**: Never expose transformation services to public internet or AI agents directly
+- **Token Reporting**: Report input/output token usage to enforcer (not costs or budgets)
+- **No License Logic**: Enforcers handle all JWT validation, budget tracking, and billing
+
+### Custom Publisher Enforcers
+
+Publishers who **build their own enforcement infrastructure** have complete flexibility in how they
+integrate with transformation services:
+
+**Implementation Guidelines:**
+
+- **Full Flexibility**: Use any integration pattern that fits your architecture
+- **No API Constraints**: Internal interfaces can be optimized for your specific requirements
+- **Direct Control**: Handle enforcement logic and content transformation coordination as needed
+- **Composable Benefits**: Mix and match components (custom enforcer + SaaS tooling, or vice versa)
+
+| Intent       | Input Tokens | Output Tokens | Processing Pattern                                   | Cache TTL       | Usage Context Fit           |
+| ------------ | ------------ | ------------- | ---------------------------------------------------- | --------------- | --------------------------- |
+| `read`       | N/A          | N/A           | **Bypass tool service** (`enforcement_method=trust`) | N/A             | All contexts                |
+| `summarize`  | 1000-5000    | 100-500       | Synchronous LLM processing                           | 1-24 hours      | `immediate`, `session`      |
+| `quote`      | 500-2000     | 50-200        | Text extraction + formatting                         | 1-24 hours      | `immediate`, `session`      |
+| `embed`      | 500-2000     | Vector array  | Synchronous embedding model                          | 24 hours-7 days | `session`, `index`          |
+| `rag_ingest` | 2000-10000   | 100-1000      | **Asynchronous** chunking + embedding                | 7-30 days       | `session`, `index`          |
+| `analyze`    | 2000-8000    | 500-2000      | Complex LLM analysis                                 | 30+ days        | `train`, `distill`, `audit` |
+| `translate`  | 1000-5000    | 1000-5000     | Language model processing                            | 1-24 hours      | `immediate`, `session`      |
 
 **Cache TTL Strategy:**
 
 - **Short TTL** (`immediate`, `session`): Content changes frequently, aggressive cache invalidation
 - **Medium TTL** (`index`): Balance between cost savings and content freshness
-- **Long TTL** (`train`, `distill`, `audit`): Static content analysis, maximum cost
-  optimizationThese services are never exposed directly to AI agents - all access is routed through
-  enforcers that handle license validation, budget management, and usage reporting.
+- **Long TTL** (`train`, `distill`, `audit`): Static content analysis, maximum cost optimization
 
-## Key Architectural Constraints
+These services are never exposed directly to AI agents - all access is routed through enforcers that
+handle license validation, budget management, and usage reporting.
 
-- **Internal Only**: Never exposed to public internet or AI agents directly
-- **Transformation Focus**: Only handle content processing - usage context irrelevant
-- **Token Reporting**: Report input/output token usage to enforcer (not costs or budgets)
-- **No License Logic**: Enforcers handle all JWT validation, budget tracking, and billing
-- **Flexible Integration**: REST endpoints or MCP (Model Context Protocol) support
-- **Enforcer Configuration**: Static tool mapping or dynamic MCP discovery
+## API Specification
 
-## Architecture Flow
-
-```mermaid
-flowchart TD
-    enforcer[Edge Enforcer]
-    tooling[Tool Service]
-
-    enforcer -- "POST /process<br/>(content, intent, ULID)" --> tooling
-    tooling -- "Response + token_usage<br/>(input_tokens, output_tokens)" --> enforcer
-
-    %% Styling
-    classDef enforcerStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef toolStyle fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-
-    class enforcer enforcerStyle
-    class tooling toolStyle
-```
+The following patterns apply when using **third-party enforcers** that need standardized interfaces
+for interoperability:
 
 ### Enforcement Method Integration
 
-- **`enforcement_method=trust`**: Bypasses tool services entirely - direct content serving
-- **`enforcement_method=tool_required`**: Routes through tool service for processing
-- **No hybrid modes**: Clear binary decision based on intent configuration
+| Enforcement Method | Implementation           | Purpose & Use Cases                                                                                                                                                                                                                 |
+| ------------------ | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trust`            | Direct content serving   | **Two scenarios**: (1) **AI Agent Processing** - agents receive raw content and run their own transformation pipelines, (2) **Publisher Flexibility** - publishers can license intents without implementing transformation services |
+| `tool_required`    | Route to tooling service | Publisher-controlled content transformation before delivery to AI agents                                                                                                                                                            |
 
 ## Request/Response Interface
 
@@ -129,14 +149,13 @@ HTTP/1.1 200 OK
 }
 ```
 
-### What Tool Services DO NOT Handle
+### What Tool Services SHOULD NOT Handle
 
 - ❌ License validation or JWT processing
 - ❌ Budget management or cost calculations
 - ❌ Agent identity or quota enforcement
 - ❌ Usage context or retention policies (irrelevant to transformation)
 - ❌ Usage reporting to license server (enforcer's responsibility)
-- ❌ Reservation ID generation (provided by enforcer)
 
 ## Processing Flow & Budget Integration
 
@@ -192,39 +211,7 @@ sequenceDiagram
   Agent->>License: POST /usage (reservation_id, completion_metrics)
 ```
 
-## Intent Processing Patterns
-
-### Token Usage by Intent Type
-
-| Intent       | Typical Input Tokens | Output Tokens | Processing Pattern                                   | Usage Context Fit           |
-| ------------ | -------------------- | ------------- | ---------------------------------------------------- | --------------------------- |
-| `read`       | N/A                  | N/A           | **Bypass tool service** (`enforcement_method=trust`) | All contexts                |
-| `summarize`  | 1000-5000            | 100-500       | Synchronous LLM processing                           | `immediate`, `session`      |
-| `quote`      | 1000-3000            | 50-200        | Text extraction + formatting                         | `immediate`, `session`      |
-| `embed`      | 500-2000             | Vector array  | Synchronous embedding model                          | `session`, `index`          |
-| `rag_ingest` | 2000-10000           | 100-1000      | **Asynchronous** chunking + embedding                | `session`, `index`          |
-| `analyze`    | 2000-8000            | 500-2000      | Complex LLM analysis                                 | `train`, `distill`, `audit` |
-| `translate`  | 1000-5000            | 1000-5000     | Language model processing                            | `immediate`, `session`      |
-
-### Error Handling & Timeouts
-
-```typescript
-// Tool service error response
-HTTP/1.1 500 Internal Server Error
-{
-  error: "processing_failed",
-  message: "Content extraction failed",
-  reservation_id: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-  partial_token_usage?: {
-    input_tokens: 1500,
-    output_tokens: 0
-  }
-}
-```
-
-**Critical**: Even on errors, report any token usage consumed for accurate billing.
-
-## Implementation Guidelines
+## Configuration Examples
 
 ### Enforcer Configuration
 
@@ -272,7 +259,6 @@ HTTP/1.1 500 Internal Server Error
 - **No public exposure**: Tool services should only accept enforcer requests
 - **Pre-authenticated**: Enforcer handles all authentication/authorization
 - **Content isolation**: Process each request independently without cross-contamination
-- **MCP security**: Proper authentication for MCP tool discovery and execution
 
 ### Caching & Cost Optimization
 
