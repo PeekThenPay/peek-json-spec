@@ -1,9 +1,9 @@
 import { readFile } from 'fs/promises';
-import Ajv from 'ajv';
+import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import type { PricingScheme } from '../types/pricing.js';
 import { getPricingSchema } from './pricing-schema.js';
-import { ErrorObject, ValidateFunction } from 'ajv';
+import type { ErrorObject, ValidateFunction } from 'ajv';
 
 /**
  * Error thrown when pricing JSON validation fails
@@ -25,7 +25,7 @@ let validateFn: ValidateFunction<PricingScheme> | undefined;
  */
 async function getValidator(): Promise<ValidateFunction<PricingScheme>> {
   if (!validateFn) {
-    const ajv = new Ajv({
+    const ajv = new Ajv2020({
       allErrors: true,
       strict: false,
       validateFormats: true,

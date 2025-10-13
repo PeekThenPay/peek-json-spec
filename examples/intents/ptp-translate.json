@@ -1,0 +1,67 @@
+{
+  "canonicalUrl": "https://example.com/blog/ia-artificielle",
+  "contentType": "blog",
+  "mediaType": "text/html",
+  "normalization": {
+    "htmlStripped": true,
+    "boilerplateRemoved": true,
+    "canonicalizedWhitespace": true,
+    "deduplicated": false
+  },
+  "languages": {
+    "source": "fr",
+    "detected": true,
+    "target": "en"
+  },
+  "format": "plain",
+  "segments": [
+    {
+      "index": 0,
+      "source": "L'intelligence artificielle transforme notre façon de travailler et de vivre.",
+      "target": "Artificial intelligence is transforming the way we work and live.",
+      "confidence": 0.96,
+      "preserved": ["entities"],
+      "alignment": {
+        "unit": "char",
+        "pairs": [
+          {
+            "src": [0, 24],
+            "tgt": [0, 21]
+          },
+          {
+            "src": [25, 34],
+            "tgt": [25, 37]
+          }
+        ]
+      }
+    },
+    {
+      "index": 1,
+      "source": "Les algorithmes d'apprentissage automatique peuvent maintenant analyser des quantités massives de données et identifier des modèles complexes que les humains ne pourraient pas détecter.",
+      "target": "Machine learning algorithms can now analyze massive amounts of data and identify complex patterns that humans could not detect.",
+      "confidence": 0.94,
+      "preserved": ["entities", "code"]
+    }
+  ],
+  "provenance": {
+    "contentHash": "sha256:789012345678901234567890abcdef1234567890abcdef1234567890abcde",
+    "generatedAt": "2024-10-13T17:15:00Z",
+    "method": "mt",
+    "model": {
+      "id": "mt:gpt4-turbo@20240806",
+      "provider": "openai",
+      "name": "gpt-4-turbo",
+      "version": "20240806",
+      "digest": "sha256:5678901234abcdef5678901234abcdef5678901234abcdef5678901234abcdef"
+    },
+    "sourceUrl": "https://example.com/blog/ia-artificielle",
+    "sourceTitle": "L'Intelligence Artificielle et l'Avenir du Travail"
+  },
+  "length": {
+    "inputTokens": 52,
+    "outputTokens": 45,
+    "totalTokens": 97,
+    "truncated": false,
+    "truncateReason": "none"
+  }
+}

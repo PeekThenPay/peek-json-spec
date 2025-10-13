@@ -1,3 +1,19 @@
+/**
+ * License Utilities Comprehensive Tests
+ *
+ * This test suite provides comprehensive testing of JWT license utilities
+ * including DPoP (Demonstration of Proof-of-Possession) token handling. It tests:
+ * - JWT license creation and validation with various claim sets
+ * - DPoP proof creation with cryptographic signatures
+ * - License and DPoP proof verification with replay attack protection
+ * - Error handling for malformed tokens and invalid signatures
+ * - Edge cases including expired tokens and invalid key formats
+ * - Integration between license JWTs and DPoP proofs
+ *
+ * These tests ensure the license system works correctly for creating
+ * and verifying cryptographically secure licenses with proper DPoP
+ * proof validation to prevent token replay attacks.
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   createLicenseJwt,

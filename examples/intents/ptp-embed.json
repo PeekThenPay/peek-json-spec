@@ -1,0 +1,71 @@
+{
+  "canonicalUrl": "https://example.com/docs/api-guide",
+  "language": "en",
+  "contentType": "doc",
+  "mediaType": "text/html",
+  "normalization": {
+    "htmlStripped": true,
+    "boilerplateRemoved": true,
+    "canonicalizedWhitespace": true,
+    "deduplicated": false
+  },
+  "provenance": {
+    "contentHash": "sha256:b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567",
+    "generatedAt": "2024-10-13T15:45:00Z",
+    "model": {
+      "id": "emb:text-embedding-3-large@20240125",
+      "provider": "openai",
+      "name": "text-embedding-3-large",
+      "version": "20240125",
+      "digest": "sha256:2345678901abcdef2345678901abcdef2345678901abcdef2345678901abcdef"
+    },
+    "vectorDimensions": 3072,
+    "chunkingMethod": "chunks",
+    "chunkSize": 512,
+    "chunkOverlap": 50,
+    "chunkUnit": "token",
+    "sourceUrl": "https://example.com/docs/api-guide",
+    "sourceTitle": "API Integration Guide"
+  },
+  "embeddingMetadata": {
+    "dtype": "f32",
+    "normalized": true,
+    "encode": "array",
+    "num_items": 2
+  },
+  "length": {
+    "inputTokens": 28,
+    "outputTokens": 0,
+    "totalTokens": 28,
+    "truncated": false,
+    "truncateReason": "none"
+  },
+  "embeddings": [
+    {
+      "index": 0,
+      "embedding": [0.1234, -0.5678, 0.9012, -0.3456, 0.789],
+      "meta": {
+        "span": {
+          "start": 0,
+          "end": 16,
+          "unit": "token"
+        },
+        "sectionId": "introduction",
+        "textHash": "sha256:abc123def456"
+      }
+    },
+    {
+      "index": 1,
+      "embedding": [-0.2345, 0.6789, -0.1012, 0.4567, -0.8901],
+      "meta": {
+        "span": {
+          "start": 16,
+          "end": 28,
+          "unit": "token"
+        },
+        "sectionId": "endpoints",
+        "textHash": "sha256:def456ghi789"
+      }
+    }
+  ]
+}

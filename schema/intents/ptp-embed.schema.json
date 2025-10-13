@@ -12,32 +12,53 @@
     },
     "contentType": { "$ref": "common-defs.schema.json#/$defs/contentType" },
     "mediaType": { "$ref": "common-defs.schema.json#/$defs/mediaType" },
-    "model": { "$ref": "common-defs.schema.json#/$defs/modelMetadata" },
     "normalization": { "$ref": "common-defs.schema.json#/$defs/baseNormalization" },
+    "provenance": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseProvenance" },
+        {
+          "properties": {
+            "vectorDimensions": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Number of dimensions in embedding vectors"
+            },
+            "chunkingMethod": {
+              "type": "string",
+              "enum": ["doc", "chunks", "selection"],
+              "description": "How source was partitioned for embedding"
+            },
+            "chunkSize": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Size of chunks when chunking method is 'chunks'"
+            },
+            "chunkOverlap": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Overlap between adjacent chunks"
+            },
+            "chunkUnit": {
+              "type": "string",
+              "enum": ["token", "utf8", "char"],
+              "description": "Unit of measurement for chunk size"
+            }
+          },
+          "required": ["generatedAt", "model", "vectorDimensions", "chunkingMethod"]
+        }
+      ]
+    },
     "embeddingMetadata": {
       "type": "object",
       "description": "Global embedding configuration.",
       "properties": {
-        "embedding_dim": { "type": "integer", "minimum": 1 },
         "dtype": { "type": "string", "enum": ["f32", "f16", "q8"] },
         "normalized": { "type": "boolean", "description": "L2-normalized vectors." },
         "encode": { "type": "string", "enum": ["array", "base64"], "default": "array" },
         "num_items": { "type": "integer", "minimum": 0 }
       },
-      "required": ["embedding_dim", "dtype", "encode"]
+      "required": ["dtype", "encode"]
     },
-    "chunking": {
-      "type": "object",
-      "description": "How the source was partitioned prior to embedding.",
-      "properties": {
-        "mode": { "type": "string", "enum": ["doc", "chunks", "selection"] },
-        "unit": { "type": "string", "enum": ["token", "utf8", "char"] },
-        "chunk_size": { "type": "integer", "minimum": 1 },
-        "overlap": { "type": "integer", "minimum": 0 }
-      },
-      "additionalProperties": false
-    },
-    "provenance": { "$ref": "common-defs.schema.json#/$defs/baseProvenance" },
     "length": { "$ref": "common-defs.schema.json#/$defs/baseLength" },
     "embeddings": {
       "type": "array",
@@ -109,7 +130,6 @@
     "language",
     "contentType",
     "mediaType",
-    "model",
     "embeddingMetadata",
     "provenance",
     "embeddings"

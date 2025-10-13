@@ -9,7 +9,6 @@
     "language": { "type": "string", "description": "BCP-47; may be detected" },
     "contentType": { "$ref": "common-defs.schema.json#/$defs/contentType" },
     "mediaType": { "$ref": "common-defs.schema.json#/$defs/mediaType" },
-    "model": { "$ref": "common-defs.schema.json#/$defs/modelMetadata" },
     "normalization": { "$ref": "common-defs.schema.json#/$defs/baseNormalization" },
     "provenance": {
       "allOf": [
@@ -22,7 +21,7 @@
               "description": "Analysis tasks that were performed."
             }
           },
-          "required": ["generatedAt", "tasks"]
+          "required": ["generatedAt", "model", "tasks"]
         }
       ]
     },
@@ -120,14 +119,6 @@
     }
   },
 
-  "required": [
-    "canonicalUrl",
-    "contentType",
-    "mediaType",
-    "model",
-    "provenance",
-    "analysis",
-    "length"
-  ],
+  "required": ["canonicalUrl", "contentType", "mediaType", "provenance", "analysis", "length"],
   "additionalProperties": false
 }

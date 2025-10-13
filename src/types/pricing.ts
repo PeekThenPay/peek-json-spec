@@ -1,4 +1,4 @@
-import { IntentType, UsageType } from './common.js';
+import { IntentType, UsageType, ModelMetadata } from './common.js';
 
 /**
  * Search configuration and pricing for a publisher.
@@ -80,22 +80,6 @@ export interface IntentPricing {
   };
   /** Model metadata for transform intents (optional) */
   model?: ModelMetadata;
-}
-
-/**
- * Model metadata for transform intents (e.g., summarization, embedding).
- */
-export interface ModelMetadata {
-  /** Model identifier (e.g., 'sum:gpt-4.1-mini@v2') */
-  id: string;
-  /** Model provider (e.g., 'openai') */
-  provider: string;
-  /** Model name (e.g., 'gpt-4.1-mini') */
-  name: string;
-  /** Model version (e.g., 'v2') */
-  version: string;
-  /** Digest of model (sha256) */
-  digest: string;
 }
 
 /**

@@ -116,6 +116,73 @@ on declared usage.
 
 ---
 
+## NORMATIVE: Attribution Requirements
+
+**This section contains normative requirements for attribution implementation across all intents.**
+
+All content transformation responses MUST include provenance metadata that covers both technical
+provenance and legal attribution requirements.
+
+**Required Fields**:
+
+- **`contentHash`** (string): SHA-256 hash of source content for integrity verification
+
+**Optional Core Fields** (available to all intents):
+
+- **`generatedAt`** (string): ISO8601 timestamp when response was generated
+- **`model`** (object): Model used for content processing or generation (see `modelMetadata` schema)
+
+**Optional Attribution Fields**:
+
+- **`sourceUrl`** (string): Original URL where content was retrieved
+- **`sourceTitle`** (string): Title of the original source document
+- **`sourceAuthor`** (string): Author or creator of the original content
+- **`rights`** (string): Copyright or rights statement for the source content
+- **`attribution`** (string): Required attribution text or format
+- **`license`** (string): License identifier or URL for the source content
+- **`algorithm`** (string): Processing algorithm or method used for content transformation
+- **`confidence`** (number): Confidence score for generated or processed content (0.0-1.0)
+
+**Reference**: See
+[`common-defs.schema.json#/$defs/baseProvenance`](../schema/intents/common-defs.schema.json) for the
+canonical field definitions and validation constraints.
+
+### **Intent-Specific Provenance Extensions**
+
+Each intent schema extends `baseProvenance` using the `allOf` pattern with intent-specific fields.
+Note that `baseProvenance` now includes an optional `model` field available to all intents:
+
+| Intent        | Schema Extensions                                                                                                              | Purpose                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| **read**      | `etag`, `lastModified`                                                                                                         | HTTP caching and freshness tracking                                 |
+| **analyze**   | `tasks` (required), `generatedAt` (required)                                                                                   | Analysis methodology tracking                                       |
+| **embed**     | `vectorDimensions` (required), `chunkingMethod` (required), `chunkSize`, `chunkOverlap`, `chunkUnit`, `generatedAt` (required) | Vector generation and chunking methodology                          |
+| **quote**     | `selectionMethod` (required), `generatedAt` (required)                                                                         | Citation methodology (per-quote attribution in `quotes[].citation`) |
+| **summarize** | `method` (required), `generatedAt` (required)                                                                                  | Summarization methodology (model in base provenance)                |
+| **translate** | `method` (required), `glossary`, `memory`, `generatedAt` (required)                                                            | Translation methodology and resources                               |
+
+**Implementation Note**: All intent schemas use the `allOf` pattern to extend `baseProvenance` with
+intent-specific fields. Model information, processing parameters, and transformation metadata are
+consolidated within the provenance object to maintain comprehensive audit trails and ensure
+consistent traceability across all intents.
+
+**Reference**: Each intent's provenance structure is defined in their respective schema files (e.g.,
+[`ptp-analyze.schema.json`](../schema/intents/ptp-analyze.schema.json),
+[`ptp-summarize.schema.json`](../schema/intents/ptp-summarize.schema.json)).
+
+### **Usage Context Provenance Requirements**
+
+Provenance completeness SHOULD scale with usage context retention policies:
+
+- **`immediate`**: Minimal provenance (contentHash)
+- **`session`**: Session provenance (+ generatedAt, basic source attribution)
+- **`index`**: Persistent provenance (+ sourceUrl, sourceTitle, license information)
+- **`train`**: Complete provenance (+ rights, attribution requirements, algorithm disclosure)
+- **`distill`**: Derivative provenance (+ confidence scores, transformation methodology)
+- **`audit`**: Full audit provenance (+ all available attribution and legal metadata)
+
+---
+
 ## NORMATIVE: Search Discovery Feature (Optional)
 
 **This section contains normative requirements for publishers implementing optional search
@@ -172,16 +239,14 @@ Clients should make HTTP requests to this endpoint with search parameters.
 
 ### Request Parameters
 
-| param       | header               | type            | required | value                                                                                             |
-| ----------- | -------------------- | --------------- | -------- | ------------------------------------------------------------------------------------------------- |
-| q           | X-PTP-Query          | string          | true     | User/agent query (natural language or keyword).                                                   |
-| mode        | X-PTP-Mode           | string          | false    | Retrieval strategy: "keyword", "vector", "hybrid". (Default="hybrid")                             |
-| top_k       | X-PTP-Top-K          | number          | false    | Number of results to return (1–100). (Default=10)                                                 |
-| offset      | X-PTP-Offset         | number          | false    | Pagination start (≥0). (Default=0)                                                                |
-| filters     | X-PTP-Filters        | base64url(JSON) | false    | Structured filters (e.g., `{"lang":"en", "type":["article","doc"], "date":{">=":"2024-01-01"}}`). |
-| snippet_len | X-PTP-Snippet-Length | number          | false    | Target snippet length for each hit (50–400). (Default=160)                                        |
-| highlight   | X-PTP-Highlight      | boolean         | false    | Include highlighted query matches. (Default=true)                                                 |
-| time_range  | X-PTP-Time-Range     | string          | false    | Filter by publication/update window (ISO 8601 interval, e.g., "2024-01-01/..").                   |
+| param       | header               | type    | required | value                                                                           |
+| ----------- | -------------------- | ------- | -------- | ------------------------------------------------------------------------------- |
+| q           | X-PTP-Query          | string  | true     | User/agent query (natural language or keyword).                                 |
+| mode        | X-PTP-Mode           | string  | false    | Retrieval strategy: "keyword", "vector", "hybrid". (Default="hybrid")           |
+| top_k       | X-PTP-Top-K          | number  | false    | Number of results to return (1–100). (Default=10)                               |
+| snippet_len | X-PTP-Snippet-Length | number  | false    | Target snippet length for each hit (50–400). (Default=160)                      |
+| highlight   | X-PTP-Highlight      | boolean | false    | Include highlighted query matches. (Default=true)                               |
+| time_range  | X-PTP-Time-Range     | string  | false    | Filter by publication/update window (ISO 8601 interval, e.g., "2024-01-01/.."). |
 
 **Note:** Unlike content transformation intents, search does NOT use the `ptp_intent` parameter
 since it's called via a dedicated endpoint.
@@ -508,12 +573,16 @@ by canonicalUrl and SHALL include a provenance block describing how and when it 
     "generatedAt": "2025-10-08T15:45:00Z",
     "method": "abstractive",
     "model": {
-      "id": "llm:gpt-4@turbo",
+      "id": "sum:gpt-4@turbo",
       "provider": "openai",
       "name": "gpt-4",
       "version": "turbo",
       "digest": "sha256:a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
-    }
+    },
+    "sourceUrl": "https://example.com/articles/ai-content-licensing",
+    "sourceTitle": "The Future of AI Content Licensing: A Publisher's Perspective",
+    "sourceAuthor": "Dr. Sarah Chen",
+    "attribution": "Source: Tech Ethics Quarterly"
   },
   "length": {
     "inputTokens": 2847,

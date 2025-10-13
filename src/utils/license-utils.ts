@@ -1,9 +1,3 @@
-// license-jwt.ts
-// Env-agnostic (Node + Cloudflare Workers) utilities for assertion-only licenses + DPoP
-// Requires: npm i jose
-//
-// Works with jose v6.x without Node/DOM-specific key types.
-
 import {
   SignJWT,
   jwtVerify,

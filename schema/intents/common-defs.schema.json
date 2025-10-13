@@ -65,7 +65,7 @@
     },
     "baseProvenance": {
       "type": "object",
-      "description": "Core provenance fields for content integrity and generation tracking.",
+      "description": "Core provenance fields for content integrity, generation tracking, and attribution.",
       "properties": {
         "contentHash": {
           "type": "string",
@@ -75,10 +75,48 @@
           "type": "string",
           "format": "date-time",
           "description": "Timestamp when the response was generated/computed."
+        },
+        "model": {
+          "$ref": "#/$defs/modelMetadata",
+          "description": "Model used for content processing or generation."
+        },
+        "sourceUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Original URL where content was retrieved."
+        },
+        "sourceTitle": {
+          "type": "string",
+          "description": "Title of the original source document."
+        },
+        "sourceAuthor": {
+          "type": "string",
+          "description": "Author or creator of the original content."
+        },
+        "rights": {
+          "type": "string",
+          "description": "Copyright or rights statement for the source content."
+        },
+        "attribution": {
+          "type": "string",
+          "description": "Required attribution text or format."
+        },
+        "license": {
+          "type": "string",
+          "description": "License identifier or URL for the source content."
+        },
+        "algorithm": {
+          "type": "string",
+          "description": "Processing algorithm or method used for content transformation."
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence score for generated or processed content."
         }
       },
-      "required": ["contentHash"],
-      "additionalProperties": false
+      "required": ["contentHash"]
     },
     "baseNormalization": {
       "type": "object",
