@@ -62,6 +62,39 @@ their own normative requirements.
 | **analyze**   | Structured annotations (sentiment, entities, topics, readability, PII, etc.) | derived_ttl                                      | per_request (bundle)             | Include spans + confidence; can combine multiple analyses.           |
 | **qa**        | Retrieval-augmented answers to supplied questions (with citations)           | transient                                        | per_1000_tokens (input + output) | qa ≠ search; it synthesizes language. Auto-QA is optional extension. |
 
+## NORMATIVE: Preview (Peek) Response Requirements
+
+**This section contains normative requirements for preview/peek responses.**
+
+Any preview or peek response returned under this specification MUST comply with the following
+constraints to ensure transparency and prevent abuse:
+
+### Content Fidelity Requirements
+
+- **Faithful excerpt**: MUST be a representative excerpt from the actual resource content (no
+  alternate/SEO-only text or misleading substitutions)
+- **Content integrity**: MUST accurately reflect the substance, tone, and context of the source
+  material
+
+### Size and Format Requirements
+
+- **Token limits**: MUST NOT exceed `max_preview_length` (default: 1000 tokens) when
+  `preview_unit == "tokens"`
+- **Character limits**: MUST NOT exceed equivalent limits when `preview_unit == "chars"`
+- **Preview identification**: Response body MUST include `"type": "peek"` field to identify content
+  as preview
+
+### Required HTTP Headers
+
+- **Indexing control**: MUST include `X-Robots-Tag: noindex, noarchive` unless publisher explicitly
+  permits indexing in manifest
+- **Content negotiation**: MUST include `Vary: Accept, Authorization` when same URL can serve both
+  machine and HTML representations
+- **Media type**: SHOULD use `application/vnd.peek+json` for structured preview responses
+
+**Rationale**: These requirements create shared minimum standards to prevent content cloaking,
+ensure transparent preview behavior, and enable comparable implementations across the ecosystem.
+
 ### INFORMATIVE: Key Design Principles
 
 **This section provides informative guidance about the design rationale behind intent categories.**
@@ -350,6 +383,7 @@ summarize, etc.
 
 ```json
 {
+  "type": "peek",
   "canonicalUrl": "https://example.com/articles/ai-content-licensing",
   "title": "The Future of AI Content Licensing: A Publisher's Perspective",
   "snippet": "As AI systems increasingly consume web content for training and inference, publishers are seeking new models for fair compensation and control over their intellectual property.",
@@ -360,6 +394,81 @@ summarize, etc.
     "tokenCountEstimate": 2847
   },
   "tags": ["artificial-intelligence", "content-licensing", "publishing", "intellectual-property"],
+  "peekManifestUrl": "https://example.com/.well-known/peek.json"
+}
+```
+
+**Additional Response Examples for Non-Text Media:**
+
+_PDF Document:_
+
+```json
+{
+  "type": "peek",
+  "canonicalUrl": "https://example.com/reports/ai-industry-analysis-2025.pdf",
+  "title": "AI Industry Analysis Report 2025",
+  "snippet": "Comprehensive analysis of artificial intelligence market trends, key players, and future projections for the global AI industry in 2025.",
+  "language": "en-US",
+  "contentType": "doc",
+  "mediaType": "application/pdf",
+  "metadata": {
+    "pageCount": 47,
+    "fileSize": 2847291,
+    "author": "Research Analytics Corp"
+  },
+  "signals": {
+    "tokenCountEstimate": 15420
+  },
+  "tags": ["artificial-intelligence", "market-analysis", "industry-report"],
+  "peekManifestUrl": "https://example.com/.well-known/peek.json"
+}
+```
+
+_Image:_
+
+```json
+{
+  "type": "peek",
+  "canonicalUrl": "https://example.com/images/datacenter-architecture.jpg",
+  "title": "Modern AI Datacenter Architecture Diagram",
+  "snippet": "Detailed architectural diagram showing the layout of a state-of-the-art AI training datacenter with GPU clusters, networking infrastructure, and cooling systems.",
+  "contentType": "other",
+  "mediaType": "image/jpeg",
+  "metadata": {
+    "dimensions": {
+      "width": 2048,
+      "height": 1536
+    },
+    "fileSize": 387264
+  },
+  "tags": ["datacenter", "architecture", "ai-infrastructure"],
+  "peekManifestUrl": "https://example.com/.well-known/peek.json"
+}
+```
+
+_Video:_
+
+```json
+{
+  "type": "peek",
+  "canonicalUrl": "https://example.com/videos/ai-model-training-process.mp4",
+  "title": "Large Language Model Training Process Explained",
+  "snippet": "Educational video demonstrating the step-by-step process of training large language models, from data preparation to model deployment.",
+  "language": "en-US",
+  "contentType": "video",
+  "mediaType": "video/mp4",
+  "metadata": {
+    "duration": 847.5,
+    "dimensions": {
+      "width": 1920,
+      "height": 1080
+    },
+    "fileSize": 125847392
+  },
+  "signals": {
+    "tokenCountEstimate": 3420
+  },
+  "tags": ["machine-learning", "tutorial", "ai-training"],
   "peekManifestUrl": "https://example.com/.well-known/peek.json"
 }
 ```

@@ -65,6 +65,29 @@ Edge enforcement settings for CDN/worker integration.
     "monthly").
   - `cache_duration` (number) – Suggested cache duration in seconds for immediate usage context.
 
+## `peek_policy` (optional)
+
+Publisher guidance for preview behavior that agents may find useful.
+
+- `max_peek_length` (integer, default: 1000) – Recommended length limit for previews (≤1000
+  recommended)
+- `peek_unit` (enum: "tokens" | "chars") – Unit for measuring preview size limits
+- `peek_scope` (enum: "excerpt" | "lead") – Guidance on excerpt type (excerpt = representative
+  sample, lead = opening content)
+- `appeals_url` (string/uri) – Public appeals or allowlist request form URL
+
+**Purpose**: Provides useful guidance for AI systems about publisher preview preferences. This
+information helps agents understand publisher expectations for preview length and format, and
+provides a contact point for appeals or allowlist requests.
+
+**Implementation Notes**:
+
+- \*\* Publishers who disable auto-peek should still implement
+  [bot guidance headers](headers-and-content-negotiation.md#bot-guidance-headers-for-non-auto-peek-publishers)
+  to encourage responsible AI agent behavior and license acquisition
+- \*\* Automated preview generation based on
+  [bot detection guidance](bot-detection-guidance.md) with the specified token limits and policies
+
 ## Example Structure
 
 ```json
@@ -93,6 +116,12 @@ Edge enforcement settings for CDN/worker integration.
       "update_frequency": "daily",
       "cache_duration": 3600
     }
+  },
+  "peek_policy": {
+    "max_peek_length": 500,
+    "peek_unit": "tokens",
+    "peek_scope": "excerpt",
+    "appeals_url": "https://technews.com/legal/ai-appeals"
   }
 }
 ```

@@ -70,4 +70,16 @@ export interface PeekManifest {
       cache_duration?: number;
     };
   };
+
+  /** Publisher guidance for preview behavior that agents may find useful */
+  peek_policy?: {
+    /** Recommended length limit for previews (≤1000 recommended) */
+    max_peek_length?: number;
+    /** Unit for measuring preview size limits */
+    peek_unit?: 'tokens' | 'chars';
+    /** Guidance on excerpt type (excerpt = representative sample, lead = opening content) */
+    peek_scope?: 'excerpt' | 'lead';
+    /** Public appeals or allowlist request form URL */
+    appeals_url?: string;
+  };
 }

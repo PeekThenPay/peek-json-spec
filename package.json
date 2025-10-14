@@ -1,7 +1,7 @@
 {
   "name": "@peekthenpay/peek-json-spec",
   "packageManager": "pnpm@8.9.0",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PeekThenPay/peek-json-spec.git"
@@ -46,7 +46,7 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "demo": "pnpm run build && node scripts/demo-license-utils.mjs",
-    "test:run": "vitest run",
+    "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "lint": "pnpm run format:check && eslint 'src/**/*.{ts,js}'",

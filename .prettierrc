@@ -14,7 +14,7 @@
     {
       "files": ["*.md"],
       "options": {
-        "proseWrap": "always"
+        "proseWrap": "preserve"
       }
     }
   ]
