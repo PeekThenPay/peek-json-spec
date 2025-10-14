@@ -7,7 +7,8 @@ value creation**
 
 ## Overview
 
-**The AI ecosystem is at a crossroads.** Publishers want to protect and monetize their content,
+**The AI ecosystem is at a crossroads.**  
+Publishers want to protect and monetize their content,
 while AI systems need contextual, real-time data. This tension has created a patchwork of paywalls,
 lawsuits, and closed-door deals.
 
@@ -15,36 +16,35 @@ Peek-Then-Pay provides a better path: an **open standard for balanced collaborat
 HTML, and robots.txt enabled the web to thrive through shared standards, we need consistent rules
 for AI content access.
 
-### The Problem: Two Failing Extremes
+### The Problem: Two Broken Extremes
 
-Current approaches reduce to **binary extremes** that fail both sides:
+AI access to web content has polarized into unsustainable models:
 
-- **Free scraping** ignores publisher rights and creates legal conflict
-- **Hard paywalls** block discovery and kill AI integration incentives
-- **Over-centralized tollbooths** concentrate power and limit publisher choice
-- **Ad-hoc licensing deals** create fragmentation and don't scale
+1. **Unrestricted scraping** — disregards publisher rights and invites legal and ethical conflict.  
+2. **Restrictive walls and intermediaries** — from hard paywalls to centralized tollbooths, these block discovery, fragment ecosystems, and concentrate control.  
+
+Each side fails to provide a standardized, transparent, and enforceable path for responsible access.  
+Publishers need control without isolation; AI systems need access without overreach.
 
 ### The Solution: Balanced Hybrid Model
 
-**Peek-Then-Pay combines the best of both approaches** with clear separation of concerns:
+Peek-Then-Pay bridges this gap with **clear separation of responsibilities**:
 
 **Decentralized where it matters:**
-
 - Publishers advertise terms in standardized `peek.json` manifests
 - Publishers enforce policies at their own edge (CDN/Workers)
 - Publishers control content transformation and tooling
 
 **Centralized where it helps:**
-
 - Common licensing marketplace handles payments and accounts
 - Unified integration path for AI systems across publishers
 - Standardized intent-based pricing and contracts
 
-**The result:** AI agents can:
-
-1. **Preview content** to understand value
+**Result:** 
+AI agents can:
+1. **Preview content** to evaluate value
 2. **Choose specific usage types** (read, summarize, embed, etc.)
-3. **Pay for actual transformations** rather than raw access
+3. **Access clean, context-aware data** — publishers provide accurate transforms that save cost and time
 
 ## Key Features
 
