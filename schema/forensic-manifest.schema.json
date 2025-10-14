@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.peekthenpay.com/forensic-manifest.schema.json",
+  "title": "Peek-Then-Pay Forensic Manifest",
+  "description": "Schema for the JWS payload structure carried in X-PTP-Delivery header for audit trails and compliance verification",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version for future evolution compatibility"
+    },
+    "manifest_id": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "description": "Unique manifest identifier in ULID format for replay resistance and auditing"
+    },
+    "publisher_id": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "description": "Publisher identifier in ULID format"
+    },
+    "license_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "License identifier in ULID format, null for public preview responses"
+    },
+    "resource_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Canonical resource URL being served (full URL with scheme)"
+    },
+    "resource_type": {
+      "$ref": "intents/common-defs.schema.json#/$defs/contentType"
+    },
+    "payload_digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-fA-F0-9]{64}$",
+      "description": "SHA256 digest of the response payload in format sha256:<hex>, must match X-PTP-Payload-Digest header"
+    },
+    "preview": {
+      "type": "boolean",
+      "description": "true for preview content, false for full licensed content"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 / ISO 8601 datetime when this manifest was issued (MUST be UTC)"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 / ISO 8601 datetime when this content/license expires (MUST be UTC)"
+    },
+    "content_ttl_seconds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Time-to-live for this specific content response in seconds (for cache management)"
+    },
+    "signer": {
+      "type": "object",
+      "properties": {
+        "kid": {
+          "type": "string",
+          "description": "Key ID used to sign this manifest (for JWS header kid reference)"
+        },
+        "entity": {
+          "type": "string",
+          "description": "Signer entity identifier (publisher, CDN, enforcement service, etc.)"
+        }
+      },
+      "required": ["kid", "entity"],
+      "additionalProperties": false,
+      "description": "JWS signer identification"
+    },
+    "model": {
+      "$ref": "intents/common-defs.schema.json#/$defs/modelMetadata",
+      "description": "Processing model information for audit trails when content transformation was applied"
+    }
+  },
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "publisher_id",
+    "license_id",
+    "resource_url",
+    "payload_digest",
+    "preview",
+    "issued_at"
+  ],
+  "additionalProperties": false,
+  "examples": [
+    {
+      "schema_version": "1.0",
+      "manifest_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T3Z",
+      "publisher_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T1X",
+      "license_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T2Y",
+      "resource_url": "https://example.com/articles/ai-licensing-guide",
+      "resource_type": "article",
+      "payload_digest": "sha256:f933170deedab22606e857712501415cbedcef68143df05583c6e23b8c0dd7bb",
+      "preview": false,
+      "issued_at": "2025-10-14T12:00:00Z",
+      "expires_at": "2025-10-14T13:00:00Z",
+      "content_ttl_seconds": 3600,
+      "signer": {
+        "kid": "publisher-signing-key-001",
+        "entity": "example-publisher"
+      },
+      "model": {
+        "provider": "openai",
+        "id": "gpt-4",
+        "version": "gpt-4-0613",
+        "digest": "sha256:7ac5170dd6cc43d9c01a042f12b62598a301201cef596610a87c23474de63065"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "manifest_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T4A",
+      "publisher_id": "01HQ2Z3Y4K5M6N7P8Q9R0S1T1X",
+      "license_id": null,
+      "resource_url": "https://example.com/articles/ai-licensing-guide",
+      "resource_type": "article",
+      "payload_digest": "sha256:a829d77f5a875292d560ae3b176ddd8b428e7f546a880b3f7bf421ba6a475329",
+      "preview": true,
+      "issued_at": "2025-10-14T12:00:00Z",
+      "expires_at": "2025-10-14T12:05:00Z",
+      "content_ttl_seconds": 300,
+      "signer": {
+        "kid": "publisher-signing-key-001",
+        "entity": "example-publisher"
+      }
+    }
+  ]
+}

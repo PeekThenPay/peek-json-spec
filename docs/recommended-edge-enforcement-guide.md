@@ -58,8 +58,11 @@ License JWT   Classify       Validate       Process              Content + ID
 
 - **Professional Services**: Integrate Cloudflare Enterprise, DataDome, PerimeterX for bot
   classification
-- **Agent Detection**: Route identified AI agents to enforcer; humans to standard content delivery
+- **Agent Detection**: Route identified AI agents to enforcer; humans (and whitelisted search crawlers) to standard content delivery
 - **Traffic Shaping**: Apply peek.json policies only to detected automated traffic
+- **Non-Auto-Peek Publishers**: Even when `allow_auto_peek: false`, include
+  [bot guidance headers](headers-and-content-negotiation.md#bot-guidance-headers-for-non-auto-peek-publishers)
+  to encourage license acquisition
 
 ### 2. License & Budget Validation
 
@@ -79,6 +82,102 @@ const validation = {
 | ------------------ | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `trust`            | Direct content serving   | **Two scenarios**: (1) **AI Agent Processing** - agents receive raw content and run their own transformation pipelines, (2) **Publisher Flexibility** - publishers can license intents without implementing transformation services |
 | `tool_required`    | Route to tooling service | Publisher-controlled content transformation before delivery to AI agents                                                                                                                                                            |
+
+## Unlicensed Request Handling (NORMATIVE)
+
+Edge enforcers MUST handle unlicensed requests with the following logic:
+
+### HTTP 203 - Preview Response
+
+**When to return HTTP 203:**
+
+- Bot detected (not whitelisted) + No `X-PTP-Intent` header + license provided
+- Publisher allows preview content (peek enabled)
+
+**Requirements:**
+
+- Response MUST conform to `ptp-peek.schema.json`
+- MUST include `peekManifestUrl` for licensing discovery
+- MUST comply with [normative preview constraints](normative-intent-definitions.md#normative-preview-response-requirements)
+- SHOULD include bot guidance headers for licensing negotiation
+
+**Example:**
+
+```http
+HTTP/1.1 203 Non-Authoritative Information
+Content-Type: application/vnd.peek+json
+X-PTP-License-Endpoint: https://api.example.com/pricing?publisher_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1X
+X-PTP-License-Required: true
+X-PTP-Supported-Intents: read,summarize,embed
+
+{
+  "type": "peek",
+  "canonicalUrl": "https://example.com/article",
+  "title": "AI Content Licensing Guide",
+  "snippet": "This article explores new models for AI content licensing...",
+  "mediaType": "text/html",
+  "peekManifestUrl": "https://example.com/.well-known/peek.json"
+}
+```
+
+### HTTP 403 - Invalid License
+
+**When to return HTTP 403:**
+
+- Request includes `X-PTP-Intent` header and/or license token
+- Provided license is invalid, expired, or insufficient for requested intent
+
+**Requirements:**
+
+- SHOULD include bot guidance headers for re-licensing
+- If peek is enabled, SHOULD include preview content conforming to `ptp-peek.schema.json`
+- Error context SHOULD indicate license issue and re-licensing path
+
+**Example with preview (when peek enabled):**
+
+```http
+HTTP/1.1 403 Forbidden
+Content-Type: application/vnd.peek+json
+X-PTP-License-Endpoint: https://api.example.com/pricing?publisher_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1X
+X-PTP-License-Required: true
+X-PTP-Supported-Intents: read,summarize,embed
+
+{
+  "type": "peek",
+  "canonicalUrl": "https://example.com/article",
+  "title": "AI Content Licensing Guide",
+  "snippet": "This article explores new models for AI content licensing...",
+  "mediaType": "text/html",
+  "peekManifestUrl": "https://example.com/.well-known/peek.json",
+  "error": "invalid_license",
+  "message": "Provided intent 'read' not supported by current license"
+}
+```
+
+**Example without preview (when peek disabled):**
+
+```http
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+X-PTP-License-Endpoint: https://api.example.com/pricing?publisher_id=01HQ2Z3Y4K5M6N7P8Q9R0S1T1X
+X-PTP-License-Required: true
+X-PTP-Supported-Intents: read,summarize,embed
+
+{
+  "error": "insufficient_budget",
+  "message": "License budget available '$0.10' insufficient for intent 'read' estimated cost '$0.14'"
+}
+```
+
+**Supported Error Types:**
+
+- `invalid_license` - Intent not supported or usage not allowed by license
+  - Example: "Provided intent 'read' not supported by current license"
+  - Example: "Provided usage 'train' not allowed by current license"
+- `insufficient_budget` - License budget insufficient for requested operation
+  - Example: "License budget available '$0.10' insufficient for intent 'read' estimated cost '$0.14'"
+- `license_expired` - License has expired
+  - Example: "License expired at '2025-10-14T11:50:00-05:00'"
 
 ## Budget Management Implementation
 

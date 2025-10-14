@@ -36,6 +36,19 @@ export type UsageType =
   | 'audit'; // Compliance and provenance verification
 
 /**
+ * Content type classification for routing and categorization.
+ */
+export type ContentType =
+  | 'article'
+  | 'blog'
+  | 'doc'
+  | 'news'
+  | 'video'
+  | 'audio'
+  | 'dataset'
+  | 'other';
+
+/**
  * Model metadata for AI-generated content.
  */
 export interface ModelMetadata {

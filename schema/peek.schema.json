@@ -8,6 +8,33 @@
     "version": {
       "type": "string"
     },
+    "peek_policy": {
+      "type": "object",
+      "description": "Publisher guidance for preview behavior that agents may find useful.",
+      "properties": {
+        "max_peek_length": {
+          "type": "integer",
+          "default": 1000,
+          "description": "Recommended length limit for previews (≤1000 recommended)."
+        },
+        "peek_unit": {
+          "type": "string",
+          "enum": ["tokens", "chars"],
+          "description": "Unit for measuring preview size limits."
+        },
+        "peek_scope": {
+          "type": "string",
+          "enum": ["excerpt", "lead"],
+          "description": "Guidance on excerpt type (excerpt = representative sample, lead = opening content)."
+        },
+        "appeals_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Public appeals or allowlist request form URL."
+        }
+      },
+      "additionalProperties": false
+    },
     "meta": {
       "type": "object",
       "required": [

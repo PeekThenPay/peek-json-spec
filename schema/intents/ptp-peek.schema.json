@@ -5,13 +5,52 @@
   "type": "object",
   "description": "Minimal, discovery-only preview of a resource.",
   "properties": {
+    "type": {
+      "type": "string",
+      "const": "peek",
+      "description": "Identifies this response as preview content"
+    },
     "canonicalUrl": { "type": "string", "format": "uri" },
     "title": { "type": "string", "minLength": 1, "maxLength": 220 },
     "snippet": {
       "type": "string",
-      "description": "Ultra-short preview or summary (not full content).",
-      "minLength": 20,
+      "description": "Ultra-short preview, summary, or description. For text content: excerpt or summary. For images: alt text or AI description. For videos/audio: description or transcript preview. For documents: summary or metadata description.",
+      "minLength": 10,
       "maxLength": 500
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Media-specific metadata for non-text content types.",
+      "properties": {
+        "duration": {
+          "type": "number",
+          "description": "Duration in seconds for audio/video content."
+        },
+        "dimensions": {
+          "type": "object",
+          "properties": {
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 }
+          },
+          "required": ["width", "height"],
+          "description": "Pixel dimensions for image/video content."
+        },
+        "fileSize": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes."
+        },
+        "pageCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of pages for document content."
+        },
+        "author": {
+          "type": "string",
+          "description": "Author or creator metadata."
+        }
+      },
+      "additionalProperties": true
     },
     "language": {
       "type": "string",
@@ -36,8 +75,17 @@
       "items": { "type": "string", "minLength": 1 },
       "maxItems": 12
     },
-    "peekManifestUrl": { "type": "string", "format": "uri" }
+    "peekManifestUrl": { "type": "string", "format": "uri" },
+    "error": {
+      "type": "string",
+      "enum": ["invalid_license", "insufficient_budget", "license_expired"],
+      "description": "Error type when peek response is returned with HTTP 403 due to license issues."
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable error message providing details about license issues."
+    }
   },
-  "required": ["canonicalUrl", "title", "snippet", "peekManifestUrl", "mediaType"],
+  "required": ["type", "canonicalUrl", "title", "snippet", "peekManifestUrl", "mediaType"],
   "additionalProperties": false
 }
