@@ -1,4 +1,3 @@
-import { readFile } from 'fs/promises';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import type { PeekManifest } from '../types/peek-manifest.js';
@@ -62,25 +61,4 @@ export async function createPeekManifest(json: string): Promise<PeekManifest> {
   }
 
   return data as PeekManifest;
-}
-
-/**
- * Creates a PeekManifest from a file, validating it against the schema
- * @param filePath Path to the peek.json file
- * @returns A validated PeekManifest object
- * @throws {PeekValidationError} If the JSON is invalid or doesn't match the schema
- * @throws {Error} If the file cannot be read
- */
-export async function createPeekManifestFromFile(filePath: string): Promise<PeekManifest> {
-  try {
-    const content = await readFile(filePath, 'utf-8');
-    return await createPeekManifest(content);
-  } catch (err) {
-    if (err instanceof PeekValidationError) {
-      throw err;
-    }
-    throw new Error(
-      `Failed to read peek.json from ${filePath}: ${err instanceof Error ? err.message : String(err)}`
-    );
-  }
 }

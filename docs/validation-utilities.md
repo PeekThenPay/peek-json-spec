@@ -74,7 +74,6 @@ The package provides utilities for validating pricing schemes against `pricing.s
 ```typescript
 import {
   createPricingScheme,
-  createPricingSchemeFromFile,
   PricingValidationError,
 } from '@peekthenpay/peek-json-spec/pricing-schema-factory';
 
@@ -88,9 +87,11 @@ try {
   }
 }
 
-// Validate pricing from file
+// For file-based validation in Node.js environments:
+import { readFile } from 'fs/promises';
 try {
-  const pricingScheme = await createPricingSchemeFromFile('./pricing.json');
+  const fileContent = await readFile('./pricing.json', 'utf-8');
+  const pricingScheme = await createPricingScheme(fileContent);
 } catch (error) {
   console.error('File validation failed:', error.message);
 }
@@ -386,10 +387,11 @@ objects:
 
 - **`createPeekManifest(json: string): Promise<PeekManifest>`** - Creates a validated PeekManifest
   from a JSON string, throwing PeekValidationError if invalid
-- **`createPeekManifestFromFile(filePath: string): Promise<PeekManifest>`** - Loads and validates a
-  PeekManifest from a JSON file
 - **`PeekValidationError`** - Custom error class for validation failures with detailed error
   information
+
+> **Note**: File-based validation functions have been removed to ensure edge runtime compatibility.
+> In Node.js environments, use `fs.readFile()` to load file content and pass it to `createPeekManifest()`.
 
 ### Peek Schema Utilities (`src/utils/peek-schema.ts`)
 

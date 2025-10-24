@@ -1,4 +1,3 @@
-import { readFile } from 'fs/promises';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import type { PricingScheme } from '../types/pricing.js';
@@ -63,25 +62,4 @@ export async function createPricingScheme(json: string): Promise<PricingScheme> 
   }
 
   return data as PricingScheme;
-}
-
-/**
- * Creates a PricingScheme from a file, validating it against the schema
- * @param filePath Path to the pricing JSON file
- * @returns A validated PricingScheme object
- * @throws {PricingValidationError} If the JSON is invalid or doesn't match the schema
- * @throws {Error} If the file cannot be read
- */
-export async function createPricingSchemeFromFile(filePath: string): Promise<PricingScheme> {
-  try {
-    const content = await readFile(filePath, 'utf-8');
-    return await createPricingScheme(content);
-  } catch (err) {
-    if (err instanceof PricingValidationError) {
-      throw err;
-    }
-    throw new Error(
-      `Failed to read pricing JSON from ${filePath}: ${err instanceof Error ? err.message : String(err)}`
-    );
-  }
 }
