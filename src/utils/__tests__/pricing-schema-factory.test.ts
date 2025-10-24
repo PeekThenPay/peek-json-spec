@@ -6,11 +6,7 @@
  */
 
 import { describe, test, expect } from 'vitest';
-import {
-  createPricingScheme,
-  createPricingSchemeFromFile,
-  PricingValidationError,
-} from '../pricing-schema-factory.js';
+import { createPricingScheme, PricingValidationError } from '../pricing-schema-factory.js';
 
 describe('pricing-schema-factory.ts', () => {
   describe('Basic functionality', () => {
@@ -60,12 +56,6 @@ describe('pricing-schema-factory.ts', () => {
   });
 
   describe('Error handling', () => {
-    test('should handle file not found errors', async () => {
-      const nonExistentPath = '/path/that/does/not/exist.json';
-
-      await expect(createPricingSchemeFromFile(nonExistentPath)).rejects.toThrow();
-    });
-
     test('should provide validation error details', async () => {
       const invalidPricing = JSON.stringify({
         pricing_scheme_id: 123, // Should be string with specific pattern

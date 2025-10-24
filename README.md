@@ -20,8 +20,8 @@ for AI content access.
 
 AI access to web content has polarized into unsustainable models:
 
-1. **Unrestricted scraping** — disregards publisher rights and invites legal and ethical conflict.  
-2. **Restrictive walls and intermediaries** — from hard paywalls to centralized tollbooths, these block discovery, fragment ecosystems, and concentrate control.  
+1. **Unrestricted scraping** — disregards publisher rights and invites legal and ethical conflict.
+2. **Restrictive walls and intermediaries** — from hard paywalls to centralized tollbooths, these block discovery, fragment ecosystems, and concentrate control.
 
 Each side fails to provide a standardized, transparent, and enforceable path for responsible access.  
 Publishers need control without isolation; AI systems need access without overreach.
@@ -31,17 +31,20 @@ Publishers need control without isolation; AI systems need access without overre
 Peek-Then-Pay bridges this gap with **clear separation of responsibilities**:
 
 **Decentralized where it matters:**
+
 - Publishers advertise terms in standardized `peek.json` manifests
 - Publishers enforce policies at their own edge (CDN/Workers)
 - Publishers control content transformation and tooling
 
 **Centralized where it helps:**
+
 - Common licensing marketplace handles payments and accounts
 - Unified integration path for AI systems across publishers
 - Standardized intent-based pricing and contracts
 
-**Result:** 
+**Result:**
 AI agents can:
+
 1. **Preview content** to evaluate value
 2. **Choose specific usage types** (read, summarize, embed, etc.)
 3. **Access clean, context-aware data** — publishers provide accurate transforms that save cost and time
@@ -163,7 +166,7 @@ flowchart LR
 | [**Intent Definitions**](./docs/normative-intent-definitions.md)           | **Core specification defining standard AI interaction patterns** (read, summarize, embed, etc.), usage contexts, attribution requirements, and JWT security implementation. Required reading for all implementers. | **Normative** |
 | [**Manifest Fields**](./docs/peek-manifest-fields.md)                      | **Complete peek.json reference** with field definitions, validation rules, and schema compliance requirements. Essential for publishers setting up content licensing terms.                                        | **Normative** |
 | [**License API**](./docs/license-api.md)                                   | **Complete API specification** for license acquisition, validation, and usage reporting. Covers JWT workflows, bilateral reporting, and edge enforcement integration patterns.                                     | Informative   |
-| [**Bot Detection Guidance**](./docs/bot-detection-guidance.md)             | **Publisher guidance for AI agent detection and licensing discovery** with Schema.org structured data patterns, auto-peek vs. non-auto-peek publisher strategies, and machine-readable licensing metadata.        | Recommended   |
+| [**Bot Detection Guidance**](./docs/bot-detection-guidance.md)             | **Publisher guidance for AI agent detection and licensing discovery** with Schema.org structured data patterns, auto-peek vs. non-auto-peek publisher strategies, and machine-readable licensing metadata.         | Recommended   |
 | [**Edge Enforcement Guide**](./docs/recommended-edge-enforcement-guide.md) | **Implementation patterns and architecture** for publishers deploying edge enforcement via CDNs, Workers, and bot detection services.                                                                              | Recommended   |
 
 ## Benefits

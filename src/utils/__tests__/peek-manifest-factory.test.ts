@@ -10,11 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import {
-  createPeekManifest,
-  createPeekManifestFromFile,
-  PeekValidationError,
-} from '../peek-manifest-factory.js';
+import { createPeekManifest, PeekValidationError } from '../peek-manifest-factory.js';
 
 describe('peek-manifest-factory.ts', () => {
   describe('Basic functionality', () => {
@@ -64,9 +60,10 @@ describe('peek-manifest-factory.ts', () => {
   describe('Example validation', () => {
     it('should validate the examples/peek.json file', async () => {
       const examplePath = join(process.cwd(), 'examples', 'peek.json');
+      const content = await readFile(examplePath, 'utf-8');
 
       // This ensures our example is always valid
-      const result = await createPeekManifestFromFile(examplePath);
+      const result = await createPeekManifest(content);
 
       expect(result).toBeDefined();
       expect(result.version).toBeDefined();
@@ -276,10 +273,6 @@ describe('peek-manifest-factory.ts', () => {
   });
 
   describe('Error handling', () => {
-    it('should handle file not found errors', async () => {
-      await expect(createPeekManifestFromFile('/nonexistent/file.json')).rejects.toThrow();
-    });
-
     it('should provide validation error details', async () => {
       const invalidManifest = {
         version: 123, // Should be string
