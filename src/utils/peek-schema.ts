@@ -44,37 +44,35 @@ import type { SchemaObject } from 'ajv';
  * @see https://json-schema.org/draft/2020-12/schema
  */
 export type JSONSchema202012 = SchemaObject;
-import { BaseSchemaError, createSchemaLoader } from './schema-loader.js';
+import { peekSchema } from './static-schema-imports.js';
 
 /**
  * Custom error class for peek.json schema-related errors
  */
-export class SchemaError extends BaseSchemaError {
+export class SchemaError extends Error {
   constructor(
     message: string,
     public cause?: Error
   ) {
-    super(message, cause);
+    super(message);
     this.name = 'SchemaError';
+    if (cause) {
+      this.cause = cause;
+    }
   }
 }
 
-// Create schema loader using the shared utility
-const { loadSchema, loadSchemaSync } = createSchemaLoader({
-  schemaPath: '../../schema/peek.schema.json',
-  ErrorClass: SchemaError,
-  schemaDisplayName: 'peek.json schema',
-});
-
 /**
- * Loads the peek.json schema asynchronously with caching
+ * Loads the peek.json schema (now synchronous since schemas are statically imported)
  *
- * The schema is loaded lazily on first access and cached for subsequent calls.
- * This function loads the JSON Schema that defines the structure of peek.json
+ * This function returns the JSON Schema that defines the structure of peek.json
  * manifest files used by publishers to control AI access to their content.
  *
+ * Note: This function is now synchronous for edge compatibility, but maintains
+ * the async interface for backward compatibility.
+ *
  * @returns Promise resolving to the peek.json JSONSchema202012 object
- * @throws {SchemaError} if the schema file cannot be read, parsed, or is invalid
+ * @throws {SchemaError} if the schema cannot be accessed
  *
  * @example
  * ```typescript
@@ -93,30 +91,38 @@ const { loadSchema, loadSchemaSync } = createSchemaLoader({
  * ```
  */
 export async function getSchema(): Promise<JSONSchema202012> {
-  return loadSchema();
+  try {
+    return peekSchema as JSONSchema202012;
+  } catch (error) {
+    throw new SchemaError(
+      'Failed to load peek.json schema',
+      error instanceof Error ? error : new Error(String(error))
+    );
+  }
 }
 
 /**
- * Synchronous access to the cached peek.json schema
+ * Synchronous access to the peek.json schema
  *
- * Only use this function if you're certain the schema has been loaded previously
- * via getSchema(). This is useful in scenarios where you need synchronous access
- * and can guarantee the schema is already in memory.
+ * Since peek schema is statically imported, this is always available.
  *
- * @returns The cached peek.json JSONSchema202012 object
- * @throws {Error} if the schema hasn't been loaded yet
+ * @returns The peek.json JSONSchema202012 object
+ * @throws {SchemaError} if the schema cannot be accessed
  *
  * @example
  * ```typescript
- * // Load schema first
- * await getSchema();
- *
- * // Then access synchronously
  * const schema = getSchemaSync();
  * ```
  */
 export function getSchemaSync(): JSONSchema202012 {
-  return loadSchemaSync();
+  try {
+    return peekSchema as JSONSchema202012;
+  } catch (error) {
+    throw new SchemaError(
+      'Failed to access peek.json schema',
+      error instanceof Error ? error : new Error(String(error))
+    );
+  }
 }
 
 /**
