@@ -45,37 +45,35 @@ import type { SchemaObject } from 'ajv';
  * @see https://json-schema.org/draft/2020-12/schema
  */
 export type JSONSchema202012 = SchemaObject;
-import { BaseSchemaError, createSchemaLoader } from './schema-loader.js';
+import { pricingSchema } from './static-schema-imports.js';
 
 /**
  * Custom error class for pricing schema-related errors
  */
-export class PricingSchemaError extends BaseSchemaError {
+export class PricingSchemaError extends Error {
   constructor(
     message: string,
     public cause?: Error
   ) {
-    super(message, cause);
+    super(message);
     this.name = 'PricingSchemaError';
+    if (cause) {
+      this.cause = cause;
+    }
   }
 }
 
-// Create schema loader using the shared utility
-const { loadSchema, loadSchemaSync } = createSchemaLoader({
-  schemaPath: '../../schema/pricing.schema.json',
-  ErrorClass: PricingSchemaError,
-  schemaDisplayName: 'pricing schema',
-});
-
 /**
- * Loads the pricing schema asynchronously with caching
+ * Loads the pricing schema (now synchronous since schemas are statically imported)
  *
- * The schema is loaded lazily on first access and cached for subsequent calls.
- * This function loads the JSON Schema that defines the structure of pricing
+ * This function returns the JSON Schema that defines the structure of pricing
  * configuration files used in the PeekThenPay billing system.
  *
+ * Note: This function is now synchronous for edge compatibility, but maintains
+ * the async interface for backward compatibility.
+ *
  * @returns Promise resolving to the pricing JSONSchema202012 object
- * @throws {PricingSchemaError} if the schema file cannot be read, parsed, or is invalid
+ * @throws {PricingSchemaError} if the schema cannot be accessed
  *
  * @example
  * ```typescript
@@ -94,30 +92,38 @@ const { loadSchema, loadSchemaSync } = createSchemaLoader({
  * ```
  */
 export async function getPricingSchema(): Promise<JSONSchema202012> {
-  return loadSchema();
+  try {
+    return pricingSchema as JSONSchema202012;
+  } catch (error) {
+    throw new PricingSchemaError(
+      'Failed to load pricing schema',
+      error instanceof Error ? error : new Error(String(error))
+    );
+  }
 }
 
 /**
- * Synchronous access to the cached pricing schema
+ * Synchronous access to the pricing schema
  *
- * Only use this function if you're certain the schema has been loaded previously
- * via getPricingSchema(). This is useful for performance-critical code paths
- * where you can guarantee the schema is already in memory.
+ * Since pricing schema is statically imported, this function is always available.
  *
- * @returns The cached pricing JSONSchema202012 object
- * @throws {Error} if the schema hasn't been loaded yet
+ * @returns The pricing JSONSchema202012 object
+ * @throws {PricingSchemaError} if the schema cannot be accessed
  *
  * @example
  * ```typescript
- * // Load schema first
- * await getPricingSchema();
- *
- * // Then access synchronously in hot code paths
  * const schema = getPricingSchemaSync();
  * ```
  */
 export function getPricingSchemaSync(): JSONSchema202012 {
-  return loadSchemaSync();
+  try {
+    return pricingSchema as JSONSchema202012;
+  } catch (error) {
+    throw new PricingSchemaError(
+      'Failed to access pricing schema',
+      error instanceof Error ? error : new Error(String(error))
+    );
+  }
 }
 
 /**
