@@ -138,7 +138,7 @@ describe('license-utils', () => {
       );
     });
 
-    it('should throw error for empty intents', async () => {
+    it('should allow empty permissions array', async () => {
       const claims: LicensePayload = {
         iss: 'https://api.fetchright.ai',
         sub: 'operator:test',
@@ -148,14 +148,35 @@ describe('license-utils', () => {
         exp: Math.floor(Date.now() / 1000) + 3600,
         pricing_scheme_id: 'scheme-123',
         pricing_scheme_type: 'default',
-        permissions: [], // Empty array
+        permissions: [], // Empty array - should be allowed
+        budget_cents: 100,
+        metadata: {},
+        cnf: { jkt: 'test-thumbprint' },
+      };
+
+      const jwt = await createLicenseJwt({ publisherPrivateJwk, kid: 'test', claims });
+      expect(jwt).toBeDefined();
+      expect(typeof jwt).toBe('string');
+    });
+
+    it('should throw error for non-array permissions', async () => {
+      const claims: LicensePayload = {
+        iss: 'https://api.fetchright.ai',
+        sub: 'operator:test',
+        aud: 'publisher:test',
+        jti: ulid(),
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 3600,
+        pricing_scheme_id: 'scheme-123',
+        pricing_scheme_type: 'default',
+        permissions: 'not-an-array' as unknown as LicensePayload['permissions'], // Invalid type
         budget_cents: 100,
         metadata: {},
         cnf: { jkt: 'test-thumbprint' },
       };
 
       await expect(createLicenseJwt({ publisherPrivateJwk, kid: 'test', claims })).rejects.toThrow(
-        'claims.permissions must be a non-empty array'
+        'claims.permissions must be an array'
       );
     });
 

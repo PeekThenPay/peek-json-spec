@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://peekthenpay.org/schemas/ptp-summarize-1.0.json",
   "title": "Peek-Then-Pay Summarize Intent Response",
   "description": "Machine-usable semantic summary of a resource, derived from canonical content.",
   "type": "object",

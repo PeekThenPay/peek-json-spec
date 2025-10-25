@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://peekthenpay.org/schemas/ptp-qa-1.0.json",
   "title": "Peek-Then-Pay QA Intent Response",
   "description": "Structured question–answer pairs derived from a resource, with confidence and provenance.",
   "type": "object",

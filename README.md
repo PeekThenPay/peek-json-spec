@@ -159,12 +159,30 @@ flowchart LR
 - **Centralized Coordination**: Unified licensing and billing across all publishers
 - **Bilateral Reporting**: Both parties report usage for accuracy and dispute resolution
 
+## Edge Runtime Compatibility
+
+This package is **fully optimized for edge runtimes** including Cloudflare Workers, Vercel Edge Functions, and other V8-based environments:
+
+- ✅ **Pre-compiled Validators** - No runtime AJV dependency or schema compilation
+- ✅ **Zero Node.js APIs** - Pure JavaScript with Web Standard APIs only
+- ✅ **Minimal Bundle Size** - Tree-shakable imports and optimized for edge constraints
+- ✅ **Cold Start Optimized** - Instant validation with no initialization overhead
+
+```typescript
+// Edge-compatible validation example
+import ptpSummarizeValidator from '@peekthenpay/peek-json-spec/validators/ptp-summarize-validator.js';
+
+// Works instantly in any edge runtime
+const isValid = ptpSummarizeValidator(responseData);
+```
+
 ## Documentation
 
 | Document                                                                   | Purpose                                                                                                                                                                                                            | Status        |
 | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
 | [**Intent Definitions**](./docs/normative-intent-definitions.md)           | **Core specification defining standard AI interaction patterns** (read, summarize, embed, etc.), usage contexts, attribution requirements, and JWT security implementation. Required reading for all implementers. | **Normative** |
 | [**Manifest Fields**](./docs/peek-manifest-fields.md)                      | **Complete peek.json reference** with field definitions, validation rules, and schema compliance requirements. Essential for publishers setting up content licensing terms.                                        | **Normative** |
+| [**Validation Utilities**](./docs/validation-utilities.md)                 | **Technical reference for validation functions** including edge-compatible pre-compiled validators, factory functions, and schema validation patterns for all Peek-Then-Pay components.                            | **Reference** |
 | [**License API**](./docs/license-api.md)                                   | **Complete API specification** for license acquisition, validation, and usage reporting. Covers JWT workflows, bilateral reporting, and edge enforcement integration patterns.                                     | Informative   |
 | [**Bot Detection Guidance**](./docs/bot-detection-guidance.md)             | **Publisher guidance for AI agent detection and licensing discovery** with Schema.org structured data patterns, auto-peek vs. non-auto-peek publisher strategies, and machine-readable licensing metadata.         | Recommended   |
 | [**Edge Enforcement Guide**](./docs/recommended-edge-enforcement-guide.md) | **Implementation patterns and architecture** for publishers deploying edge enforcement via CDNs, Workers, and bot detection services.                                                                              | Recommended   |

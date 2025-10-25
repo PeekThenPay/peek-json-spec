@@ -1,8 +1,12 @@
-import Ajv2020 from 'ajv/dist/2020.js';
-import addFormats from 'ajv-formats';
 import type { PricingScheme } from '../types/pricing.js';
-import { getPricingSchema } from './pricing-schema.js';
-import type { ErrorObject, ValidateFunction } from 'ajv';
+import type { ErrorObject } from 'ajv';
+// Import pre-compiled validator with full format validation
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Pre-compiled validator without types
+import validatorFn from '../validators/pricing-validator.js';
+
+// Type assertion for pre-compiled validator
+const validator = validatorFn as ((data: unknown) => boolean) & { errors?: ErrorObject[] | null };
 
 /**
  * Error thrown when pricing JSON validation fails
@@ -17,28 +21,6 @@ export class PricingValidationError extends Error {
   }
 }
 
-let validateFn: ValidateFunction<PricingScheme> | undefined;
-
-/**
- * Creates a validator function for pricing JSON files if one doesn't exist
- */
-async function getValidator(): Promise<ValidateFunction<PricingScheme>> {
-  if (!validateFn) {
-    const ajv = new Ajv2020({
-      allErrors: true,
-      strict: false,
-      validateFormats: true,
-    });
-
-    // Add format validators
-    addFormats(ajv);
-
-    const schema = await getPricingSchema();
-    validateFn = ajv.compile(schema) as ValidateFunction<PricingScheme>;
-  }
-  return validateFn;
-}
-
 /**
  * Creates a PricingScheme from a JSON string, validating it against the schema
  * @param json The JSON string to parse and validate
@@ -46,7 +28,7 @@ async function getValidator(): Promise<ValidateFunction<PricingScheme>> {
  * @throws {PricingValidationError} If the JSON is invalid or doesn't match the schema
  * @throws {SyntaxError} If the JSON is malformed
  */
-export async function createPricingScheme(json: string): Promise<PricingScheme> {
+export function createPricingScheme(json: string): PricingScheme {
   let data: unknown;
   try {
     data = JSON.parse(json);
@@ -54,11 +36,10 @@ export async function createPricingScheme(json: string): Promise<PricingScheme> 
     throw new SyntaxError('Invalid JSON: ' + (err instanceof Error ? err.message : String(err)));
   }
 
-  const validate = await getValidator();
-  const valid = validate(data);
+  const isValid = validator(data);
 
-  if (!valid) {
-    throw new PricingValidationError('Invalid pricing JSON format', validate.errors || []);
+  if (!isValid) {
+    throw new PricingValidationError('Invalid pricing JSON format', validator.errors || []);
   }
 
   return data as PricingScheme;

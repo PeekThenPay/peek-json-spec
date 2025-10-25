@@ -39,19 +39,19 @@ describe('pricing-schema-factory.ts', () => {
       expect(result.cache_ttl_seconds).toBe(3600);
     });
 
-    test('should reject invalid JSON', async () => {
+    test('should reject invalid JSON', () => {
       const invalidJson = '{ invalid json }';
 
-      await expect(createPricingScheme(invalidJson)).rejects.toThrow(SyntaxError);
+      expect(() => createPricingScheme(invalidJson)).toThrow(SyntaxError);
     });
 
-    test('should reject pricing schemes missing required fields', async () => {
+    test('should reject pricing schemes missing required fields', () => {
       const incompletePricing = JSON.stringify({
         currency: 'USD',
         // Missing required fields: pricing_scheme_id, pricing_digest, publisher_id, cache_ttl_seconds, intents
       });
 
-      await expect(createPricingScheme(incompletePricing)).rejects.toThrow(PricingValidationError);
+      expect(() => createPricingScheme(incompletePricing)).toThrow(PricingValidationError);
     });
   });
 

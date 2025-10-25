@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.peekthenpay.com/forensic-manifest.schema.json",
   "title": "Peek-Then-Pay Forensic Manifest",
   "description": "Schema for the JWS payload structure carried in X-PTP-Delivery header for audit trails and compliance verification",
   "type": "object",
@@ -38,7 +37,7 @@
       "description": "Canonical resource URL being served (full URL with scheme)"
     },
     "resource_type": {
-      "$ref": "intents/common-defs.schema.json#/$defs/contentType"
+      "$ref": "common-defs.schema.json#/$defs/contentType"
     },
     "payload_digest": {
       "type": "string",
@@ -81,7 +80,7 @@
       "description": "JWS signer identification"
     },
     "model": {
-      "$ref": "intents/common-defs.schema.json#/$defs/modelMetadata",
+      "$ref": "common-defs.schema.json#/$defs/modelMetadata",
       "description": "Processing model information for audit trails when content transformation was applied"
     }
   },

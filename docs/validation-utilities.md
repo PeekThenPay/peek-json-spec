@@ -15,71 +15,89 @@ pnpm add @peekthenpay/peek-json-spec
 
 ## Intent Schema Validation
 
-### High-Performance Intent Validation
+### Edge-Compatible Pre-compiled Validators
 
-The package provides optimized utilities for validating AI response data against intent schemas:
+The package provides **pre-compiled validators** optimized for edge runtimes (Cloudflare Workers, Vercel Edge, etc.):
 
 ```typescript
-import {
-  loadIntentSchema,
-  validateIntentResponse,
-  createIntentValidator,
-} from '@peekthenpay/peek-json-spec/schema-loader';
+// Import pre-compiled validators directly (edge-compatible, no AJV runtime needed)
+import ptpSummarizeValidator from '@peekthenpay/peek-json-spec/validators/ptp-summarize-validator.js';
+import ptpAnalyzeValidator from '@peekthenpay/peek-json-spec/validators/ptp-analyze-validator.js';
+import ptpEmbedValidator from '@peekthenpay/peek-json-spec/validators/ptp-embed-validator.js';
 
-// High-level validation (recommended)
-const result = await validateIntentResponse('ptp-summarize', responseData);
-if (!result.valid) {
-  console.error('Validation failed:', result.errors);
-} else {
-  console.log('Valid response:', result.data);
-}
-
-// Create compiled validator for repeated use
-const validator = await createIntentValidator('ptp-analyze');
-const isValid = validator(responseData);
+// Validate intent responses (fast, synchronous)
+const isValid = ptpSummarizeValidator(responseData);
 if (!isValid) {
-  console.error('Validation errors:', validator.errors);
+  console.error('Validation errors:', ptpSummarizeValidator.errors);
+} else {
+  console.log('Valid summarize response');
 }
 
-// Load schema directly
-const schema = await loadIntentSchema('ptp-embed');
+// Validate analyze responses
+const isAnalyzeValid = ptpAnalyzeValidator(analyzeData);
+if (!isAnalyzeValid) {
+  console.error('Analyze validation failed:', ptpAnalyzeValidator.errors);
+}
 ```
 
-### Available Intent Types
+### Performance Benefits
 
-- `ptp-analyze` - Structured content analysis (sentiment, entities, topics)
-- `ptp-embed` - Vector embeddings with metadata
-- `ptp-peek` - Content previews and discovery
-- `ptp-qa` - Question-answer pairs with citations
-- `ptp-quote` - Verbatim content excerpts
-- `ptp-read` - Full content with normalization
-- `ptp-search` - Search results with ranking
-- `ptp-summarize` - Content summarization
-- `ptp-translate` - Language translation with alignment
-- `common-defs` - Shared type definitions
+- **🚀 Edge Runtime Compatible** - Works in Cloudflare Workers, Vercel Edge Functions
+- **⚡ Zero Cold Start** - No runtime schema compilation
+- **📦 Minimal Bundle Size** - No AJV dependency at runtime
+- **🔍 Full Format Validation** - URI, date-time, SHA256 patterns included
 
-### Performance Features
+### Available Pre-compiled Validators
 
-- **Lazy Loading**: Schemas loaded on-demand with memory caching
-- **Cross-Reference Resolution**: Automatic handling of schema dependencies
-- **Compiled Validators**: AJV 2020-12 with format validation
-- **Pipeline Optimized**: Minimal latency for request/response validation
+| Intent Type     | Validator Import             | Purpose                                                   |
+| --------------- | ---------------------------- | --------------------------------------------------------- |
+| `ptp-analyze`   | `ptp-analyze-validator.js`   | Structured content analysis (sentiment, entities, topics) |
+| `ptp-embed`     | `ptp-embed-validator.js`     | Vector embeddings with metadata                           |
+| `ptp-peek`      | `ptp-peek-validator.js`      | Content previews and discovery                            |
+| `ptp-qa`        | `ptp-qa-validator.js`        | Question-answer pairs with citations                      |
+| `ptp-quote`     | `ptp-quote-validator.js`     | Verbatim content excerpts                                 |
+| `ptp-read`      | `ptp-read-validator.js`      | Full content with normalization                           |
+| `ptp-search`    | `ptp-search-validator.js`    | Search results with ranking                               |
+| `ptp-summarize` | `ptp-summarize-validator.js` | Content summarization                                     |
+| `ptp-translate` | `ptp-translate-validator.js` | Language translation with alignment                       |
 
-## Pricing Schema Validation
+### Additional Core Validators
 
-### Validation Functions
+| Schema Type         | Validator Import                 | Purpose                       |
+| ------------------- | -------------------------------- | ----------------------------- |
+| `peek-manifest`     | `peek-validator.js`              | Peek.json manifest validation |
+| `pricing`           | `pricing-validator.js`           | Pricing scheme validation     |
+| `forensic-manifest` | `forensic-manifest-validator.js` | Audit trail validation        |
 
-The package provides utilities for validating pricing schemes against `pricing.schema.json`:
+## Manifest and Schema Validation
+
+### Factory Functions with Built-in Validation
+
+The package provides factory functions that parse and validate in one step:
 
 ```typescript
 import {
+  createPeekManifest,
+  PeekValidationError,
   createPricingScheme,
   PricingValidationError,
-} from '@peekthenpay/peek-json-spec/pricing-schema-factory';
+  validateForensicManifest,
+  ForensicManifestError,
+} from '@peekthenpay/peek-json-spec';
 
-// Validate pricing JSON string
+// Peek manifest validation
 try {
-  const pricingScheme = await createPricingScheme(jsonString);
+  const manifest = createPeekManifest(jsonString);
+  console.log('Valid peek manifest:', manifest);
+} catch (error) {
+  if (error instanceof PeekValidationError) {
+    console.error('Validation errors:', error.errors);
+  }
+}
+
+// Pricing scheme validation
+try {
+  const pricingScheme = createPricingScheme(jsonString);
   console.log('Valid pricing scheme:', pricingScheme);
 } catch (error) {
   if (error instanceof PricingValidationError) {
@@ -87,13 +105,35 @@ try {
   }
 }
 
-// For file-based validation in Node.js environments:
-import { readFile } from 'fs/promises';
+// Forensic manifest validation (for audit trails)
 try {
-  const fileContent = await readFile('./pricing.json', 'utf-8');
-  const pricingScheme = await createPricingScheme(fileContent);
+  validateForensicManifest(manifestData);
+  console.log('Valid forensic manifest');
 } catch (error) {
-  console.error('File validation failed:', error.message);
+  if (error instanceof ForensicManifestError) {
+    console.error('Validation failed:', error.message);
+  }
+}
+```
+
+### Direct Pre-compiled Validator Usage
+
+For maximum performance and edge compatibility, use validators directly:
+
+```typescript
+// Import specific validators
+import peekValidator from '@peekthenpay/peek-json-spec/validators/peek-validator.js';
+import pricingValidator from '@peekthenpay/peek-json-spec/validators/pricing-validator.js';
+
+// Validate directly
+const isPeekValid = peekValidator(peekData);
+if (!isPeekValid) {
+  console.error('Peek validation errors:', peekValidator.errors);
+}
+
+const isPricingValid = pricingValidator(pricingData);
+if (!isPricingValid) {
+  console.error('Pricing validation errors:', pricingValidator.errors);
 }
 ```
 

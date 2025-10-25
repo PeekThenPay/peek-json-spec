@@ -41,17 +41,17 @@ describe('peek-manifest-factory.ts', () => {
       expect(result.meta.site_name).toBe('Test Site');
     });
 
-    it('should reject invalid JSON', async () => {
-      await expect(createPeekManifest('{ invalid json')).rejects.toThrow(SyntaxError);
+    it('should reject invalid JSON', () => {
+      expect(() => createPeekManifest('{ invalid json')).toThrow(SyntaxError);
     });
 
-    it('should reject manifests missing required fields', async () => {
+    it('should reject manifests missing required fields', () => {
       const invalidManifest = {
         version: '1.0.0',
         // Missing required fields
       };
 
-      await expect(createPeekManifest(JSON.stringify(invalidManifest))).rejects.toThrow(
+      expect(() => createPeekManifest(JSON.stringify(invalidManifest))).toThrow(
         PeekValidationError
       );
     });
