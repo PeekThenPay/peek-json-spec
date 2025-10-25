@@ -31,8 +31,9 @@ export async function createLicenseJwt(opts: CreateLicenseOptions): Promise<stri
     throw new Error('claims.cnf.jkt (operator JWK thumbprint) is required.');
   }
   if (!claims.jti) throw new Error('claims.jti is required.');
-  if (!Array.isArray(claims.permissions) || claims.permissions.length === 0) {
-    throw new Error('claims.permissions must be a non-empty array.');
+  // Allow empty permissions array - license request can indicate intended permissions but it's not required
+  if (!Array.isArray(claims.permissions)) {
+    throw new Error('claims.permissions must be an array.');
   }
   if (typeof claims.budget_cents !== 'number' || claims.budget_cents <= 0) {
     throw new Error('claims.budget_cents must be a positive number.');
@@ -43,7 +44,7 @@ export async function createLicenseJwt(opts: CreateLicenseOptions): Promise<stri
   const notBefore = typeof claims.nbf === 'number' ? claims.nbf : now;
 
   return await new SignJWT({ ...claims })
-    .setProtectedHeader({ alg: 'ES256', kid })
+    .setProtectedHeader({ alg: 'ES256', typ: 'JWT', kid })
     .setIssuer(claims.iss)
     .setIssuedAt(now)
     .setNotBefore(notBefore - 30) // small skew tolerance
@@ -241,8 +242,7 @@ function assertLicenseClaims(p: JWTPayload): asserts p is LicensePayload {
   if (typeof o.exp !== 'number') throw new Error('License missing exp.');
   if (!o.cnf || typeof (o.cnf as Record<string, unknown>)?.jkt !== 'string')
     throw new Error('License missing cnf.jkt.');
-  if (!Array.isArray(o.permissions) || o.permissions.length === 0)
-    throw new Error('License missing permissions.');
+  if (!Array.isArray(o.permissions)) throw new Error('License missing permissions array.');
   if (typeof o.budget_cents !== 'number' || o.budget_cents <= 0)
     throw new Error('License budget invalid.');
 }

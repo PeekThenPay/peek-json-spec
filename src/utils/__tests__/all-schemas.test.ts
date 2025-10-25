@@ -159,10 +159,10 @@ describe('Comprehensive Schema Validation', () => {
               errorMessage.includes('missing schema')
             ) {
               console.warn(`Cross-reference resolution issue in ${schemaName}:`, errorMessage);
-              // Validate basic structure instead
+              // Validate basic structure instead (intent schemas no longer have $id)
               expect(schema).toMatchObject({
                 $schema: 'https://json-schema.org/draft/2020-12/schema',
-                $id: expect.stringContaining('peekthenpay.org/schemas/'),
+                title: expect.any(String),
               });
             } else {
               console.error(`Schema ${schemaName} compilation failed:`, error);

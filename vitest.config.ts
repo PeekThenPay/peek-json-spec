@@ -10,6 +10,7 @@ export default defineConfig({
       exclude: [
         'src/types/**',
         'src/index.ts',
+        'src/validators/**', // Exclude pre-compiled validators from coverage
         'scripts/**',
         'node_modules/**',
         'dist/**',

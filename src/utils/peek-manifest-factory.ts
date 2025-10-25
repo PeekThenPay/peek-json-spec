@@ -1,8 +1,12 @@
-import Ajv2020 from 'ajv/dist/2020.js';
-import addFormats from 'ajv-formats';
 import type { PeekManifest } from '../types/peek-manifest.js';
-import { getSchema } from './peek-schema.js';
-import type { ErrorObject, ValidateFunction } from 'ajv';
+import type { ErrorObject } from 'ajv';
+// Import pre-compiled validator with full format validation
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Pre-compiled validator without types
+import validatorFn from '../validators/peek-validator.js';
+
+// Type assertion for pre-compiled validator
+const validator = validatorFn as ((data: unknown) => boolean) & { errors?: ErrorObject[] | null };
 
 /**
  * Error thrown when peek.json validation fails
@@ -17,27 +21,6 @@ export class PeekValidationError extends Error {
   }
 }
 
-let validateFn: ValidateFunction<PeekManifest> | undefined;
-
-/**
- * Creates a validator function for peek.json files if one doesn't exist
- */
-async function getValidator(): Promise<ValidateFunction<PeekManifest>> {
-  if (!validateFn) {
-    const ajv = new Ajv2020({
-      validateFormats: true,
-      allErrors: true,
-      coerceTypes: false,
-      useDefaults: true,
-    });
-    addFormats(ajv, { mode: 'full' });
-
-    const schema = await getSchema();
-    validateFn = ajv.compile(schema) as ValidateFunction<PeekManifest>;
-  }
-  return validateFn;
-}
-
 /**
  * Creates a PeekManifest from a JSON string, validating it against the schema
  * @param json The JSON string to parse and validate
@@ -45,7 +28,7 @@ async function getValidator(): Promise<ValidateFunction<PeekManifest>> {
  * @throws {PeekValidationError} If the JSON is invalid or doesn't match the schema
  * @throws {SyntaxError} If the JSON is malformed
  */
-export async function createPeekManifest(json: string): Promise<PeekManifest> {
+export function createPeekManifest(json: string): PeekManifest {
   let data: unknown;
   try {
     data = JSON.parse(json);
@@ -53,11 +36,10 @@ export async function createPeekManifest(json: string): Promise<PeekManifest> {
     throw new SyntaxError('Invalid JSON: ' + (err instanceof Error ? err.message : String(err)));
   }
 
-  const validate = await getValidator();
-  const valid = validate(data);
+  const isValid = validator(data);
 
-  if (!valid) {
-    throw new PeekValidationError('Invalid peek.json format', validate.errors || []);
+  if (!isValid) {
+    throw new PeekValidationError('Invalid peek.json format', validator.errors || []);
   }
 
   return data as PeekManifest;

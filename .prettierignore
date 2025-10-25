@@ -1,2 +1,5 @@
 # Ignore Markdown files with Mermaid diagrams to prevent formatting issues
 packages/spec/docs/license-api.md
+
+# Ignore generated validators (minified code from AJV standalone)
+src/validators/

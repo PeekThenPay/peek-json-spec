@@ -21,10 +21,10 @@ describe('forensic-manifest-factory.ts', () => {
     preview: false,
     content_ttl_seconds: 3600,
     model: {
-      id: 'gpt-4',
+      id: 'llm:gpt-4@20240101',
       provider: 'openai',
       name: 'gpt-4',
-      version: '2024-01-01',
+      version: '20240101',
       digest: 'sha256:7ac5170dd6cc43d9c01a042f12b62598a301201cef596610a87c23474de63065',
     },
   };
@@ -198,23 +198,25 @@ describe('forensic-manifest-factory.ts', () => {
     });
 
     it('should throw for invalid publisher_id', () => {
-      const manifest = createForensicManifest({
-        ...validParams,
+      // Create an invalid manifest directly without using createForensicManifest
+      const invalidManifest = {
+        ...createForensicManifest(validParams),
         publisher_id: 'invalid-id',
-      });
+      };
 
-      expect(() => validateForensicManifest(manifest)).toThrow(ForensicManifestError);
-      expect(() => validateForensicManifest(manifest)).toThrow('Invalid publisher_id format');
+      expect(() => validateForensicManifest(invalidManifest)).toThrow(ForensicManifestError);
+      expect(() => validateForensicManifest(invalidManifest)).toThrow('must match pattern');
     });
 
     it('should throw for invalid license_id', () => {
-      const manifest = createForensicManifest({
-        ...validParams,
+      // Create an invalid manifest directly without using createForensicManifest
+      const invalidManifest = {
+        ...createForensicManifest(validParams),
         license_id: 'invalid-license',
-      });
+      };
 
-      expect(() => validateForensicManifest(manifest)).toThrow(ForensicManifestError);
-      expect(() => validateForensicManifest(manifest)).toThrow('Invalid license_id format');
+      expect(() => validateForensicManifest(invalidManifest)).toThrow(ForensicManifestError);
+      expect(() => validateForensicManifest(invalidManifest)).toThrow('must match pattern');
     });
 
     it('should accept null license_id', () => {
@@ -227,49 +229,55 @@ describe('forensic-manifest-factory.ts', () => {
     });
 
     it('should throw for invalid payload_digest', () => {
-      const manifest = createForensicManifest({
-        ...validParams,
+      // Create an invalid manifest directly without using createForensicManifest
+      const invalidManifest = {
+        ...createForensicManifest(validParams),
         payload_digest: 'invalid-digest',
-      });
+      };
 
-      expect(() => validateForensicManifest(manifest)).toThrow(ForensicManifestError);
-      expect(() => validateForensicManifest(manifest)).toThrow('Invalid payload_digest format');
+      expect(() => validateForensicManifest(invalidManifest)).toThrow(ForensicManifestError);
+      expect(() => validateForensicManifest(invalidManifest)).toThrow('must match pattern');
     });
 
-    it('should throw for invalid resource_url URL', () => {
-      const manifest = createForensicManifest({
-        ...validParams,
+    it('should throw for invalid resource_url', () => {
+      // Create an invalid manifest directly without using createForensicManifest
+      const invalidManifest = {
+        ...createForensicManifest(validParams),
         resource_url: 'not-a-url',
-      });
+      };
 
-      expect(() => validateForensicManifest(manifest)).toThrow(ForensicManifestError);
-      expect(() => validateForensicManifest(manifest)).toThrow('Invalid resource_url URL');
+      expect(() => validateForensicManifest(invalidManifest)).toThrow(ForensicManifestError);
+      expect(() => validateForensicManifest(invalidManifest)).toThrow('must match format "uri"');
     });
 
     it('should throw for invalid issued_at date', () => {
-      const manifest = createForensicManifest({
-        ...validParams,
+      // Create an invalid manifest directly without using createForensicManifest
+      const invalidManifest = {
+        ...createForensicManifest(validParams),
         issued_at: 'not-a-date',
-      });
+      };
 
-      expect(() => validateForensicManifest(manifest)).toThrow(ForensicManifestError);
-      expect(() => validateForensicManifest(manifest)).toThrow('Invalid issued_at date');
+      expect(() => validateForensicManifest(invalidManifest)).toThrow(ForensicManifestError);
+      expect(() => validateForensicManifest(invalidManifest)).toThrow(
+        'must match format "date-time"'
+      );
     });
 
     it('should throw for invalid model digest', () => {
-      const manifest = createForensicManifest({
-        ...validParams,
+      // Create an invalid manifest directly without using createForensicManifest
+      const invalidManifest = {
+        ...createForensicManifest(validParams),
         model: {
-          id: 'gpt-4',
+          id: 'llm:gpt-4@20240101',
           provider: 'openai',
           name: 'gpt-4',
-          version: '2024-01-01',
+          version: '20240101',
           digest: 'invalid-digest',
         },
-      });
+      };
 
-      expect(() => validateForensicManifest(manifest)).toThrow(ForensicManifestError);
-      expect(() => validateForensicManifest(manifest)).toThrow('Invalid model digest format');
+      expect(() => validateForensicManifest(invalidManifest)).toThrow(ForensicManifestError);
+      expect(() => validateForensicManifest(invalidManifest)).toThrow('must match pattern');
     });
   });
 });

@@ -1,7 +1,7 @@
 {
   "name": "@peekthenpay/peek-json-spec",
   "packageManager": "pnpm@8.9.0",
-  "version": "0.5.1",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PeekThenPay/peek-json-spec.git"
@@ -35,15 +35,21 @@
       "types": "./dist/pricing-schema.d.ts",
       "import": "./dist/pricing-schema.js",
       "default": "./dist/pricing-schema.js"
+    },
+    "./validators/*": {
+      "import": "./src/validators/*.js",
+      "default": "./src/validators/*.js"
     }
   },
   "files": [
     "dist",
     "schema",
+    "src/validators",
     "README.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "node scripts/generate-validators-with-formats.js && tsc",
+    "generate-validators": "node scripts/generate-validators-with-formats.js",
     "clean": "rm -rf dist",
     "demo": "pnpm run build && node scripts/demo-license-utils.mjs",
     "test": "vitest run",

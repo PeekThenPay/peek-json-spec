@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://peekthenpay.org/schemas/ptp-embed-1.0.json",
   "title": "Peek-Then-Pay Embed Intent Response",
   "description": "Numeric vector representations (embeddings) for a resource or its regions, with provenance and token accounting.",
   "type": "object",

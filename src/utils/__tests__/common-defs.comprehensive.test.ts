@@ -232,7 +232,7 @@ describe('Common Definitions Schema Comprehensive Validation', () => {
       expect(validator({ model: modelData })).toBe(true);
     });
 
-    it('should reject invalid model ID format', () => {
+    it('should reject invalid model digest format', () => {
       const validator = ajv.compile({
         type: 'object',
         properties: {
@@ -242,11 +242,11 @@ describe('Common Definitions Schema Comprehensive Validation', () => {
       });
 
       const invalidModel = {
-        id: 'invalid-format', // Missing type:name@version format
+        id: 'any-valid-string', // ID is now just a string, no pattern required
         provider: 'openai',
         name: 'gpt-4',
         version: 'v1',
-        digest: 'sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+        digest: 'invalid-digest-format', // This should still be validated
       };
 
       const isValid = validator({ model: invalidModel });

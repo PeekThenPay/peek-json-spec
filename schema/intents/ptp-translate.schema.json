@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://peekthenpay.org/schemas/ptp-translate-1.0.json",
   "title": "Peek-Then-Pay Translate Intent Response",
   "description": "Target-language rendering of a textual resource or selection, with provenance and optional alignments.",
   "type": "object",

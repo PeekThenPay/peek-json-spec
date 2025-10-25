@@ -46,7 +46,7 @@ describe('Schema Loader Integration Tests', () => {
 
       expect(schema).toBeDefined();
       expect(schema.$schema).toBe('https://json-schema.org/draft/2020-12/schema');
-      expect(schema.$id).toContain('common-defs-1.0.json');
+      expect(schema.$id).toContain('common-defs.schema.json');
     });
   });
 

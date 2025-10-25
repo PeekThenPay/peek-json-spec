@@ -5,9 +5,31 @@
  * signed and included in the X-PTP-Delivery header for audit trails and compliance.
  */
 
-import { ulid, isValid as isValidULID } from 'ulid';
-import { ForensicManifest, FORENSIC_MANIFEST_CONSTANTS } from '../types/forensic-manifest.js';
-import { ModelMetadata, ContentType } from '../types/common.js';
+import { ulid } from 'ulid';
+import type { ForensicManifest } from '../types/forensic-manifest.js';
+import { FORENSIC_MANIFEST_CONSTANTS } from '../types/forensic-manifest.js';
+import type { ModelMetadata, ContentType } from '../types/common.js';
+import type { ErrorObject } from 'ajv';
+// Import pre-compiled validator with full format validation
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Pre-compiled validator without types
+import validatorFn from '../validators/forensic-manifest-validator.js';
+
+// Type assertion for pre-compiled validator
+const validator = validatorFn as ((data: unknown) => boolean) & { errors?: ErrorObject[] | null };
+
+/**
+ * Error thrown when forensic manifest validation fails
+ */
+export class ForensicManifestValidationError extends Error {
+  constructor(
+    message: string,
+    public errors?: ErrorObject<string, Record<string, string | number | boolean | null>, unknown>[]
+  ) {
+    super(message);
+    this.name = 'ForensicManifestValidationError';
+  }
+}
 
 /**
  * Parameters for creating a forensic manifest
@@ -135,6 +157,9 @@ export function createForensicManifest(params: CreateForensicManifestParams): Fo
     manifest.model = params.model;
   }
 
+  // Validate the manifest using the validation function
+  validateForensicManifest(manifest);
+
   return manifest;
 }
 
@@ -179,27 +204,7 @@ export function isValidPayloadDigest(digest: string): boolean {
 }
 
 /**
- * Validates that a string is a valid HTTP/HTTPS URL
- */
-function isValidUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Validates that a string is a valid ISO 8601 date-time
- */
-function isValidISODate(dateString: string): boolean {
-  const timestamp = Date.parse(dateString);
-  return !isNaN(timestamp);
-}
-
-/**
- * Error thrown when forensic manifest validation fails
+ * Error thrown when forensic manifest validation fails (legacy - kept for compatibility)
  */
 export class ForensicManifestError extends Error {
   constructor(
@@ -212,30 +217,12 @@ export class ForensicManifestError extends Error {
 }
 
 /**
- * Validates a forensic manifest object
+ * Validates a forensic manifest object using the pre-compiled validator
  */
 export function validateForensicManifest(manifest: ForensicManifest): void {
-  if (!isValidULID(manifest.publisher_id)) {
-    throw new ForensicManifestError(`Invalid publisher_id format: ${manifest.publisher_id}`);
-  }
-
-  if (manifest.license_id !== null && !isValidULID(manifest.license_id)) {
-    throw new ForensicManifestError(`Invalid license_id format: ${manifest.license_id}`);
-  }
-
-  if (!isValidPayloadDigest(manifest.payload_digest)) {
-    throw new ForensicManifestError(`Invalid payload_digest format: ${manifest.payload_digest}`);
-  }
-
-  if (!isValidUrl(manifest.resource_url)) {
-    throw new ForensicManifestError(`Invalid resource_url URL: ${manifest.resource_url}`);
-  }
-
-  if (!isValidISODate(manifest.issued_at)) {
-    throw new ForensicManifestError(`Invalid issued_at date: ${manifest.issued_at}`);
-  }
-
-  if (manifest.model && !isValidPayloadDigest(manifest.model.digest)) {
-    throw new ForensicManifestError(`Invalid model digest format: ${manifest.model.digest}`);
+  const valid = validator(manifest);
+  if (!valid && validator.errors) {
+    const errorMessage = validator.errors.map((e: ErrorObject) => e.message).join(', ');
+    throw new ForensicManifestError(`Forensic manifest validation failed: ${errorMessage}`);
   }
 }

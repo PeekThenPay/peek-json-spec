@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://peekthenpay.org/schemas/ptp-analyze-1.0.json",
   "title": "Peek-Then-Pay Analyze Intent Response",
   "description": "Structured annotations (topics, entities, sentiment, etc.) for a resource or selection.",
   "type": "object",

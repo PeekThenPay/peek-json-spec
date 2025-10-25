@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://peekthenpay.org/schemas/common-defs-1.0.json",
+  "$id": "common-defs.schema.json",
   "title": "Peek-Then-Pay Common Schema Definitions",
   "description": "Reusable schema definitions for Peek-Then-Pay intent responses.",
   "$defs": {
@@ -37,8 +37,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^[a-z0-9_-]+:[a-z0-9._-]+@[a-z0-9]+$",
-          "description": "Model identifier in format: type:name@version"
+          "description": "Model identifier"
         },
         "provider": {
           "type": "string",
@@ -46,12 +45,10 @@
         },
         "name": {
           "type": "string",
-          "pattern": "^[a-z0-9._-]+$",
           "description": "Model name"
         },
         "version": {
           "type": "string",
-          "pattern": "^[a-z0-9]+$",
           "description": "Model version"
         },
         "digest": {
