@@ -51,8 +51,48 @@ function generateValidator(schemaPath, outputPath, referencePaths = []) {
     // Generate standalone code
     const moduleCode = standalone(ajv, validate);
 
+    // Convert CommonJS to ESM format
+    let esmCode = moduleCode
+      .replace(/^"use strict";/, '') // Remove strict mode
+      .replace(/module\.exports = ([^;]+);module\.exports\.default = \1;/, 'export default $1;'); // Convert exports
+
+    // Collect all ajv-formats imports needed
+    const formatImports = new Set();
+
+    // Find all format requirements
+    const formatMatches = [
+      ...esmCode.matchAll(
+        /const \w+ = require\("ajv-formats\/dist\/formats"\)\.fullFormats\.(\w+);/g
+      ),
+      ...esmCode.matchAll(
+        /const \w+ = require\("ajv-formats\/dist\/formats"\)\.fullFormats\["([^"]+)"\];/g
+      ),
+    ];
+
+    // Replace individual requires with const declarations
+    esmCode = esmCode.replace(
+      /const (\w+) = require\("ajv-formats\/dist\/formats"\)\.fullFormats\.(\w+);/g,
+      (match, varName, formatName) => {
+        formatImports.add(formatName);
+        return `const ${varName} = fullFormats.${formatName};`;
+      }
+    );
+
+    esmCode = esmCode.replace(
+      /const (\w+) = require\("ajv-formats\/dist\/formats"\)\.fullFormats\["([^"]+)"\];/g,
+      (match, varName, formatName) => {
+        formatImports.add(formatName);
+        return `const ${varName} = fullFormats["${formatName}"];`;
+      }
+    );
+
+    // Add single import at the top if any formats were used
+    if (formatImports.size > 0) {
+      esmCode = 'import { fullFormats } from "ajv-formats/dist/formats";\n' + esmCode;
+    }
+
     // Write to file
-    writeFileSync(outputPath, moduleCode);
+    writeFileSync(outputPath, esmCode);
 
     console.log(`✅ Generated ${outputPath}`);
     return true;
