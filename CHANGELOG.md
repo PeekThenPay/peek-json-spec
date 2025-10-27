@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2] - 2025-10-27
+
+### 🐛 Fixed
+
+- **ESM Import Extension**: Added `.js` extension to ajv-formats import for proper ESM compliance
+  - Fixed import from `"ajv-formats/dist/formats"` to `"ajv-formats/dist/formats.js"`
+  - Resolves "Cannot find module" error in Node.js ESM strict mode
+  - All 12 pre-compiled validators now use correct ESM import syntax
+- Enhanced validator generator script for proper ESM import paths
+
+### ✅ Verified
+
+- All 193 tests passing with corrected import paths
+- ESM module resolution working in Node.js environments
+- Edge runtime compatibility maintained
+
 ## [1.0.1] - 2025-10-25
 
 ### 🐛 Fixed

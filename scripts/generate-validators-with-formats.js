@@ -88,7 +88,7 @@ function generateValidator(schemaPath, outputPath, referencePaths = []) {
 
     // Add single import at the top if any formats were used
     if (formatImports.size > 0) {
-      esmCode = 'import { fullFormats } from "ajv-formats/dist/formats";\n' + esmCode;
+      esmCode = 'import { fullFormats } from "ajv-formats/dist/formats.js";\n' + esmCode;
     }
 
     // Write to file
