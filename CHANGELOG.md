@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.3] - 2025-10-27
+
+### 🐛 Fixed
+
+- **JSON Import Attributes**: Added `with { type: "json" }` to all JSON schema imports for strict ESM compliance
+  - Updated all 13 schema imports in `static-schema-imports.ts` with proper import attributes
+  - Fixed "Module needs an import attribute of type: json" error in strict ESM environments
+  - Updated TypeScript config module target from "ES2022" to "ESNext" to support import attributes
+- **ESM Standards Compliance**: Full adherence to ESM specification requirements
+
+### 🔧 Changed
+
+- Updated `tsconfig.json` module setting to "ESNext" for import attributes support
+- Enhanced JSON schema imports with proper type declarations
+
+### ✅ Verified
+
+- All 193 tests passing with import attributes
+- JSON schema loading working correctly in strict ESM mode
+- Edge runtime compatibility confirmed
+
 ## [1.0.2] - 2025-10-27
 
 ### 🐛 Fixed
