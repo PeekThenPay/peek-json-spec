@@ -3,7 +3,12 @@
 **Open standard bridging the AI-publisher divide — beyond scraping vs. paywalls to collaborative
 value creation**
 
-[![npm version](https://badge.fury.io/js/%40peekthenpay%2Fpeek-json-spec.svg)](https://www.npmjs.com/package/@peekthenpay/peek-json-spec)
+[![npm version](https://badge.fury.io/js/@peekthenpay/peek-json-spec.svg)](https://www.npmjs.com/package/@peekthenpay/peek-json-spec)
+[![License: CC0 1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](https://creativecommons.org/publicdomain/zero/1.0/)
+
+This project is dedicated to the public domain under the CC0 1.0 Universal license.  
+See [LICENSE](LICENSE) for details.
+
 
 ## Overview
 
@@ -238,7 +243,3 @@ This is an open standard developed collaboratively:
 - 📋 [Propose specification changes](https://github.com/PeekThenPay/peek-json-spec/issues)
 - 🛠️ [Build reference implementations](https://github.com/PeekThenPay/peek-json-spec/pulls)
 - 📖 [Improve documentation](https://github.com/PeekThenPay/peek-json-spec/tree/main/docs)
-
-## License
-
-MIT - See [LICENSE](LICENSE) for details.
