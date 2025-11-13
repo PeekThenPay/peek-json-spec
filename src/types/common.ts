@@ -20,6 +20,7 @@ export type IntentType =
   | 'summarize' // Abstractive/compressive summary (short, medium, long)
   | 'quote' // Verbatim snippets (≤300 chars) with attribution
   | 'embed' // Numeric vectors (768-3072 dimensions per chunk)
+  | 'chunk' // Small, relevance-ranked spans from a single resource with offsets
   | 'qa' // Structured Q&A pairs derived from source
   | 'translate' // Parallel corpora (source + translated text)
   | 'analyze'; // JSON structured annotations (sentiment, entities, etc.)

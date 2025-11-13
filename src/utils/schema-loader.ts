@@ -83,6 +83,7 @@ interface SchemaLoaderConfig<TError extends BaseSchemaError> {
 export type IntentSchemaType =
   | 'common-defs'
   | 'ptp-analyze'
+  | 'ptp-chunk'
   | 'ptp-embed'
   | 'ptp-peek'
   | 'ptp-qa'

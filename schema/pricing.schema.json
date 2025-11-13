@@ -33,7 +33,7 @@
       "type": "object",
       "description": "Map of intent name to intent pricing details",
       "patternProperties": {
-        "^(peek|read|summarize|quote|embed|qa|translate|analyze)$": {
+        "^(peek|read|summarize|quote|embed|chunk|qa|translate|analyze)$": {
           "$ref": "#/$defs/IntentPricing"
         }
       },
@@ -68,7 +68,17 @@
       "properties": {
         "intent": {
           "type": "string",
-          "enum": ["peek", "read", "summarize", "quote", "embed", "qa", "translate", "analyze"],
+          "enum": [
+            "peek",
+            "read",
+            "summarize",
+            "quote",
+            "embed",
+            "chunk",
+            "qa",
+            "translate",
+            "analyze"
+          ],
           "description": "Name of the intent"
         },
         "pricing_mode": {

@@ -24,6 +24,7 @@ export { default as forensicManifestSchema } from '../../schema/forensic-manifes
 // Intent schemas
 export { default as commonDefsSchema } from '../../schema/intents/common-defs.schema.json' with { type: 'json' };
 export { default as ptpAnalyzeSchema } from '../../schema/intents/ptp-analyze.schema.json' with { type: 'json' };
+export { default as ptpChunkSchema } from '../../schema/intents/ptp-chunk.schema.json' with { type: 'json' };
 export { default as ptpEmbedSchema } from '../../schema/intents/ptp-embed.schema.json' with { type: 'json' };
 export { default as ptpPeekSchema } from '../../schema/intents/ptp-peek.schema.json' with { type: 'json' };
 export { default as ptpQaSchema } from '../../schema/intents/ptp-qa.schema.json' with { type: 'json' };
