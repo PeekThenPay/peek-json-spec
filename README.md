@@ -9,8 +9,6 @@ value creation**
 This project is dedicated to the public domain under the CC0 1.0 Universal license.  
 See [LICENSE](LICENSE) for details.
 
-
-
 ## Overview
 
 **The AI ecosystem is at a crossroads.**  

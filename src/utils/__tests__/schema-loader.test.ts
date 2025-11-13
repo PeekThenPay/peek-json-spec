@@ -188,6 +188,7 @@ describe('Schema Loader Integration Tests', () => {
 
       const intentTypes = [
         'ptp-analyze',
+        'ptp-chunk',
         'ptp-embed',
         'ptp-peek',
         'ptp-qa',

@@ -122,6 +122,7 @@ for (const config of mainSchemas) {
 // Generate intent schema validators (with common-defs references)
 const intentSchemas = [
   'ptp-analyze',
+  'ptp-chunk',
   'ptp-embed',
   'ptp-peek',
   'ptp-qa',

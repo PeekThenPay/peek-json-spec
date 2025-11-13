@@ -7,6 +7,8 @@ with content within the Peek-Then-Pay ecosystem. These definitions establish cle
 persistence rights, and pricing signals for different use cases, creating a common vocabulary
 between publishers and AI operators.
 
+These intents describe what type of transformation or access an AI system is requesting, not the underlying licensing relationship. Pricing determines which intents are permitted under licensing terms; intents define the action being performed.
+
 By standardizing intent categories, we enable:
 
 - **Clear Communication**: Publishers can express precise terms for different types of access
@@ -24,6 +26,8 @@ and "OPTIONAL" in this document are to be interpreted as described in
 [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.html).
 
 ### Normative vs. Informative Content
+
+If an implementation claims conformance with this specification, it MUST implement all NORMATIVE requirements in this document.
 
 | Content Type    | RFC 2119 Keywords                          | Compliance                       | Section Marking    |
 | --------------- | ------------------------------------------ | -------------------------------- | ------------------ |
@@ -60,7 +64,17 @@ their own normative requirements.
 | **embed**     | Numeric vectors per chunk (e.g., 768–1536–3072 dims)                         | durable_within_scope (redistribution restricted) | per_1000_tokens (industry norm)  | Bill on tokens_in; track bytes_out separately.                       |
 | **translate** | Parallel text (source → target)                                              | derived_ttl (durable if licensed)                | per_1000_tokens (med→high)       | Style/brand rules may apply; attribution when public.                |
 | **analyze**   | Structured annotations (sentiment, entities, topics, readability, PII, etc.) | derived_ttl                                      | per_request (bundle)             | Include spans + confidence; can combine multiple analyses.           |
+| **chunk**     | Small, relevance-ranked spans from a single resource with offsets            | derived_ttl (short-lived, non-reconstructive)    | per_request (or per_1000_tokens) | RAG grounding, semantic evidence retrieval, citation-first reasoning |
 | **qa**        | Retrieval-augmented answers to supplied questions (with citations)           | transient                                        | per_1000_tokens (input + output) | qa ≠ search; it synthesizes language. Auto-QA is optional extension. |
+
+**search** identifies which resources are relevant across a corpus. **chunk** identifies which parts of a specific resource are relevant. **qa** optionally synthesizes answers, but **chunk** is the foundational evidence retrieval primitive.
+
+Persistence categories:
+
+- transient — may not be stored beyond immediate use
+- session — cached within a single interaction
+- derived_ttl — derived content allowed for temporary storage
+- durable_within_scope — can be stored long-term within the licensing scope
 
 ## NORMATIVE: Preview (Peek) Response Requirements
 
@@ -83,6 +97,8 @@ constraints to ensure transparency and prevent abuse:
 - **Character limits**: MUST NOT exceed equivalent limits when `preview_unit == "chars"`
 - **Preview identification**: Response body MUST include `"type": "peek"` field to identify content
   as preview
+
+  These bounds prevent preview responses from being used to reconstruct substantial parts of the source content.
 
 ### Required HTTP Headers
 
@@ -207,14 +223,25 @@ Clients should make HTTP requests to this endpoint with search parameters.
 
 ### Request Parameters
 
-| param       | header               | type    | required | value                                                                           |
-| ----------- | -------------------- | ------- | -------- | ------------------------------------------------------------------------------- |
-| q           | X-PTP-Query          | string  | true     | User/agent query (natural language or keyword).                                 |
-| mode        | X-PTP-Mode           | string  | false    | Retrieval strategy: "keyword", "vector", "hybrid". (Default="hybrid")           |
-| top_k       | X-PTP-Top-K          | number  | false    | Number of results to return (1–100). (Default=10)                               |
-| snippet_len | X-PTP-Snippet-Length | number  | false    | Target snippet length for each hit (50–400). (Default=160)                      |
-| highlight   | X-PTP-Highlight      | boolean | false    | Include highlighted query matches. (Default=true)                               |
-| time_range  | X-PTP-Time-Range     | string  | false    | Filter by publication/update window (ISO 8601 interval, e.g., "2024-01-01/.."). |
+| param              | header                | type    | required | value                                                                           |
+| ------------------ | --------------------- | ------- | -------- | ------------------------------------------------------------------------------- |
+| q                  | X-PTP-Query           | string  | false    | User/agent query (natural language or keyword)                                  |
+| embedding          | X-PTP-Embedding       | array   | false    | Client-provided embedding vector (requires embedding_model_id)                  |
+| embedding_model_id | X-PTP-Embedding-Model | string  | false    | Model identifier for provided embedding (required if embedding present)         |
+| mode               | X-PTP-Mode            | string  | true     | Retrieval strategy: "keyword", "vector", "hybrid"                               |
+| top_k              | X-PTP-Top-K           | number  | false    | Number of results to return (1–100). (Default=10)                               |
+| snippet_len        | X-PTP-Snippet-Length  | number  | false    | Target snippet length for each hit (50–400). (Default=160)                      |
+| highlight          | X-PTP-Highlight       | boolean | false    | Include highlighted query matches. (Default=true)                               |
+| time_range         | X-PTP-Time-Range      | string  | false    | Filter by publication/update window (ISO 8601 interval, e.g., "2024-01-01/.."). |
+
+**Request Field Requirements:**
+
+- A request MAY omit `q` and `embedding` if `mode="keyword"` (uses default corpus ranking)
+- A request MUST provide `embedding` if `mode="vector"`
+- A request SHOULD provide both `q` and `embedding` if `mode="hybrid"`
+- If `embedding` is provided, `embedding_model_id` is REQUIRED
+- The server MUST validate `embedding_model_id` against supported models declared in the PricingScheme
+- If the embedding model is not supported, the server MUST either reject with HTTP 422 `UNSUPPORTED_EMBEDDING_MODEL` or fall back to keyword mode if allowed
 
 **Note:** Unlike content transformation intents, search does NOT use the `ptp_intent` parameter
 since it's called via a dedicated endpoint.
@@ -728,6 +755,8 @@ chunks/regions) for similarity search, clustering, reranking, or downstream RAG 
 (text) or summarize (derived text), embed delivers machine vectors with strict modality + provenance
 and clear retention rights.
 
+Embeddings MUST NOT be used to reconstruct original text through inversion or generative approximation techniques.
+
 **Normative Definition** The embed intent SHALL return one or more numeric vector representations
 derived from the canonical content of a resource or from specified subsections thereof. Each vector
 MUST correspond deterministically to a defined input text span, region, or media object and SHALL be
@@ -1006,6 +1035,8 @@ persisted (per license) and MUST NOT include reconstructive amounts of source te
 spans necessary for localization. For non-text resources, analyze SHALL operate only on an available
 text layer (e.g., transcript, OCR). Unsupported media MUST return 406 with an explanatory code.
 
+Returned spans MUST be minimal and MUST NOT exceed reconstructive limits.
+
 **Schema**: [`ptp-analyze.schema.json`](../schema/intents/ptp-analyze.schema.json)
 
 **Request Parameters:**
@@ -1233,6 +1264,249 @@ qa responses are transformative and MAY be retained under the license terms.
 
 ---
 
+### chunk (Chunk Retrieval)
+
+**What Chunk Retrieval is For** The chunk intent returns small, relevance-ranked spans of text extracted from a single resource. It is the foundational mechanism for evidence-first AI — providing precise, verifiable excerpts without synthesis or interpretation.
+
+Chunk retrieval is the primary mechanism for evidence-first AI. **search** tells the model where to look; **chunk** tells it what matters inside the resource. It is lower-level and less interpretive than **qa**.
+
+**Normative Definition** The chunk intent SHALL operate ONLY over a single `canonicalUrl` and MUST NOT synthesize new answers or generate paraphrased content. It MUST return spans of text with start/end offsets, and MUST include ranking information (rank, score, scoringId) for each span.
+
+The response MUST include optional short quotes (bounded length, typically ≤300 chars) and MUST protect against reconstructing full documents following the same anti-reconstruction rules as peek and quote intents. The server MAY use keyword, vector, or hybrid ranking internally but MUST report which ranking mode was used via the `mode` field.
+
+Each chunk MUST include:
+
+- **rank**: Integer position in relevance order (1-indexed)
+- **score**: Numeric relevance score
+- **span**: Object with `start`, `end`, and `unit` (char or token) identifying the location in the source document
+- **quote** (optional): Short verbatim excerpt (≤300 chars) from the span
+- **section** (optional): Section heading or structural context if available
+
+The response MUST include the `query` if provided by the client, and MUST report the retrieval `mode` used (keyword, vector, or hybrid). Chunks MUST NOT exceed maximum size limits that would enable document reconstruction, and the server SHALL enforce the same safety constraints as quote intent.
+
+**Schema**: [`ptp-chunk.schema.json`](../schema/intents/ptp-chunk.schema.json)
+
+**Request Parameters:**
+
+| param              | header                 | type    | required | value                                                                   |
+| ------------------ | ---------------------- | ------- | -------- | ----------------------------------------------------------------------- |
+| ptp_intent         | X-PTP-Intent           | string  | true     | "chunk"                                                                 |
+| q                  | X-PTP-Query            | string  | false    | Natural language query for semantic or hybrid retrieval                 |
+| embedding          | X-PTP-Embedding        | array   | false    | Client-provided embedding vector (requires embedding_model_id)          |
+| embedding_model_id | X-PTP-Embedding-Model  | string  | false    | Model identifier for provided embedding (required if embedding present) |
+| mode               | X-PTP-Mode             | string  | true     | Retrieval strategy: "keyword", "vector", or "hybrid"                    |
+| top_k              | X-PTP-Top-K            | number  | false    | Number of chunks to return (1–20). Default=5                            |
+| max_chunk_length   | X-PTP-Max-Chunk-Length | number  | false    | Maximum length per chunk in tokens. Default=300                         |
+| include_quotes     | X-PTP-Include-Quotes   | boolean | false    | Whether to include short verbatim quotes. Default=true                  |
+| include_sections   | X-PTP-Include-Sections | boolean | false    | Whether to include section metadata. Default=false                      |
+
+**Request Field Requirements:**
+
+- A request MAY omit `embedding` if `mode="keyword"`
+- A request MUST provide `embedding` if `mode="vector"`
+- A request SHOULD provide both `q` and `embedding` if `mode="hybrid"`
+- If `embedding` is provided, `embedding_model_id` is REQUIRED
+- The server MUST validate `embedding_model_id` against supported models declared in the PricingScheme
+- If the embedding model is not supported, the server MUST either:
+  - Reject the request with HTTP 422 and error code `UNSUPPORTED_EMBEDDING_MODEL`, or
+  - Fall back to keyword-only mode if the publisher's PricingScheme indicates fallback is allowed
+
+**Response Example:**
+
+```json
+{
+  "canonicalUrl": "https://example.com/articles/renewable-energy-guide",
+  "language": "en",
+  "contentType": "article",
+  "mediaType": "text/html",
+  "query": "how solar panels convert sunlight to electricity",
+  "mode": "hybrid",
+  "scoringId": "bm25_e5_hybrid_v2",
+  "chunks": [
+    {
+      "rank": 1,
+      "score": 0.94,
+      "span": {
+        "start": 1245,
+        "end": 1456,
+        "unit": "char"
+      },
+      "quote": "Photovoltaic cells capture photons from sunlight and convert them into electrical energy through the photovoltaic effect. When sunlight strikes the cell, electrons are knocked loose from atoms in the semiconductor material.",
+      "section": "How Solar Panels Work"
+    },
+    {
+      "rank": 2,
+      "score": 0.87,
+      "span": {
+        "start": 2103,
+        "end": 2289,
+        "unit": "char"
+      },
+      "quote": "The direct current (DC) generated by solar panels must be converted to alternating current (AC) by an inverter before it can be used in homes and businesses.",
+      "section": "Power Conversion and Grid Integration"
+    },
+    {
+      "rank": 3,
+      "score": 0.81,
+      "span": {
+        "start": 3456,
+        "end": 3598,
+        "unit": "char"
+      },
+      "quote": "Modern solar panels typically achieve 15-22% efficiency in converting sunlight to electricity, with premium panels reaching up to 24%.",
+      "section": "Efficiency and Performance"
+    }
+  ],
+  "provenance": {
+    "contentHash": "sha256:abc123def456789012345678901234567890123456789012345678901234567890",
+    "generatedAt": "2024-01-15T10:30:45Z"
+  },
+  "length": {
+    "inputTokens": 1547,
+    "outputTokens": 142,
+    "totalTokens": 1689,
+    "truncated": false
+  }
+}
+```
+
+**Usage Context Semantics for Chunk:**
+
+Chunk retrieval returns factual evidence only. Any synthesis (answers, paraphrases) occurs on the client side and MUST be accounted for under the usage context attached to the license.
+
+- **immediate** — chunks may be used transiently for a single response
+- **session** — MAY cache chunks for the duration of a conversation/session
+- **index** — MAY store derived metadata (vector index entries, relevance signals) but NOT the text itself
+- **train / distill** — MUST require explicit training rights; chunk intent by itself does not grant training usage
+
+**Embedding Model Compatibility (Normative):**
+
+When a client provides an embedding vector in a chunk request:
+
+1. The request MUST include `embedding_model_id`
+2. The publisher MUST compare `embedding_model_id` against supported models declared in the active PricingScheme
+3. If no supported embedding model matches, the server MUST either:
+   - Reject with HTTP 422 `UNSUPPORTED_EMBEDDING_MODEL`, or
+   - Fall back to keyword mode if allowed by PricingScheme
+4. **Cross-model comparison is invalid**: Embeddings MUST ONLY be compared against embeddings produced by the SAME embedding model family and version
+
+---
+
+## NORMATIVE: Embedding Model Compatibility and PricingScheme Requirements
+
+**This section contains normative requirements for embedding model compatibility validation and publisher-client alignment.**
+
+### Embedding Model Compatibility Rules
+
+When a client provides an embedding vector in a **search**, **chunk**, or **qa** request, the following normative requirements apply:
+
+1. **Model ID Required**: The request MUST include an `embedding_model_id` field identifying the embedding model used to generate the vector
+2. **Publisher Validation**: The publisher MUST compare `embedding_model_id` against the embedding models it supports, as declared in the active PricingScheme
+3. **Rejection or Fallback**: If no supported embedding model matches, the server MUST either:
+   - Reject the request with HTTP 422 status and error code `UNSUPPORTED_EMBEDDING_MODEL`, or
+   - Fall back to keyword-only mode if the publisher's PricingScheme explicitly indicates fallback is allowed
+4. **Same-Model Comparison Only**: Embeddings MUST ONLY be compared against embeddings produced by the SAME embedding model family and version. Cross-model or cross-version vector comparison is invalid and SHALL NOT be performed
+
+### PricingScheme Embedding Model Declarations
+
+Publishers declare which embedding models they support via the PricingScheme schema. Clients MUST align with these declarations when providing embeddings.
+
+#### Single Embedding Model Support
+
+If the PricingScheme includes an `embed` intent with model metadata:
+
+```json
+{
+  "intents": {
+    "embed": {
+      "intent": "embed",
+      "pricing_mode": "per_1000_tokens",
+      "usage": { ... },
+      "enforcement_method": "trust",
+      "model": {
+        "id": "embedding:text-embedding-3-small@20241001",
+        "provider": "openai",
+        "name": "text-embedding-3-small",
+        "version": "20241001",
+        "digest": "sha256:abc123..."
+      }
+    }
+  }
+}
+```
+
+Then `intents.embed.model` identifies the embedding model used internally by the publisher when the client does NOT provide an embedding. Client-provided embeddings MUST match this `model.id` unless the publisher also declares `embedding_models` (see below).
+
+#### Multiple Embedding Model Support
+
+Publishers MAY declare support for multiple embedding models via an optional top-level `embedding_models` property in the PricingScheme:
+
+```json
+{
+  "pricing_scheme_id": "01HZXXX...",
+  "publisher_id": "01HYYY...",
+  "currency": "USD",
+  "cache_ttl_seconds": 3600,
+  "intents": { ... },
+  "embedding_models": {
+    "models": [
+      {
+        "id": "embedding:text-embedding-3-small@20241001",
+        "provider": "openai",
+        "name": "text-embedding-3-small",
+        "version": "20241001",
+        "digest": "sha256:abc123..."
+      },
+      {
+        "id": "embedding:text-embedding-3-large@20241001",
+        "provider": "openai",
+        "name": "text-embedding-3-large",
+        "version": "20241001",
+        "digest": "sha256:def456..."
+      },
+      {
+        "id": "embedding:bge-large-en-v1.5@20240315",
+        "provider": "baai",
+        "name": "bge-large-en-v1.5",
+        "version": "20240315",
+        "digest": "sha256:789ghi..."
+      }
+    ]
+  }
+}
+```
+
+**Resolution Rules:**
+
+- If `embedding_models` exists → client-provided embeddings MUST match one of the models in `embedding_models.models[]`
+- If `embedding_models` does NOT exist → client-provided embeddings MUST match `intents.embed.model.id`
+- If neither exists → the publisher does not support client-provided embeddings and MUST reject requests containing `embedding` field with error code `CLIENT_EMBEDDINGS_NOT_SUPPORTED`
+
+### Request Validation Requirements
+
+For any request containing an `embedding` field (search, chunk, or qa):
+
+1. **Required Fields**:
+   - MUST include `embedding_model_id`
+   - MUST include `mode` field indicating retrieval strategy
+2. **Mode Constraints**:
+   - `mode="keyword"`: MAY omit `embedding`
+   - `mode="vector"`: MUST provide `embedding`
+   - `mode="hybrid"`: SHOULD provide both `query` and `embedding`
+3. **Compatibility Check**: Server MUST validate `embedding_model_id` against declared supported models
+4. **Error Handling**: Server MUST return structured error with appropriate error code if validation fails
+
+### Error Codes
+
+| Error Code                        | HTTP Status | Description                                                              |
+| --------------------------------- | ----------- | ------------------------------------------------------------------------ |
+| `UNSUPPORTED_EMBEDDING_MODEL`     | 422         | The provided embedding_model_id is not supported by this publisher       |
+| `CLIENT_EMBEDDINGS_NOT_SUPPORTED` | 422         | Publisher does not accept client-provided embeddings                     |
+| `EMBEDDING_MODEL_ID_REQUIRED`     | 400         | Request includes embedding but missing required embedding_model_id field |
+| `EMBEDDING_REQUIRED_FOR_MODE`     | 400         | Request mode="vector" requires embedding field                           |
+
+---
+
 ## NORMATIVE: Implementation and Enforcement
 
 **This section contains normative requirements for license enforcement and JWT security
@@ -1375,3 +1649,15 @@ acquisition:
 By establishing this common vocabulary, normative intent definitions create the foundation for a
 sustainable AI ecosystem where content creators maintain control while AI systems gain efficient,
 compliant access to the data they need.
+
+### Evidence-First AI: Search, Chunk, and QA Integration
+
+Chunk retrieval is the lowest-level semantic evidence mechanism. **search** finds URLs; **chunk** finds spans within a URL; **qa** optionally synthesizes answers from these spans. When embeddings are provided by the client, they MUST correspond to a publisher-supported embedding model as declared in the active PricingScheme. Otherwise, the request MUST be rejected or downgraded to keyword mode.
+
+This three-tier architecture enables evidence-first AI workflows:
+
+1. **Discovery** (`search`): Identify relevant resources across a corpus using keyword, vector, or hybrid search
+2. **Evidence Retrieval** (`chunk`): Extract precise, verifiable spans from identified resources with relevance ranking
+3. **Synthesis** (`qa`, optional): Generate answers from extracted evidence with explicit citations
+
+The embedding model compatibility requirements ensure that vector-based retrieval maintains semantic consistency. Cross-model comparison is explicitly prohibited because embeddings from different models occupy incompatible vector spaces. Publishers declare their supported embedding models via the PricingScheme, and clients MUST align their embedding generation with these declarations to ensure valid similarity comparisons.

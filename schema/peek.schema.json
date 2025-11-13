@@ -122,6 +122,7 @@
               "summarize",
               "quote",
               "embed",
+              "chunk",
               "rag_ingest",
               "train",
               "qa",

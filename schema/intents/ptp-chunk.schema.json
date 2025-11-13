@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Peek-Then-Pay Chunk Retrieval Response",
+  "description": "Small, relevance-ranked spans extracted from a single resource with offsets and optional quotes for RAG grounding and evidence retrieval.",
+  "type": "object",
+  "properties": {
+    "canonicalUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "The canonical URL of the single resource being chunked"
+    },
+    "language": {
+      "type": "string",
+      "description": "BCP-47 language code of the source content"
+    },
+    "contentType": {
+      "$ref": "common-defs.schema.json#/$defs/contentType"
+    },
+    "mediaType": {
+      "$ref": "common-defs.schema.json#/$defs/mediaType"
+    },
+    "query": {
+      "type": "string",
+      "description": "Natural language query provided by the client (if any)"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["keyword", "vector", "hybrid"],
+      "description": "Retrieval mode used for ranking: keyword, vector (embedding-based), or hybrid"
+    },
+    "scoringId": {
+      "type": "string",
+      "description": "Identifier for the scoring/ranking algorithm used (e.g., 'bm25_e5_hybrid_v2')"
+    },
+    "chunks": {
+      "type": "array",
+      "description": "Ranked array of text chunks/spans extracted from the resource",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-indexed position in relevance ranking"
+          },
+          "score": {
+            "type": "number",
+            "description": "Relevance score (higher = more relevant)"
+          },
+          "span": {
+            "type": "object",
+            "description": "Location of this chunk within the source document",
+            "properties": {
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Starting position in the source document"
+              },
+              "end": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Ending position in the source document"
+              },
+              "unit": {
+                "type": "string",
+                "enum": ["char", "token"],
+                "default": "char",
+                "description": "Unit of measurement for start/end positions"
+              }
+            },
+            "required": ["start", "end"]
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "Optional short verbatim excerpt from the span (bounded to prevent reconstruction)"
+          },
+          "section": {
+            "type": "string",
+            "description": "Optional section heading or structural context"
+          }
+        },
+        "required": ["rank", "score", "span"],
+        "additionalProperties": false
+      }
+    },
+    "provenance": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseProvenance" },
+        {
+          "required": ["generatedAt"]
+        }
+      ]
+    },
+    "length": {
+      "allOf": [
+        { "$ref": "common-defs.schema.json#/$defs/baseLength" },
+        {
+          "required": ["inputTokens"]
+        }
+      ]
+    }
+  },
+  "required": [
+    "canonicalUrl",
+    "language",
+    "contentType",
+    "mediaType",
+    "mode",
+    "scoringId",
+    "chunks",
+    "provenance",
+    "length"
+  ],
+  "additionalProperties": false
+}
