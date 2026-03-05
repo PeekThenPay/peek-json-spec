@@ -242,3 +242,6 @@ This is an open standard developed collaboratively:
 - 📋 [Propose specification changes](https://github.com/PeekThenPay/peek-json-spec/issues)
 - 🛠️ [Build reference implementations](https://github.com/PeekThenPay/peek-json-spec/pulls)
 - 📖 [Improve documentation](https://github.com/PeekThenPay/peek-json-spec/tree/main/docs)
+
+## NOTICE:
+Certain mechanisms described in this specification may be subject to patent applications by the authors.
