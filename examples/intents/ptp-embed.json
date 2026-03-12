@@ -1,4 +1,5 @@
 {
+  "intent": "embed",
   "canonicalUrl": "https://example.com/docs/api-guide",
   "language": "en",
   "contentType": "doc",

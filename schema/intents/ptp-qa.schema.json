@@ -4,6 +4,11 @@
   "description": "Structured question–answer pairs derived from a resource, with confidence and provenance.",
   "type": "object",
   "properties": {
+    "intent": {
+      "type": "string",
+      "const": "qa",
+      "description": "Intent type identifier"
+    },
     "canonicalUrl": { "type": "string", "format": "uri" },
     "language": { "type": "string", "description": "BCP-47 language of the source" },
     "contentType": { "$ref": "common-defs.schema.json#/$defs/contentType" },
@@ -66,6 +71,6 @@
       ]
     }
   },
-  "required": ["canonicalUrl", "language", "model", "qa_pairs", "provenance", "length"],
+  "required": ["intent", "canonicalUrl", "language", "model", "qa_pairs", "provenance", "length"],
   "additionalProperties": false
 }

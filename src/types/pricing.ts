@@ -23,6 +23,18 @@ export interface RagIngestConfiguration {
 }
 
 /**
+ * QA configuration and pricing for a publisher.
+ */
+export interface QaConfiguration {
+  /** QA endpoint URL for this publisher */
+  endpoint_url: string;
+  /** Pricing model: per_request or per_1000_tokens (input + output) */
+  pricing_mode: 'per_request' | 'per_1000_tokens';
+  /** Base price in cents according to pricing_mode */
+  price_cents: number;
+}
+
+/**
  * Represents a pricing scheme for a publisher.
  */
 export interface PricingScheme {
@@ -42,6 +54,8 @@ export interface PricingScheme {
   search?: SearchConfiguration;
   /** RAG ingest endpoint configuration and pricing */
   rag_ingest?: RagIngestConfiguration;
+  /** QA endpoint configuration and pricing */
+  qa?: QaConfiguration;
   /** Quotas for rate limiting and per-request limits */
   quotas?: PricingQuotas;
 }

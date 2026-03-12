@@ -4,6 +4,11 @@
   "description": "Numeric vector representations (embeddings) for a resource or its regions, with provenance and token accounting.",
   "type": "object",
   "properties": {
+    "intent": {
+      "type": "string",
+      "const": "embed",
+      "description": "Intent type identifier"
+    },
     "canonicalUrl": { "type": "string", "format": "uri" },
     "language": {
       "type": "string",
@@ -125,6 +130,7 @@
   },
 
   "required": [
+    "intent",
     "canonicalUrl",
     "language",
     "contentType",

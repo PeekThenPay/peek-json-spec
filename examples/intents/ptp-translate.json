@@ -1,4 +1,5 @@
 {
+  "intent": "translate",
   "canonicalUrl": "https://example.com/blog/ia-artificielle",
   "contentType": "blog",
   "mediaType": "text/html",

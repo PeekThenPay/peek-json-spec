@@ -4,6 +4,11 @@
   "description": "One or more verbatim snippets with precise spans and citation.",
   "type": "object",
   "properties": {
+    "intent": {
+      "type": "string",
+      "const": "quote",
+      "description": "Intent type identifier"
+    },
     "canonicalUrl": { "type": "string", "format": "uri" },
     "language": { "type": "string", "description": "IETF BCP-47 of the source" },
     "contentType": { "$ref": "common-defs.schema.json#/$defs/contentType" },
@@ -81,6 +86,14 @@
       "additionalProperties": false
     }
   },
-  "required": ["canonicalUrl", "language", "contentType", "mediaType", "quotes", "provenance"],
+  "required": [
+    "intent",
+    "canonicalUrl",
+    "language",
+    "contentType",
+    "mediaType",
+    "quotes",
+    "provenance"
+  ],
   "additionalProperties": false
 }

@@ -64,6 +64,10 @@
       "type": "object",
       "description": "Core provenance fields for content integrity, generation tracking, and attribution.",
       "properties": {
+        "requestId": {
+          "type": "string",
+          "description": "Unique identifier for this request/response."
+        },
         "contentHash": {
           "type": "string",
           "description": "Stable hash of source content (e.g., sha256:...)."
@@ -112,8 +116,7 @@
           "maximum": 1,
           "description": "Confidence score for generated or processed content."
         }
-      },
-      "required": ["contentHash"]
+      }
     },
     "baseNormalization": {
       "type": "object",
@@ -156,6 +159,72 @@
           "default": "none",
           "description": "Reason for truncation if applicable."
         }
+      },
+      "additionalProperties": false
+    },
+    "articleMetadata": {
+      "type": "object",
+      "description": "Article metadata extracted from structured data (JSON-LD, microdata).",
+      "properties": {
+        "headline": { "type": "string" },
+        "author": {
+          "description": "Author(s).",
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": { "name": { "type": "string" } },
+                "required": ["name"]
+              }
+            }
+          ]
+        },
+        "datePublished": { "type": "string" },
+        "dateModified": { "type": "string" },
+        "publisher": {
+          "type": "object",
+          "properties": { "name": { "type": "string" } },
+          "required": ["name"]
+        },
+        "keywords": {
+          "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+        },
+        "wordCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "productMetadata": {
+      "type": "object",
+      "description": "Product metadata extracted from structured data (JSON-LD, microdata).",
+      "properties": {
+        "sku": { "type": "string" },
+        "name": { "type": "string" },
+        "brand": { "type": "string" },
+        "category": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "price": { "type": "number" },
+        "salePrice": { "type": "number" },
+        "currency": { "type": "string" },
+        "availability": { "type": "string" },
+        "condition": { "type": "string" },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "integer", "minimum": 0 },
+        "productType": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "pageMetadata": {
+      "type": "object",
+      "description": "Page-level metadata extracted from structured data, HTML meta tags, etc.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Page type classification (e.g., article, product, website, webpage)."
+        },
+        "article": { "$ref": "#/$defs/articleMetadata" },
+        "product": { "$ref": "#/$defs/productMetadata" }
       },
       "additionalProperties": false
     }

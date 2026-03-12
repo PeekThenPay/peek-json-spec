@@ -133,6 +133,7 @@ describe('Common Definitions Schema Comprehensive Validation', () => {
       const validator = await ajv.compileAsync(analyzeSchema);
 
       const validResponse = {
+        intent: 'analyze',
         canonicalUrl: 'https://example.com/test',
         language: 'en',
         contentType: 'article',
@@ -170,6 +171,7 @@ describe('Common Definitions Schema Comprehensive Validation', () => {
       const validator = await ajv.compileAsync(embedSchema);
 
       const validResponse = {
+        intent: 'embed',
         canonicalUrl: 'https://example.com/test',
         language: 'en',
         contentType: 'article',

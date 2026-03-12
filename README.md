@@ -100,20 +100,25 @@ This approach transforms licensing from a barrier into a **discovery and value d
 
 ## Standard Intents
 
-| Intent       | Purpose                            | Typical Use                        |
-| ------------ | ---------------------------------- | ---------------------------------- |
-| `peek`       | Content preview                    | Discovery, preview                 |
-| `read`       | Full content                       | Training, analysis                 |
-| `summarize`  | Content summary                    | Context building                   |
-| `quote`      | Verbatim excerpts                  | Citations, previews                |
-| `embed`      | Vector embeddings                  | RAG, similarity search             |
-| `translate`  | Language translation               | Multilingual content               |
-| `analyze`    | Structured analysis                | Content classification             |
-| `qa`         | Question answering                 | Information extraction             |
-| `search`     | Discovery across publisher catalog | Content discovery, filtering       |
-| `rag_ingest` | Batch export for RAG systems       | Training data, persistent indexing |
+| Intent      | Purpose              | Typical Use            |
+| ----------- | -------------------- | ---------------------- |
+| `peek`      | Content preview      | Discovery, preview     |
+| `read`      | Full content         | Training, analysis     |
+| `summarize` | Content summary      | Context building       |
+| `quote`     | Verbatim excerpts    | Citations, previews    |
+| `embed`     | Vector embeddings    | RAG, similarity search |
+| `translate` | Language translation | Multilingual content   |
+| `analyze`   | Structured analysis  | Content classification |
 
-**Note:** `search` and `rag_ingest` operate via dedicated endpoints (not per-URL requests) and work
+### Optional Corpus-Wide Features
+
+| Feature      | Purpose                              | Typical Use                           |
+| ------------ | ------------------------------------ | ------------------------------------- |
+| `search`     | Discovery across publisher catalog   | Content discovery, filtering          |
+| `rag_ingest` | Batch export of retrieval-ready data | Long-term RAG indexing, embeddings    |
+| `qa`         | Question answering with citations    | Information extraction, comprehension |
+
+**Note:** These features operate via dedicated endpoints (not per-URL requests) and work
 across multiple resources in a publisher's catalog.
 
 ## Architecture
@@ -244,4 +249,5 @@ This is an open standard developed collaboratively:
 - 📖 [Improve documentation](https://github.com/PeekThenPay/peek-json-spec/tree/main/docs)
 
 ## NOTICE:
+
 Certain mechanisms described in this specification may be subject to patent applications by the authors.

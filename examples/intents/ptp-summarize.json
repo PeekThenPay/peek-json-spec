@@ -1,4 +1,5 @@
 {
+  "intent": "summarize",
   "canonicalUrl": "https://example.com/research/quantum-computing-paper",
   "language": "en",
   "contentType": "article",

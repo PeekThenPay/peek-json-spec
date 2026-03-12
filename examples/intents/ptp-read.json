@@ -1,4 +1,5 @@
 {
+  "intent": "read",
   "canonicalUrl": "https://example.com/articles/neural-networks",
   "language": "en",
   "contentType": "article",

@@ -4,6 +4,11 @@
   "description": "Target-language rendering of a textual resource or selection, with provenance and optional alignments.",
   "type": "object",
   "properties": {
+    "intent": {
+      "type": "string",
+      "const": "translate",
+      "description": "Intent type identifier"
+    },
     "canonicalUrl": { "type": "string", "format": "uri" },
     "contentType": { "$ref": "common-defs.schema.json#/$defs/contentType" },
     "mediaType": { "$ref": "common-defs.schema.json#/$defs/mediaType" },
@@ -96,6 +101,7 @@
     }
   },
   "required": [
+    "intent",
     "canonicalUrl",
     "contentType",
     "mediaType",

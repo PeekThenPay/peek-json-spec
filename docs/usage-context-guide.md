@@ -18,14 +18,14 @@ pricing frameworks for publishers and operators.
 
 ## The Core Usage Spectrum
 
-| Usage         | Persistence                                                   | Relative Frequency | Example Intents / Actions             | Primary Use-Case                                                                           |
-| ------------- | ------------------------------------------------------------- | ------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------ |
-| **immediate** | No retention beyond one API call                              | ★★★★★ (≈50–60%)    | read, summarize, quote, translate, qa | One-shot access to content to fulfill a single prompt or answer.                           |
-| **session**   | Ephemeral cache or short-term reuse (minutes–hours)           | ★★★★☆ (≈25–30%)    | rag_ingest, embed, read, qa           | Building short-lived context or vector stores for multi-turn chat, search, or live agents. |
-| **index**     | Persistent but updatable retrieval index (days–weeks)         | ★★★☆☆ (≈10%)       | embed, rag_ingest                     | Maintaining ongoing search or assistant indexes (Perplexity, Bing, Copilot).               |
-| **train**     | Permanent model incorporation                                 | ★☆☆☆☆ (<3%)        | analyze, embed                        | Fine-tuning or pre-training models on licensed content.                                    |
-| **distill**   | Semi-permanent; used to generate synthetic or derivative data | ★☆☆☆☆ (<2%)        | summarize, qa, analyze                | Creating synthetic datasets for fine-tuning or model distillation.                         |
-| **audit**     | Temporary, but tied to compliance processes                   | ☆☆☆☆☆ (<1%)        | analyze, qa                           | Model auditing, provenance tracing, or bias / fact checking.                               |
+| Usage         | Persistence                                                   | Relative Frequency | Example Intents / Actions         | Primary Use-Case                                                                           |
+| ------------- | ------------------------------------------------------------- | ------------------ | --------------------------------- | ------------------------------------------------------------------------------------------ |
+| **immediate** | No retention beyond one API call                              | ★★★★★ (≈50–60%)    | read, summarize, quote, translate | One-shot access to content to fulfill a single prompt or answer.                           |
+| **session**   | Ephemeral cache or short-term reuse (minutes–hours)           | ★★★★☆ (≈25–30%)    | rag_ingest, embed, read           | Building short-lived context or vector stores for multi-turn chat, search, or live agents. |
+| **index**     | Persistent but updatable retrieval index (days–weeks)         | ★★★☆☆ (≈10%)       | embed, rag_ingest                 | Maintaining ongoing search or assistant indexes (Perplexity, Bing, Copilot).               |
+| **train**     | Permanent model incorporation                                 | ★☆☆☆☆ (<3%)        | analyze, embed                    | Fine-tuning or pre-training models on licensed content.                                    |
+| **distill**   | Semi-permanent; used to generate synthetic or derivative data | ★☆☆☆☆ (<2%)        | summarize, analyze                | Creating synthetic datasets for fine-tuning or model distillation.                         |
+| **audit**     | Temporary, but tied to compliance processes                   | ☆☆☆☆☆ (<1%)        | analyze                           | Model auditing, provenance tracing, or bias / fact checking.                               |
 
 ---
 
@@ -150,7 +150,7 @@ examples for a compact model.
 
 ```http
 X-PTP-Usage: distill
-X-PTP-Intent: qa
+X-PTP-Intent: summarize
 X-PTP-Derivative-Purpose: synthetic_qa
 ```
 
