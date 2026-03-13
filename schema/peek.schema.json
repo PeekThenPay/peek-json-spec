@@ -116,20 +116,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [
-              "peek",
-              "read",
-              "summarize",
-              "quote",
-              "embed",
-              "chunk",
-              "rag_ingest",
-              "train",
-              "qa",
-              "translate",
-              "analyze",
-              "search"
-            ]
+            "enum": ["peek", "read", "summarize", "quote", "embed", "chunk", "translate", "analyze"]
           },
           "description": "Intended use cases for licensed content."
         },

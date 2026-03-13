@@ -4,6 +4,11 @@
   "description": "Canonical, transient full-content response for LLM/agent consumption.",
   "type": "object",
   "properties": {
+    "intent": {
+      "type": "string",
+      "const": "read",
+      "description": "Intent type identifier"
+    },
     "canonicalUrl": { "type": "string", "format": "uri" },
     "language": {
       "type": "string",
@@ -20,11 +25,46 @@
       "type": ["string", "null"]
     },
     "structured": {
-      "description": "Optional normalized structure; used when mediaType is application/json+ptp-structured.",
+      "description": "Optional normalized structure; used when mediaType is application/json+ptp-structured. Either blocks or markdown will be present, controlled by ptp_format parameter.",
       "type": "object",
       "properties": {
+        "title": {
+          "type": "string",
+          "description": "Document title."
+        },
+        "description": {
+          "type": "string",
+          "description": "Meta description or intro paragraph."
+        },
+        "author": {
+          "description": "Author(s).",
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": { "name": { "type": "string" } },
+                "required": ["name"]
+              }
+            }
+          ]
+        },
+        "datePublished": {
+          "type": "string",
+          "description": "ISO 8601 date."
+        },
+        "dateModified": {
+          "type": "string",
+          "description": "ISO 8601 date."
+        },
+        "metadata": {
+          "$ref": "common-defs.schema.json#/$defs/pageMetadata",
+          "description": "Extracted structured metadata (product, article, etc.)."
+        },
         "blocks": {
           "type": "array",
+          "description": "Structured blocks (when ptp_format=blocks).",
           "items": {
             "type": "object",
             "properties": {
@@ -53,9 +93,12 @@
             },
             "required": ["type"]
           }
+        },
+        "markdown": {
+          "type": "string",
+          "description": "Markdown representation (when ptp_format=markdown, default)."
         }
       },
-      "required": ["blocks"],
       "additionalProperties": false
     },
     "normalization": {
@@ -97,14 +140,17 @@
           "rel": { "type": "string", "enum": ["image", "table", "supplement", "other"] },
           "href": { "type": "string", "format": "uri" },
           "mime": { "type": "string" },
-          "title": { "type": "string" }
+          "title": { "type": "string" },
+          "alt": { "type": "string", "description": "Alt text for images." },
+          "width": { "type": "integer", "minimum": 1, "description": "Image width in pixels." },
+          "height": { "type": "integer", "minimum": 1, "description": "Image height in pixels." }
         },
         "required": ["rel", "href"]
       },
       "maxItems": 100
     }
   },
-  "required": ["canonicalUrl", "contentType", "mediaType", "language", "provenance", "length"],
+  "required": ["intent", "canonicalUrl", "mediaType", "provenance", "length"],
   "allOf": [
     {
       "if": {

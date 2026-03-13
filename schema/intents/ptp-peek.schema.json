@@ -4,10 +4,10 @@
   "type": "object",
   "description": "Minimal, discovery-only preview of a resource.",
   "properties": {
-    "type": {
+    "intent": {
       "type": "string",
       "const": "peek",
-      "description": "Identifies this response as preview content"
+      "description": "Intent type identifier"
     },
     "canonicalUrl": { "type": "string", "format": "uri" },
     "title": { "type": "string", "minLength": 1, "maxLength": 220 },
@@ -65,7 +65,17 @@
       "type": "object",
       "description": "Non-content signals for ranking/UX; safe to cache.",
       "properties": {
-        "tokenCountEstimate": { "type": "integer", "minimum": 0 }
+        "tokenCountEstimate": { "type": "integer", "minimum": 0 },
+        "originalContentLengthBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Original content size before normalization."
+        },
+        "normalizedContentLengthBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Content size after normalization."
+        }
       },
       "additionalProperties": true
     },
@@ -74,10 +84,22 @@
       "items": { "type": "string", "minLength": 1 },
       "maxItems": 12
     },
+    "provenance": {
+      "$ref": "common-defs.schema.json#/$defs/baseProvenance",
+      "description": "Content provenance and attribution."
+    },
     "peekManifestUrl": { "type": "string", "format": "uri" },
     "error": {
       "type": "string",
-      "enum": ["invalid_license", "insufficient_budget", "license_expired"],
+      "enum": [
+        "invalid_license",
+        "insufficient_budget",
+        "license_expired",
+        "intent_usage_not_supported",
+        "invalid_ptp_parameters",
+        "missing_required_parameters",
+        "missing_license_token"
+      ],
       "description": "Error type when peek response is returned with HTTP 403 due to license issues."
     },
     "message": {
@@ -85,6 +107,14 @@
       "description": "Human-readable error message providing details about license issues."
     }
   },
-  "required": ["type", "canonicalUrl", "title", "snippet", "peekManifestUrl", "mediaType"],
+  "required": [
+    "intent",
+    "canonicalUrl",
+    "title",
+    "snippet",
+    "peekManifestUrl",
+    "mediaType",
+    "provenance"
+  ],
   "additionalProperties": false
 }

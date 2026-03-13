@@ -3,6 +3,11 @@
   "title": "Peek-Then-Pay Search Intent Response",
   "type": "object",
   "properties": {
+    "intent": {
+      "type": "string",
+      "const": "search",
+      "description": "Intent type identifier"
+    },
     "query": { "type": "string" },
     "mode": { "type": "string", "enum": ["keyword", "vector", "hybrid"] },
     "scoringId": {
@@ -28,6 +33,6 @@
       }
     }
   },
-  "required": ["query", "mode", "scoringId", "results"],
+  "required": ["intent", "query", "mode", "scoringId", "results"],
   "additionalProperties": false
 }

@@ -51,12 +51,9 @@ export interface PeekManifest {
       | 'summarize'
       | 'quote'
       | 'embed'
-      | 'rag_ingest'
-      | 'train'
-      | 'qa'
+      | 'chunk'
       | 'translate'
       | 'analyze'
-      | 'search'
     )[];
     /** Efficiency hints for AI systems */
     content_hints?: {

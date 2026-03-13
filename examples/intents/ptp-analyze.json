@@ -1,4 +1,5 @@
 {
+  "intent": "analyze",
   "canonicalUrl": "https://example.com/research/climate-data",
   "language": "en",
   "contentType": "article",

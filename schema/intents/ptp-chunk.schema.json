@@ -4,6 +4,11 @@
   "description": "Small, relevance-ranked spans extracted from a single resource with offsets and optional quotes for RAG grounding and evidence retrieval.",
   "type": "object",
   "properties": {
+    "intent": {
+      "type": "string",
+      "const": "chunk",
+      "description": "Intent type identifier"
+    },
     "canonicalUrl": {
       "type": "string",
       "format": "uri",
@@ -102,6 +107,7 @@
     }
   },
   "required": [
+    "intent",
     "canonicalUrl",
     "language",
     "contentType",

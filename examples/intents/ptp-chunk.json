@@ -1,4 +1,5 @@
 {
+  "intent": "chunk",
   "canonicalUrl": "https://example.com/articles/renewable-energy-guide",
   "language": "en",
   "contentType": "article",

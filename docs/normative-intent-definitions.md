@@ -52,7 +52,7 @@ If an implementation claims conformance with this specification, it MUST impleme
 
 The following table defines **content transformation intents** - the core operations for processing
 and extracting information from publisher content. Implementations MUST support these intent
-categories as defined. **Search** and **Rag Ingest** are optional features covered separately with
+categories as defined. **Search**, **QA**, and **Rag Ingest** are optional features covered separately with
 their own normative requirements.
 
 | Intent        | Description                                                                  | Default Persistence                              | Default Pricing Mode             | Notes                                                                |
@@ -65,9 +65,8 @@ their own normative requirements.
 | **translate** | Parallel text (source → target)                                              | derived_ttl (durable if licensed)                | per_1000_tokens (med→high)       | Style/brand rules may apply; attribution when public.                |
 | **analyze**   | Structured annotations (sentiment, entities, topics, readability, PII, etc.) | derived_ttl                                      | per_request (bundle)             | Include spans + confidence; can combine multiple analyses.           |
 | **chunk**     | Small, relevance-ranked spans from a single resource with offsets            | derived_ttl (short-lived, non-reconstructive)    | per_request (or per_1000_tokens) | RAG grounding, semantic evidence retrieval, citation-first reasoning |
-| **qa**        | Retrieval-augmented answers to supplied questions (with citations)           | transient                                        | per_1000_tokens (input + output) | qa ≠ search; it synthesizes language. Auto-QA is optional extension. |
 
-**search** identifies which resources are relevant across a corpus. **chunk** identifies which parts of a specific resource are relevant. **qa** optionally synthesizes answers, but **chunk** is the foundational evidence retrieval primitive.
+**search** identifies which resources are relevant across a corpus. **chunk** identifies which parts of a specific resource are relevant. **qa** optionally synthesizes answers from one or more resources via a dedicated endpoint, but **chunk** is the foundational evidence retrieval primitive.
 
 Persistence categories:
 
@@ -119,6 +118,8 @@ These intent definitions follow several important principles:
 
 - **Search as Discovery Feature**: `search` is an optional discovery service separate from content
   transformation intents, providing query access to publisher indexes via dedicated endpoints
+- **QA as Corpus-Wide Feature**: `qa` is an optional synthesis service that answers questions across
+  one or more resources via a dedicated endpoint, separate from per-URL content transformation intents
 - **Synthetic Content Persistence**: `qa` outputs are generated answers; default persistence is
   transient to prevent silent corpus duplication
 - **Length-Based Pricing**: `read` scales with content length, making per_1000_tokens the natural
@@ -344,6 +345,62 @@ SHALL enforce publisher-defined caps on total items, time ranges, and budget.
 The RAG ingest endpoint URL is found in the publisher's pricing configuration at
 `rag_ingest.endpoint_url`. Clients should make HTTP POST requests to this endpoint with ingest
 parameters.
+
+---
+
+## NORMATIVE: QA Feature (Optional)
+
+**This section contains normative requirements for publishers implementing optional QA features.**
+
+QA is an **optional synthesis feature** that publishers MAY choose to provide to enable question
+answering across their content. When implemented, publishers MUST follow these normative
+requirements. Unlike the core content transformation intents, QA is not called via the standard
+intent mechanism (on a per-URL request) but through a dedicated QA endpoint specified in the
+publisher's pricing configuration.
+
+QA operates across a publisher's corpus — answering questions by synthesizing information from
+multiple resources, not just a single URL. Where **search** identifies which resources are relevant
+and **chunk** extracts evidence spans from individual documents, **qa** synthesizes natural-language
+answers drawn from any combination of resources in the publisher's catalog.
+
+### Publisher Implementation
+
+Publishers that choose to offer QA capabilities MUST:
+
+1. Specify a `qa.endpoint_url` in their pricing configuration
+2. Set a `qa.pricing_mode` and `qa.price_cents`
+3. Implement the QA endpoint according to this specification
+
+### Client Usage
+
+Clients discover QA availability through the publisher's pricing manifest and call the QA
+endpoint directly (not via the standard intent API). QA provides synthesized answers with citations
+and provenance, suitable for agentic comprehension workflows.
+
+### Normative Definition
+
+The qa endpoint SHALL return one or more structured answers derived from the referenced resource(s),
+each with an associated confidence score and provenance. The response MUST include the question(s)
+posed, their corresponding answers, and—when requested—citations identifying the portions of the
+source content used to justify each answer.
+
+The qa response MUST NOT include reconstructive text beyond limited answer spans and quotes. When
+multiple sources or documents are used, each answer MUST identify its contributing source(s).
+
+If the model cannot answer a question above the configured confidence threshold, it SHALL return
+`"unanswered": true` for that entry rather than hallucinated content.
+
+QA responses are transformative and MAY be retained under the license terms. Default persistence is
+transient to prevent silent corpus duplication.
+
+### Schema
+
+**Schema**: [`ptp-qa.schema.json`](../schema/intents/ptp-qa.schema.json)
+
+### Endpoint Discovery
+
+The QA endpoint URL is found in the publisher's pricing configuration at `qa.endpoint_url`.
+Clients should make HTTP requests to this endpoint with QA parameters.
 
 ---
 
@@ -1161,108 +1218,6 @@ Returned spans MUST be minimal and MUST NOT exceed reconstructive limits.
   }
 }
 ```
-
-### qa
-
-**What QA is For** The qa intent answers one or more specific questions based on the content of a
-given resource (or small set of resources) — without reconstructing the full content itself. It’s
-meant for agentic comprehension, not data extraction or training.
-
-**Normative Definition** The qa intent SHALL return one or more structured answers derived from the
-referenced resource(s), each with an associated confidence score and provenance. The response MUST
-include the question(s) posed, their corresponding answers, and—when requested—citations identifying
-the portions of the source content used to justify each answer.
-
-The qa response MUST NOT include reconstructive text beyond limited answer spans and quotes. When
-multiple sources or documents are used, each answer MUST identify its contributing source(s).
-
-If the model cannot answer a question above the configured confidence threshold, it SHALL return
-"unanswered": true for that entry rather than hallucinated content.
-
-qa responses are transformative and MAY be retained under the license terms.
-
-**Schema**: [`ptp-qa.schema.json`](../schema/intents/ptp-qa.schema.json)
-
-**Request Parameters:**
-
-| param          | header               | type                                       | required | value                                                     |
-| -------------- | -------------------- | ------------------------------------------ | -------- | --------------------------------------------------------- |
-| ptp_intent     | X-PTP-Intent         | string                                     | true     | "qa"                                                      |
-| q              | X-PTP-Query          | string or base64url(JSON array of strings) | true     | One or more questions.                                    |
-| mode           | X-PTP-Mode           | string                                     | false    | "single" \| "multi". (Default="single")                   |
-| max_answers    | X-PTP-Max-Answers    | number                                     | false    | Max answers to return per question (1–10). (Default=3)    |
-| confidence_min | X-PTP-Confidence-Min | number                                     | false    | Minimum answer confidence to include (0–1). (Default=0.5) |
-| citations      | X-PTP-Citations      | boolean                                    | false    | Include source references/offsets. (Default=true)         |
-| quote_spans    | X-PTP-Quote-Spans    | boolean                                    | false    | Return short evidence snippets. (Default=true)            |
-
-**Response Example:**
-
-```json
-{
-  "canonicalUrl": "https://example.com/articles/renewable-energy-guide",
-  "language": "en",
-  "contentType": "article",
-  "mediaType": "text/html",
-  "model": {
-    "id": "qa:gpt-4o-mini@v1",
-    "provider": "openai",
-    "name": "gpt-4o-mini",
-    "version": "v1",
-    "digest": "sha256:abc123def456789012345678901234567890123456789012345678901234567890"
-  },
-  "qa_pairs": [
-    {
-      "index": 0,
-      "question": "What are the main types of renewable energy?",
-      "answer": "The main types of renewable energy include solar power, wind power, hydroelectric power, geothermal energy, and biomass energy.",
-      "confidence": 0.92,
-      "answerType": "factual",
-      "sources": [
-        {
-          "canonicalUrl": "https://example.com/articles/renewable-energy-guide",
-          "span": {
-            "start": 245,
-            "end": 387,
-            "unit": "char"
-          },
-          "quote": "Solar, wind, hydro, geothermal, and biomass are considered the five primary forms of renewable energy sources."
-        }
-      ]
-    },
-    {
-      "index": 1,
-      "question": "How does solar energy work?",
-      "answer": "Solar energy works by converting sunlight into electricity using photovoltaic cells in solar panels, which generate direct current that is then converted to alternating current for use in homes and businesses.",
-      "confidence": 0.88,
-      "answerType": "analytical",
-      "sources": [
-        {
-          "canonicalUrl": "https://example.com/articles/renewable-energy-guide",
-          "span": {
-            "start": 1245,
-            "end": 1456,
-            "unit": "char"
-          },
-          "quote": "Photovoltaic cells capture photons from sunlight and convert them into electrical energy through the photovoltaic effect."
-        }
-      ]
-    }
-  ],
-  "provenance": {
-    "contentHash": "sha256:def789abc012345678901234567890123456789012345678901234567890abcdef",
-    "generatedAt": "2024-01-15T10:30:45Z"
-  },
-  "length": {
-    "inputTokens": 1247,
-    "outputTokens": 198,
-    "totalTokens": 1445,
-    "truncated": false,
-    "truncateReason": "none"
-  }
-}
-```
-
----
 
 ### chunk (Chunk Retrieval)
 

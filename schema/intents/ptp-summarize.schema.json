@@ -5,6 +5,11 @@
   "type": "object",
 
   "properties": {
+    "intent": {
+      "type": "string",
+      "const": "summarize",
+      "description": "Intent type identifier"
+    },
     "canonicalUrl": { "type": "string", "format": "uri" },
     "language": {
       "type": "string",
@@ -79,6 +84,7 @@
   },
 
   "required": [
+    "intent",
     "canonicalUrl",
     "summary",
     "language",

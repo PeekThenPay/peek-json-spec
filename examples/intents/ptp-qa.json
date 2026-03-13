@@ -1,4 +1,5 @@
 {
+  "intent": "qa",
   "canonicalUrl": "https://example.com/faq/product-info",
   "language": "en",
   "contentType": "other",

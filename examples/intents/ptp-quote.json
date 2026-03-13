@@ -1,4 +1,5 @@
 {
+  "intent": "quote",
   "canonicalUrl": "https://example.com/articles/ai-research-paper",
   "language": "en",
   "contentType": "article",

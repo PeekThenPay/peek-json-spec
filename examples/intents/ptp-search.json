@@ -1,4 +1,5 @@
 {
+  "intent": "search",
   "query": "machine learning algorithms for time series forecasting",
   "mode": "hybrid",
   "scoringId": "bm25_te3l@v2",

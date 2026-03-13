@@ -4,6 +4,11 @@
   "description": "Structured annotations (topics, entities, sentiment, etc.) for a resource or selection.",
   "type": "object",
   "properties": {
+    "intent": {
+      "type": "string",
+      "const": "analyze",
+      "description": "Intent type identifier"
+    },
     "canonicalUrl": { "type": "string", "format": "uri" },
     "language": { "type": "string", "description": "BCP-47; may be detected" },
     "contentType": { "$ref": "common-defs.schema.json#/$defs/contentType" },
@@ -118,6 +123,14 @@
     }
   },
 
-  "required": ["canonicalUrl", "contentType", "mediaType", "provenance", "analysis", "length"],
+  "required": [
+    "intent",
+    "canonicalUrl",
+    "contentType",
+    "mediaType",
+    "provenance",
+    "analysis",
+    "length"
+  ],
   "additionalProperties": false
 }
