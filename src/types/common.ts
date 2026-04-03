@@ -25,6 +25,21 @@ export type IntentType =
   | 'analyze'; // JSON structured annotations (sentiment, entities, etc.)
 
 /**
+ * Corpus-wide optional features with dedicated endpoints.
+ * These operate across a publisher's catalog rather than on a single URL.
+ */
+export type CorpusFeatureType =
+  | 'search' // Discovery across a publisher's content index
+  | 'qa' // Question answering synthesized from one or more resources
+  | 'rag_ingest'; // Batch export of retrieval-ready chunks and embeddings
+
+/**
+ * Full taxonomy of billable operations — per-URL intents plus corpus-wide features.
+ * Used for license permissions and usage accounting.
+ */
+export type OperationType = IntentType | CorpusFeatureType;
+
+/**
  * Usage context for content access - determines retention and licensing terms.
  */
 export type UsageType =

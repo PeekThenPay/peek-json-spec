@@ -71,6 +71,6 @@
       ]
     }
   },
-  "required": ["intent", "canonicalUrl", "language", "model", "qa_pairs", "provenance", "length"],
+  "required": ["intent", "language", "model", "qa_pairs", "provenance", "length"],
   "additionalProperties": false
 }

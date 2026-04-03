@@ -168,14 +168,23 @@
           "format": "uri",
           "description": "Search endpoint URL for this publisher"
         },
-        "price_cents": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 1000000,
-          "description": "Per-request cost in cents"
+        "pricing_mode": {
+          "type": "string",
+          "enum": ["per_request", "per_1000_tokens"],
+          "description": "Pricing model: per_request or per_1000_tokens"
+        },
+        "usage": {
+          "type": "object",
+          "description": "Usage-based pricing configuration for different usage contexts",
+          "patternProperties": {
+            "^(immediate|session|index|train|distill|audit)$": {
+              "$ref": "#/$defs/UsagePricing"
+            }
+          },
+          "additionalProperties": false
         }
       },
-      "required": ["endpoint_url", "price_cents"],
+      "required": ["endpoint_url", "pricing_mode", "usage"],
       "additionalProperties": false
     },
     "RagIngestConfiguration": {
@@ -191,14 +200,18 @@
           "enum": ["per_request", "per_1000_tokens", "per_item"],
           "description": "Pricing model: per_request (per job), per_1000_tokens, or per_item"
         },
-        "price_cents": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 1000000,
-          "description": "Base price in cents according to pricing_mode"
+        "usage": {
+          "type": "object",
+          "description": "Usage-based pricing configuration for different usage contexts",
+          "patternProperties": {
+            "^(immediate|session|index|train|distill|audit)$": {
+              "$ref": "#/$defs/UsagePricing"
+            }
+          },
+          "additionalProperties": false
         }
       },
-      "required": ["endpoint_url", "pricing_mode", "price_cents"],
+      "required": ["endpoint_url", "pricing_mode", "usage"],
       "additionalProperties": false
     },
     "QaConfiguration": {
@@ -214,14 +227,18 @@
           "enum": ["per_request", "per_1000_tokens"],
           "description": "Pricing model: per_request or per_1000_tokens (input + output)"
         },
-        "price_cents": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 1000000,
-          "description": "Base price in cents according to pricing_mode"
+        "usage": {
+          "type": "object",
+          "description": "Usage-based pricing configuration for different usage contexts",
+          "patternProperties": {
+            "^(immediate|session|index|train|distill|audit)$": {
+              "$ref": "#/$defs/UsagePricing"
+            }
+          },
+          "additionalProperties": false
         }
       },
-      "required": ["endpoint_url", "pricing_mode", "price_cents"],
+      "required": ["endpoint_url", "pricing_mode", "usage"],
       "additionalProperties": false
     },
     "ModelMetadata": {

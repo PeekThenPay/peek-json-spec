@@ -49,12 +49,27 @@
   },
   "search": {
     "endpoint_url": "https://search.example.com/v1/search",
-    "price_cents": 3
+    "pricing_mode": "per_request",
+    "usage": {
+      "immediate": { "price_cents": 3 },
+      "session": { "price_cents": 5, "max_ttl_seconds": 3600 }
+    }
   },
   "rag_ingest": {
     "endpoint_url": "https://rag.example.com/v1/ingest",
     "pricing_mode": "per_1000_tokens",
-    "price_cents": 25
+    "usage": {
+      "index": { "price_cents": 25, "requires_contract": true }
+    }
+  },
+  "qa": {
+    "endpoint_url": "https://qa.example.com/v1/qa",
+    "pricing_mode": "per_1000_tokens",
+    "usage": {
+      "immediate": { "price_cents": 10 },
+      "session": { "price_cents": 15, "max_ttl_seconds": 3600 },
+      "train": { "price_cents": 500, "requires_contract": true }
+    }
   },
   "quotas": {
     "burst_rps": 100,
