@@ -1,11 +1,11 @@
 import { JWTPayload } from 'jose';
-import { IntentType, UsageType, ISO8601, ULID } from './common.js';
+import { OperationType, UsageType, ISO8601, ULID } from './common.js';
 
 /**
- * Intent-usage permission string in format "intent:usage"
- * Examples: "read:train", "summarize:immediate", "embed:session"
+ * Intent-usage permission string in format "operation:usage"
+ * Examples: "read:train", "summarize:immediate", "embed:session", "qa:immediate", "search:session"
  */
-export type IntentUsagePermission = `${IntentType}:${UsageType}`;
+export type IntentUsagePermission = `${OperationType}:${UsageType}`;
 
 /**
  * Immutable license object - embedded in JWT and never modified after creation

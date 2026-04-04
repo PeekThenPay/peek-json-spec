@@ -6,8 +6,10 @@ import { IntentType, UsageType, ModelMetadata } from './common.js';
 export interface SearchConfiguration {
   /** Search endpoint URL for this publisher */
   endpoint_url: string;
-  /** Per-request cost in cents */
-  price_cents: number;
+  /** Pricing model: per_request or per_1000_tokens */
+  pricing_mode: 'per_request' | 'per_1000_tokens';
+  /** Usage-based pricing for different usage contexts */
+  usage: Partial<Record<UsageType, UsagePricing>>;
 }
 
 /**
@@ -18,8 +20,8 @@ export interface RagIngestConfiguration {
   endpoint_url: string;
   /** Pricing model: per_request (per job), per_1000_tokens, or per_item */
   pricing_mode: 'per_request' | 'per_1000_tokens' | 'per_item';
-  /** Base price in cents according to pricing_mode */
-  price_cents: number;
+  /** Usage-based pricing for different usage contexts */
+  usage: Partial<Record<UsageType, UsagePricing>>;
 }
 
 /**
@@ -30,8 +32,8 @@ export interface QaConfiguration {
   endpoint_url: string;
   /** Pricing model: per_request or per_1000_tokens (input + output) */
   pricing_mode: 'per_request' | 'per_1000_tokens';
-  /** Base price in cents according to pricing_mode */
-  price_cents: number;
+  /** Usage-based pricing for different usage contexts */
+  usage: Partial<Record<UsageType, UsagePricing>>;
 }
 
 /**
