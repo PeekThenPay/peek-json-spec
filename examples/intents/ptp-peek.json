@@ -2,17 +2,53 @@
   "intent": "peek",
   "canonicalUrl": "https://example.com/article/ai-breakthrough",
   "title": "Revolutionary AI System Achieves Human-Level Performance",
-  "snippet": "Scientists at leading AI research lab have developed a groundbreaking artificial intelligence system that demonstrates human-level performance across multiple cognitive tasks, marking a significant milestone in the field.",
+  "snippet": "Scientists at a leading AI research lab have developed a groundbreaking artificial intelligence system that demonstrates human-level performance across multiple cognitive tasks, marking a significant milestone in the field.",
   "language": "en-US",
-  "contentType": "article",
+  "contentType": "news",
   "mediaType": "text/html",
-  "signals": {
-    "tokenCountEstimate": 1250
+  "contentState": "published",
+  "pageMetadata": {
+    "type": "article",
+    "article": {
+      "headline": "Revolutionary AI System Achieves Human-Level Performance",
+      "author": "Dana Rivers",
+      "datePublished": "2026-07-10",
+      "publisher": { "name": "Example News" },
+      "wordCount": 1480
+    }
   },
+  "topics": [
+    { "label": "Artificial Intelligence", "scheme": "wp:category", "id": "ai", "score": 0.97 },
+    { "label": "Technology & Computing", "scheme": "iab-3.0", "id": "596", "score": 0.85 }
+  ],
+  "entities": [
+    {
+      "name": "Example AI Labs",
+      "type": "organization",
+      "id": "https://www.wikidata.org/wiki/Q00000001",
+      "url": "https://example.com/topics/example-ai-labs",
+      "salience": 0.9
+    },
+    { "name": "Dana Rivers", "type": "person", "salience": 0.4 }
+  ],
+  "related": [
+    {
+      "url": "https://example.com/article/ai-benchmarks-explained",
+      "title": "How AI Benchmarks Work",
+      "relationship": "similar"
+    },
+    {
+      "url": "https://example.com/series/rise-of-agents",
+      "title": "Series: Rise of the Agents",
+      "relationship": "series"
+    }
+  ],
+  "agentGuidance": "Cite using the canonical URL. Full benchmark tables are available under the read intent; per-claim evidence spans via the chunk intent.",
+  "signals": { "tokenCountEstimate": 1250 },
   "tags": ["ai", "research", "breakthrough", "technology"],
   "provenance": {
     "contentHash": "sha256:a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
-    "generatedAt": "2025-10-07T14:30:00Z",
+    "generatedAt": "2026-07-12T14:30:00Z",
     "sourceUrl": "https://example.com/article/ai-breakthrough",
     "sourceTitle": "Revolutionary AI System Achieves Human-Level Performance"
   },
