@@ -28,8 +28,11 @@
     },
     "contentType": {
       "type": "string",
-      "description": "High-level classification for routing.",
-      "enum": ["article", "blog", "doc", "news", "video", "audio", "dataset", "other"]
+      "description": "High-level classification for routing. Use canonical enum values when they fit; namespace custom values as vertical:kind (lowercase kebab segments).",
+      "anyOf": [
+        { "enum": ["article", "blog", "doc", "news", "video", "audio", "dataset", "other"] },
+        { "pattern": "^[a-z0-9]+(-[a-z0-9]+)*(:[a-z0-9]+(-[a-z0-9]+)*)*$" }
+      ]
     },
     "modelMetadata": {
       "type": "object",
