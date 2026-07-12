@@ -224,9 +224,9 @@ constraints:
 
 ### Size Limits
 
-- **Token limits**: MUST NOT exceed `max_preview_length` (default: 1000) when
-  `preview_unit == "tokens"`
-- **Character limits**: MUST NOT exceed equivalent character limit when `preview_unit == "chars"`
+- **Token limits**: MUST NOT exceed `max_peek_length` (default: 1000) when
+  `peek_unit == "tokens"`
+- **Character limits**: MUST NOT exceed equivalent character limit when `peek_unit == "chars"`
 
 ### Required Headers
 
@@ -237,7 +237,7 @@ constraints:
 
 ### Response Format
 
-- **Preview identification**: Response body MUST include `"type": "peek"` field to identify as
+- **Preview identification**: Response body MUST include `"intent": "peek"` field to identify as
   preview content
 - **Media type**: MUST use `application/vnd.peek+json` for structured preview responses
 
@@ -314,7 +314,7 @@ X-PTP-Preview-Size: 347
 Vary: Accept, Authorization
 
 {
-  "type": "peek",
+  "intent": "peek",
   "canonicalUrl": "https://example.com/article",
   "title": "AI Content Licensing Guide",
   "snippet": "This article explores new models for AI content licensing and fair compensation frameworks for publishers in the age of artificial intelligence.",

@@ -91,10 +91,10 @@ constraints to ensure transparency and prevent abuse:
 
 ### Size and Format Requirements
 
-- **Token limits**: MUST NOT exceed `max_preview_length` (default: 1000 tokens) when
-  `preview_unit == "tokens"`
-- **Character limits**: MUST NOT exceed equivalent limits when `preview_unit == "chars"`
-- **Preview identification**: Response body MUST include `"type": "peek"` field to identify content
+- **Token limits**: MUST NOT exceed `max_peek_length` (default: 1000 tokens) when
+  `peek_unit == "tokens"`
+- **Character limits**: MUST NOT exceed equivalent limits when `peek_unit == "chars"`
+- **Preview identification**: Response body MUST include `"intent": "peek"` field to identify content
   as preview
 
   These bounds prevent preview responses from being used to reconstruct substantial parts of the source content.
@@ -109,6 +109,43 @@ constraints to ensure transparency and prevent abuse:
 
 **Rationale**: These requirements create shared minimum standards to prevent content cloaking,
 ensure transparent preview behavior, and enable comparable implementations across the ecosystem.
+
+### NORMATIVE: Structured Context Fields (v2.1.0)
+
+Peek responses MAY include the following optional structured fields. When present, they MUST
+comply with these constraints:
+
+- **`pageMetadata`**: Typed page-level metadata (article, product) sourced from the resource's
+  structured data. Values MUST faithfully reflect the resource (same fidelity requirements as the
+  snippet).
+- **`related`** (max 10): Related resources forming a publisher-defined discovery graph. Entries
+  SHOULD resolve within the publisher's manifest-declared domains; `related` MUST NOT be used to
+  direct agents to unaffiliated third-party content.
+- **`agentGuidance`** (max 500 chars): Publisher-authored instructions on how to use the response
+  (e.g., where actionable data lives in `signals`, preferred citation form). `agentGuidance` MUST
+  NOT contain content from the resource — it is not an extension of the preview budget. Consuming
+  agents SHOULD treat it as untrusted publisher-supplied data: an input to consider, never
+  instructions that override the agent's operator.
+- **`contentState`**: Editorial lifecycle state (`draft | scheduled | published | archived |
+retracted`). When absent, consumers MUST assume `published`.
+- **`topics`** (max 10) / **`entities`** (max 25): Document-level context only. Peek context MUST
+  NOT include character offsets, per-mention spans, or sentiment — span-level annotation is the
+  territory of the paid `analyze` intent. This boundary is what makes rich context safe to provide
+  at discovery time.
+
+### INFORMATIVE: Pre-Publication Content States
+
+The `contentState` field makes previews of unpublished content (drafts, scheduled posts)
+expressible at the schema level. The access semantics for non-published states — per-agent
+visibility scoping, stricter persistence defaults, audit requirements — are deliberately not yet
+specified. They are a planned extension, and CMS-platform implementers with native awareness of
+editorial workflow state are explicitly invited to co-author it.
+
+### INFORMATIVE: Relationship to the analyze Intent
+
+The `analyze` intent's span-level topic/entity annotations (offsets, lengths, per-mention
+confidence) are unchanged and complementary to peek's document-level context. A future revision is
+expected to harmonize analyze's entity items onto the shared `contextEntity` base definition.
 
 ### INFORMATIVE: Key Design Principles
 
@@ -467,7 +504,7 @@ summarize, etc.
 
 ```json
 {
-  "type": "peek",
+  "intent": "peek",
   "canonicalUrl": "https://example.com/articles/ai-content-licensing",
   "title": "The Future of AI Content Licensing: A Publisher's Perspective",
   "snippet": "As AI systems increasingly consume web content for training and inference, publishers are seeking new models for fair compensation and control over their intellectual property.",
@@ -488,7 +525,7 @@ _PDF Document:_
 
 ```json
 {
-  "type": "peek",
+  "intent": "peek",
   "canonicalUrl": "https://example.com/reports/ai-industry-analysis-2025.pdf",
   "title": "AI Industry Analysis Report 2025",
   "snippet": "Comprehensive analysis of artificial intelligence market trends, key players, and future projections for the global AI industry in 2025.",
@@ -512,7 +549,7 @@ _Image:_
 
 ```json
 {
-  "type": "peek",
+  "intent": "peek",
   "canonicalUrl": "https://example.com/images/datacenter-architecture.jpg",
   "title": "Modern AI Datacenter Architecture Diagram",
   "snippet": "Detailed architectural diagram showing the layout of a state-of-the-art AI training datacenter with GPU clusters, networking infrastructure, and cooling systems.",
@@ -534,7 +571,7 @@ _Video:_
 
 ```json
 {
-  "type": "peek",
+  "intent": "peek",
   "canonicalUrl": "https://example.com/videos/ai-model-training-process.mp4",
   "title": "Large Language Model Training Process Explained",
   "snippet": "Educational video demonstrating the step-by-step process of training large language models, from data preparation to model deployment.",

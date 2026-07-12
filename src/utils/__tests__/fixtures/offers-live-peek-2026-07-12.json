@@ -1,0 +1,37 @@
+{
+  "intent": "peek",
+  "canonicalUrl": "https://www.offers.com/stores/adidas/",
+  "title": "Adidas Coupons & Promo Codes",
+  "snippet": "Adidas - 10 active promo codes plus 14 verified deals, validated July 12, 2026. Offer redemption URLs are in signals.codeOffers.\nStore page: https://www.offers.com/stores/adidas/?utm_source=fetchright\n\nAdditional savings may be available at these similar stores: Nike (https://www.offers.com/stores/nike/?utm_source=fetchright), PUMA (https://www.offers.com/stores/puma/?utm_source=fetchright)\n\nContent delivered via FetchRight (fetchright.ai) using the Peek-Then-Pay open standard (peekthenpay.org).",
+  "peekManifestUrl": "https://www.offers.com/.well-known/peek.json",
+  "mediaType": "text/html",
+  "contentType": "ecommerce:deals",
+  "language": "en",
+  "signals": {
+    "originalContentLengthBytes": 228738,
+    "codeOffers": [
+      {
+        "name": "Get 25% Off Full-Price & Sale Items with Code",
+        "url": "https://www.offers.com/stores/adidas/?em=N4WK3KTLPVA47MJJ5HBS4BUHQU&utm_source=fetchright",
+        "sitewide": true,
+        "expiresInDays": 2
+      },
+      {
+        "name": "Save 15% on Your Purchase",
+        "url": "https://www.offers.com/stores/adidas/?em=LXTOIRALPZFUBEYFOJ5CCYRANY&utm_source=fetchright",
+        "expiresInDays": 3
+      },
+      {
+        "name": "Save 25% on Select Full-Price Orders",
+        "url": "https://www.offers.com/stores/adidas/?em=7SQO5PKFLVAJBKB2XYZY2E76KQ&utm_source=fetchright"
+      }
+    ]
+  },
+  "tags": ["ecommerce", "coupons", "promo-codes", "adidas"],
+  "provenance": {
+    "requestId": "0bbafadb-670d-451f-b8c2-8e9c29801fcc",
+    "generatedAt": "2026-07-12T18:09:29.743Z",
+    "sourceUrl": "https://www.offers.com/stores/adidas/",
+    "algorithm": "offers-peek-v2"
+  }
+}

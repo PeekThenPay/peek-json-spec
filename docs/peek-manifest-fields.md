@@ -82,10 +82,10 @@ provides a contact point for appeals or allowlist requests.
 
 **Implementation Notes**:
 
-- \*\* Publishers who disable auto-peek should still implement
+- Publishers who disable auto-peek should still implement
   [bot guidance headers](headers-and-content-negotiation.md#bot-guidance-headers-for-non-auto-peek-publishers)
   to encourage responsible AI agent behavior and license acquisition
-- \*\* Automated preview generation based on
+- Automated preview generation based on
   [bot detection guidance](bot-detection-guidance.md) with the specified token limits and policies
 
 ## Example Structure

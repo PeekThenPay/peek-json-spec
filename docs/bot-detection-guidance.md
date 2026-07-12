@@ -373,7 +373,7 @@ function getBotConfidence(request: Request): number {
 ### Prevent Abuse
 
 - **Rate limiting**: Apply strict rate limits to auto-peek responses
-- **Size limits**: Enforce `max_preview_length` strictly
+- **Size limits**: Enforce `max_peek_length` strictly
 - **Content consistency**: Ensure previews are faithful excerpts
 - **No cloaking**: Never serve different content to circumvent detection
 
