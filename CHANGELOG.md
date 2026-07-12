@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2026-07-12
+
+### 🚀 Added
+
+- **Namespaced contentType values**: `contentType` now accepts custom lowercase-kebab
+  namespaced values (e.g., `ecommerce:deals`) alongside the canonical enum, mirroring
+  `mediaType`'s anyOf pattern
+- **`pageMetadata` in peek**: the existing typed `articleMetadata`/`productMetadata` defs are
+  now reachable from peek responses
+- **`related[]`**: typed discovery-graph links (url/title/relationship), max 10, with
+  same-publisher domain guidance
+- **`agentGuidance`**: publisher instructions on using the response (max 500 chars), with
+  normative anti-reconstruction and untrusted-data constraints
+- **`contentState`**: editorial lifecycle enum (draft/scheduled/published/archived/retracted);
+  absent means published. Pre-publication access semantics reserved as a planned extension
+- **Document-level context model**: `topics[]` (contextTopic: label/scheme/id/score, max 10)
+  and `entities[]` (contextEntity: name/type/id/url/salience, max 25); span-level data
+  remains exclusive to the analyze intent
+- Live production regression fixture (offers.com peek, captured 2026-07-12)
+
+### 🔧 Changed
+
+- Normative docs: peek body identification corrected from `"type": "peek"` to
+  `"intent": "peek"` (matching the schema and shipped validators)
+- Test files are no longer compiled into `dist/` (they shipped, unimported, in the published
+  package — dead Node-only code in an edge-consumed package)
+
+### 📋 Compatibility
+
+- Additive: all new fields optional; peek top level remains `additionalProperties: false`.
+  Responses emitting new fields require 2.1.0 validators — upgrade consumers before producers.
+
+## [2.0.0] - 2026 (backfilled stub)
+
+- Corpus features upgraded to usage-based pricing (breaking); chunk intent (v1.1.0) and
+  subsequent schema updates. See git history for details — this entry backfills a changelog
+  gap between 1.0.3 and 2.1.0.
+
 ## [1.0.3] - 2025-10-27
 
 ### 🐛 Fixed
