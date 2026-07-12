@@ -53,9 +53,26 @@ AI agents can:
 2. **Choose specific usage types** (read, summarize, embed, etc.)
 3. **Access clean, context-aware data** — publishers provide accurate transforms that save cost and time
 
+### Start With Just the Peek
+
+Peek is a complete offering on its own. A publisher can support only the `peek` intent, with no
+pricing, no licensing, and no payment rails, and still get:
+
+- **Publisher-authored previews** instead of inferences scraped from raw HTML
+- **Typed page metadata, topics, and entities** (`pageMetadata`, `topics`, `entities`) that ground
+  content in AI knowledge graphs
+- **A related-content discovery graph** (`related`) that guides agents to more of the catalog
+- **Citation and usage guidance** (`agentGuidance`) that agents can follow
+- **Provenance and content state** that travel with every response
+
+For content with no direct licensing value, this is answer-engine optimization (AEO/GEO) with
+governance: the publisher defines how AI systems see, cite, and represent the brand. Licensing and
+paid intents are layers to add later, per content type, per section, or never.
+
 ## Key Features
 
-- **👁️ Content Peek** - "Preview" model for informed licensing decisions
+- **👁️ Governed Discovery** - Publisher-defined structured previews that control how AI systems
+  see, cite, and represent content; valuable standalone or as the on-ramp to licensing
 - **🎯 Intent-Based Pricing** - Pay for specific transformations (summarize, embed, translate)
 - **🔐 Unified Licensing** - Single JWT-based system works across all participating publishers
 - **⚡ Edge Enforcement** - Fast, distributed license validation at CDN/edge layer
@@ -64,8 +81,21 @@ AI agents can:
 
 ## How It Works
 
-1. **Discovery** - Publishers serve `/.well-known/peek.json` manifests with licensing terms
-2. **Preview** - License-gated content returns 203 + content preview + pricing options
+Peek-Then-Pay is layered. The discovery layer stands on its own; licensing is an optional layer on
+top of it.
+
+**Layer 1: Discovery and Representation (peek-only)**
+
+1. **Discovery** - Publishers serve `/.well-known/peek.json` manifests declaring supported intents
+   and terms
+2. **Preview** - AI agent requests receive HTTP 203 with a structured peek: a publisher-authored
+   snippet plus typed metadata, topics and entities, related content, and provenance
+
+A publisher can stop here. Supporting only the `peek` intent requires no pricing, no operator
+accounts, and no payment integration.
+
+**Layer 2: Licensed Access (optional)**
+
 3. **License** - AI agents acquire JWT licenses for specific usage contexts from License Server
 4. **Access** - Edge enforcers validate assertion-only JWTs and manage budgets locally without
    requiring License Server connectivity
@@ -100,15 +130,16 @@ This approach transforms licensing from a barrier into a **discovery and value d
 
 ## Standard Intents
 
-| Intent      | Purpose              | Typical Use            |
-| ----------- | -------------------- | ---------------------- |
-| `peek`      | Content preview      | Discovery, preview     |
-| `read`      | Full content         | Training, analysis     |
-| `summarize` | Content summary      | Context building       |
-| `quote`     | Verbatim excerpts    | Citations, previews    |
-| `embed`     | Vector embeddings    | RAG, similarity search |
-| `translate` | Language translation | Multilingual content   |
-| `analyze`   | Structured analysis  | Content classification |
+| Intent      | Purpose                                | Typical Use                       |
+| ----------- | -------------------------------------- | --------------------------------- |
+| `peek`      | Content preview                        | Discovery, preview                |
+| `read`      | Full content                           | Training, analysis                |
+| `summarize` | Content summary                        | Context building                  |
+| `quote`     | Verbatim excerpts                      | Citations, previews               |
+| `embed`     | Vector embeddings                      | RAG, similarity search            |
+| `translate` | Language translation                   | Multilingual content              |
+| `analyze`   | Structured analysis                    | Content classification            |
+| `chunk`     | Relevance-ranked spans from a resource | RAG grounding, evidence retrieval |
 
 ### Optional Corpus-Wide Features
 
@@ -187,32 +218,37 @@ const isValid = ptpSummarizeValidator(responseData);
 
 ## Documentation
 
-| Document                                                                   | Purpose                                                                                                                                                                                                            | Status        |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
-| [**Intent Definitions**](./docs/normative-intent-definitions.md)           | **Core specification defining standard AI interaction patterns** (read, summarize, embed, etc.), usage contexts, attribution requirements, and JWT security implementation. Required reading for all implementers. | **Normative** |
-| [**Manifest Fields**](./docs/peek-manifest-fields.md)                      | **Complete peek.json reference** with field definitions, validation rules, and schema compliance requirements. Essential for publishers setting up content licensing terms.                                        | **Normative** |
-| [**Validation Utilities**](./docs/validation-utilities.md)                 | **Technical reference for validation functions** including edge-compatible pre-compiled validators, factory functions, and schema validation patterns for all Peek-Then-Pay components.                            | **Reference** |
-| [**License API**](./docs/license-api.md)                                   | **Complete API specification** for license acquisition, validation, and usage reporting. Covers JWT workflows, bilateral reporting, and edge enforcement integration patterns.                                     | Informative   |
-| [**Bot Detection Guidance**](./docs/bot-detection-guidance.md)             | **Publisher guidance for AI agent detection and licensing discovery** with Schema.org structured data patterns, auto-peek vs. non-auto-peek publisher strategies, and machine-readable licensing metadata.         | Recommended   |
-| [**Edge Enforcement Guide**](./docs/recommended-edge-enforcement-guide.md) | **Implementation patterns and architecture** for publishers deploying edge enforcement via CDNs, Workers, and bot detection services.                                                                              | Recommended   |
+| Document                                                                       | Purpose                                                                                                                                                                                                            | Status        |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
+| [**Intent Definitions**](./docs/normative-intent-definitions.md)               | **Core specification defining standard AI interaction patterns** (read, summarize, embed, etc.), usage contexts, attribution requirements, and JWT security implementation. Required reading for all implementers. | **Normative** |
+| [**Manifest Fields**](./docs/peek-manifest-fields.md)                          | **Complete peek.json reference** with field definitions, validation rules, and schema compliance requirements. Essential for publishers setting up content licensing terms.                                        | **Normative** |
+| [**Validation Utilities**](./docs/validation-utilities.md)                     | **Technical reference for validation functions** including edge-compatible pre-compiled validators, factory functions, and schema validation patterns for all Peek-Then-Pay components.                            | **Reference** |
+| [**License API**](./docs/license-api.md)                                       | **Complete API specification** for license acquisition, validation, and usage reporting. Covers JWT workflows, bilateral reporting, and edge enforcement integration patterns.                                     | Informative   |
+| [**Bot Detection Guidance**](./docs/bot-detection-guidance.md)                 | **Publisher guidance for AI agent detection and licensing discovery** with Schema.org structured data patterns, auto-peek vs. non-auto-peek publisher strategies, and machine-readable licensing metadata.         | Recommended   |
+| [**Edge Enforcement Guide**](./docs/recommended-edge-enforcement-guide.md)     | **Implementation patterns and architecture** for publishers deploying edge enforcement via CDNs, Workers, and bot detection services.                                                                              | Recommended   |
+| [**Headers & Content Negotiation**](./docs/headers-and-content-negotiation.md) | **HTTP header requirements and content negotiation patterns** for serving peeks and licensed content, including bot guidance headers for non-auto-peek publishers.                                                 | **Normative** |
+| [**Tool Service API**](./docs/tool-service-api.md)                             | **API specification for publisher tooling services** that perform content transformations (summarize, embed, analyze, chunk) on behalf of the edge enforcer.                                                       | Informative   |
+| [**Usage Context Guide**](./docs/usage-context-guide.md)                       | **Usage context definitions and persistence semantics** describing how licensed content may be retained and reused across different usage scopes.                                                                  | Informative   |
 
 ## Benefits
 
 ### For Publishers
 
-- **Stay in Control** — Enforce access policies directly at your domain edge (via Workers/CDNs),
-  without ceding content to third-party proxies
-- **Simple Monetization** — Define pricing once, and rely on a central License Server to manage
-  payments and operator accounts
-- **AI-Ready by Default** — Provide optional transforms (summarization, embed, analyze) so your
-  content is consistently represented in AI systems
-- **Extend Your Reach** — Smaller publishers gain visibility in a shared marketplace, surfacing in
-  AI discovery where they might otherwise be missed
-- **Brand Integrity** — Ensure that when your content is summarized, ingested, or used in AI
+- **AEO/GEO Without a Paywall**: Peek-only participation gives structured, publisher-controlled
+  discovery for content you never intend to monetize; no pricing or payment setup required
+- **Brand Integrity**: Ensure that when your content is summarized, ingested, or used in AI
   contexts, it reflects your voice and standards
-- **Monetize Existing AI Investments** — Publishers already create embeddings for on-site
+- **Stay in Control**: Enforce access policies directly at your domain edge (via Workers/CDNs),
+  without ceding content to third-party proxies
+- **Simple Monetization**: Define pricing once, and rely on a central License Server to manage
+  payments and operator accounts
+- **AI-Ready by Default**: Provide optional transforms (summarization, embed, analyze) so your
+  content is consistently represented in AI systems
+- **Extend Your Reach**: Smaller publishers gain visibility in a shared marketplace, surfacing in
+  AI discovery where they might otherwise be missed
+- **Monetize Existing AI Investments**: Publishers already create embeddings for on-site
   search/chat; licensed access distributes costs across multiple AI systems
-- **Value-Aligned Pricing** — Charge based on what agents actually receive (structured data,
+- **Value-Aligned Pricing**: Charge based on what agents actually receive (structured data,
   embeddings) rather than arbitrary "page access"
 
 ### For AI Systems & Agents

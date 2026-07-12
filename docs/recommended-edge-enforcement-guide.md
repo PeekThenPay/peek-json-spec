@@ -111,7 +111,7 @@ X-PTP-License-Required: true
 X-PTP-Supported-Intents: read,summarize,embed
 
 {
-  "type": "peek",
+  "intent": "peek",
   "canonicalUrl": "https://example.com/article",
   "title": "AI Content Licensing Guide",
   "snippet": "This article explores new models for AI content licensing...",
@@ -143,7 +143,7 @@ X-PTP-License-Required: true
 X-PTP-Supported-Intents: read,summarize,embed
 
 {
-  "type": "peek",
+  "intent": "peek",
   "canonicalUrl": "https://example.com/article",
   "title": "AI Content Licensing Guide",
   "snippet": "This article explores new models for AI content licensing...",

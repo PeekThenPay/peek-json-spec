@@ -91,9 +91,9 @@ constraints to ensure transparency and prevent abuse:
 
 ### Size and Format Requirements
 
-- **Token limits**: MUST NOT exceed `max_preview_length` (default: 1000 tokens) when
-  `preview_unit == "tokens"`
-- **Character limits**: MUST NOT exceed equivalent limits when `preview_unit == "chars"`
+- **Token limits**: MUST NOT exceed `max_peek_length` (default: 1000 tokens) when
+  `peek_unit == "tokens"`
+- **Character limits**: MUST NOT exceed equivalent limits when `peek_unit == "chars"`
 - **Preview identification**: Response body MUST include `"intent": "peek"` field to identify content
   as preview
 
