@@ -5,6 +5,8 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 import Ajv2020 from 'ajv/dist/2020.js';
 import type { ValidateFunction } from 'ajv';
 import addFormats from 'ajv-formats';
@@ -195,5 +197,25 @@ describe('entities[]', () => {
 
   it('rejects more than 25 entities', () => {
     expect(validate({ ...basePeek, entities: Array(26).fill({ name: 'X' }) })).toBe(false);
+  });
+});
+
+describe('live production regression', () => {
+  it('validates the offers.com peek captured 2026-07-12 with zero producer changes', async () => {
+    const raw = await readFile(
+      join(
+        process.cwd(),
+        'src',
+        'utils',
+        '__tests__',
+        'fixtures',
+        'offers-live-peek-2026-07-12.json',
+      ),
+      'utf-8',
+    );
+    const livePeek = JSON.parse(raw);
+    const ok = validate(livePeek);
+    if (!ok) console.error(validate.errors);
+    expect(ok).toBe(true);
   });
 });
