@@ -74,7 +74,7 @@ describe('pageMetadata', () => {
             wordCount: 1480,
           },
         },
-      }),
+      })
     ).toBe(true);
   });
 
@@ -83,7 +83,7 @@ describe('pageMetadata', () => {
       validate({
         ...basePeek,
         pageMetadata: { type: 'article', article: { headline: 'x', sneaky: true } },
-      }),
+      })
     ).toBe(false);
   });
 });
@@ -115,7 +115,7 @@ describe('related[]', () => {
 describe('agentGuidance', () => {
   it('accepts publisher usage instructions', () => {
     expect(
-      validate({ ...basePeek, agentGuidance: 'Offer redemption URLs are in signals.codeOffers.' }),
+      validate({ ...basePeek, agentGuidance: 'Offer redemption URLs are in signals.codeOffers.' })
     ).toBe(true);
   });
 
@@ -143,7 +143,7 @@ describe('topics[]', () => {
           { label: 'Artificial Intelligence', scheme: 'wp:category', id: 'ai', score: 0.97 },
           { label: 'Technology & Computing', scheme: 'iab-3.0', id: '596' },
         ],
-      }),
+      })
     ).toBe(true);
   });
 
@@ -175,7 +175,7 @@ describe('entities[]', () => {
           },
           { name: 'Dana Rivers', type: 'person' },
         ],
-      }),
+      })
     ).toBe(true);
   });
 
@@ -209,9 +209,9 @@ describe('live production regression', () => {
         'utils',
         '__tests__',
         'fixtures',
-        'offers-live-peek-2026-07-12.json',
+        'offers-live-peek-2026-07-12.json'
       ),
-      'utf-8',
+      'utf-8'
     );
     const livePeek = JSON.parse(raw);
     const ok = validate(livePeek);
