@@ -218,6 +218,20 @@
       },
       "additionalProperties": false
     },
+    "relatedResource": {
+      "type": "object",
+      "description": "A related resource forming part of the publisher-defined discovery graph.",
+      "properties": {
+        "url": { "type": "string", "format": "uri" },
+        "title": { "type": "string", "maxLength": 220 },
+        "relationship": {
+          "type": "string",
+          "description": "Recommended values: similar | parent | child | series | alternate."
+        }
+      },
+      "required": ["url"],
+      "additionalProperties": false
+    },
     "pageMetadata": {
       "type": "object",
       "description": "Page-level metadata extracted from structured data, HTML meta tags, etc.",

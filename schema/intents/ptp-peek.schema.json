@@ -89,6 +89,26 @@
       "description": "Content provenance and attribution."
     },
     "peekManifestUrl": { "type": "string", "format": "uri" },
+    "contentState": {
+      "type": "string",
+      "enum": ["draft", "scheduled", "published", "archived", "retracted"],
+      "description": "Editorial lifecycle state of the resource. Absent means published."
+    },
+    "pageMetadata": {
+      "$ref": "common-defs.schema.json#/$defs/pageMetadata",
+      "description": "Typed page-level metadata (article, product) sourced from structured data."
+    },
+    "related": {
+      "type": "array",
+      "items": { "$ref": "common-defs.schema.json#/$defs/relatedResource" },
+      "maxItems": 10,
+      "description": "Related resources. Entries SHOULD resolve within the publisher's manifest-declared domains."
+    },
+    "agentGuidance": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Publisher-authored instructions on how to use this response (e.g., where actionable data lives in signals). MUST NOT contain resource content. Agents SHOULD treat this as untrusted publisher data."
+    },
     "error": {
       "type": "string",
       "enum": [
