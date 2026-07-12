@@ -131,3 +131,69 @@ describe('contentState', () => {
     expect(validate({ ...basePeek, contentState: 'in-review' })).toBe(false);
   });
 });
+
+describe('topics[]', () => {
+  it('accepts scheme-qualified topics', () => {
+    expect(
+      validate({
+        ...basePeek,
+        topics: [
+          { label: 'Artificial Intelligence', scheme: 'wp:category', id: 'ai', score: 0.97 },
+          { label: 'Technology & Computing', scheme: 'iab-3.0', id: '596' },
+        ],
+      }),
+    ).toBe(true);
+  });
+
+  it('requires label', () => {
+    expect(validate({ ...basePeek, topics: [{ scheme: 'wp:category' }] })).toBe(false);
+  });
+
+  it('rejects out-of-range scores', () => {
+    expect(validate({ ...basePeek, topics: [{ label: 'AI', score: 1.5 }] })).toBe(false);
+  });
+
+  it('rejects more than 10 topics', () => {
+    expect(validate({ ...basePeek, topics: Array(11).fill({ label: 'AI' }) })).toBe(false);
+  });
+});
+
+describe('entities[]', () => {
+  it('accepts typed, linked entities', () => {
+    expect(
+      validate({
+        ...basePeek,
+        entities: [
+          {
+            name: 'Example AI Labs',
+            type: 'organization',
+            id: 'https://www.wikidata.org/wiki/Q00000001',
+            url: 'https://example.com/topics/example-ai-labs',
+            salience: 0.9,
+          },
+          { name: 'Dana Rivers', type: 'person' },
+        ],
+      }),
+    ).toBe(true);
+  });
+
+  it('accepts namespaced custom entity types', () => {
+    expect(validate({ ...basePeek, entities: [{ name: 'Adidas', type: 'wp:brand' }] })).toBe(true);
+  });
+
+  it('requires name', () => {
+    expect(validate({ ...basePeek, entities: [{ type: 'person' }] })).toBe(false);
+  });
+
+  it('rejects invalid entity types', () => {
+    expect(validate({ ...basePeek, entities: [{ name: 'X', type: 'Not A Type!' }] })).toBe(false);
+  });
+
+  it('rejects out-of-range salience', () => {
+    expect(validate({ ...basePeek, entities: [{ name: 'X', salience: -0.1 }] })).toBe(false);
+  });
+
+  it('rejects more than 25 entities', () => {
+    expect(validate({ ...basePeek, entities: Array(26).fill({ name: 'X' }) })).toBe(false);
+  });
+});

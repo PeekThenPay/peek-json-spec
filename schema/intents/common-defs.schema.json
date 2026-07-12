@@ -232,6 +232,57 @@
       "required": ["url"],
       "additionalProperties": false
     },
+    "contextTopic": {
+      "type": "object",
+      "description": "Document-level topic classification (aboutness).",
+      "properties": {
+        "label": { "type": "string" },
+        "scheme": {
+          "type": "string",
+          "description": "Taxonomy identifier, e.g. iab-3.0, wp:category, or a publisher URI."
+        },
+        "id": { "type": "string", "description": "Stable identifier within the scheme." },
+        "score": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "required": ["label"],
+      "additionalProperties": false
+    },
+    "contextEntity": {
+      "type": "object",
+      "description": "Document-level named entity the content is about. No spans, no per-mention data — span-level annotation is the analyze intent's territory.",
+      "properties": {
+        "name": { "type": "string" },
+        "type": {
+          "type": "string",
+          "anyOf": [
+            {
+              "enum": [
+                "person",
+                "organization",
+                "place",
+                "product",
+                "event",
+                "creative-work",
+                "other"
+              ]
+            },
+            { "pattern": "^[a-z0-9]+(-[a-z0-9]+)*(:[a-z0-9]+(-[a-z0-9]+)*)*$" }
+          ]
+        },
+        "id": {
+          "type": "string",
+          "description": "Stable identifier, ideally a URI (Wikidata, schema.org @id, publisher canonical)."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Resolvable page about the entity."
+        },
+        "salience": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
     "pageMetadata": {
       "type": "object",
       "description": "Page-level metadata extracted from structured data, HTML meta tags, etc.",
